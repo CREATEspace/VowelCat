@@ -1,0 +1,8 @@
+The snd_pcm... functions are from the ALSA library. These are the functions
+that actually find the microphone.
+
+This code simply opens up the microphone right now. It immediately closes it
+too, so I added a delay with for loops. It is nothing special at all but it
+gives me a chance to use something like PulseAudio Volume Control to view the actual
+opened recording device. Like I said I will continue to look into recording
+and translating the data for the snack sound object. 
