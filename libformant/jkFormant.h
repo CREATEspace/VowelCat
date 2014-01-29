@@ -13,10 +13,6 @@
     of formant
  */
 
-#define DEB_PAUSE	8	/* debug levels */
-#define DEB_LPC_PARS	4
-#define DEB_PARAMS	2
-#define DEB_ENTRY	1
 #define PI 3.1415927
 #define MAXFORMANTS 7
 

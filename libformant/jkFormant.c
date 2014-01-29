@@ -233,8 +233,6 @@ void LoadSound(Sound *s, Tcl_Obj *obj, int startpos, int endpos) {
 }
 
 
-static int debug = 0;
-
 /*	dpform.c       */
 
 /* a formant tracker based on LPC polynomial roots and dynamic programming */
@@ -382,9 +380,6 @@ static Sound *dpform(Sound *ps, int nform, double nom_f1) {
         if(merge_cost > 1000.0) domerge = false;
 
         /* Allocate space for the formant and bandwidth arrays to be passed back. */
-        if(debug & DEB_ENTRY){
-            printf("Allocating formant and bandwidth arrays in dpform()\n");
-        }
         fr = malloc(sizeof(double*) * nform * 2);
         ba = fr + nform;
         for(i=0;i < nform*2; i++){
@@ -394,16 +389,10 @@ static Sound *dpform(Sound *ps, int nform, double nom_f1) {
         /*    if((fbs=new_signal(cp,SIG_UNKNOWN,dup_header(ps->header),fr,ps->length,		       ps->samprate, nform * 2))) {*/
         if (1) {
             /* Allocate space for the raw candidate array. */
-            if(debug & DEB_ENTRY){
-                printf("Allocating raw candidate array in dpform()\n");
-            }
             pcan = malloc(sizeof(short*) * MAXCAN);
             for(i=0;i<MAXCAN;i++) pcan[i] = malloc(sizeof(short) * nform);
 
             /* Allocate space for the dp lattice */
-            if(debug & DEB_ENTRY){
-                printf("Allocating DP lattice structure in dpform()\n");
-            }
             fl = malloc(sizeof(form_t*) * ps->length);
             for(i=0;i < ps->length; i++)
                 fl[i] = malloc(sizeof(form_t));
@@ -411,9 +400,6 @@ static Sound *dpform(Sound *ps, int nform, double nom_f1) {
             /*******************************************************************/
             /* main formant tracking loop */
             /*******************************************************************/
-            if(debug & DEB_ENTRY){
-                printf("Entering main computation loop in dpform()\n");
-            }
             for(i=0; i < ps->length; i++){	/* for all analysis frames... */
 
                 ncan = 0;		/* initialize candidate mapping count to 0 */
@@ -498,34 +484,15 @@ static Sound *dpform(Sound *ps, int nform, double nom_f1) {
                     fl[i]->cumerr[j] = (FBIAS * fbias) + (bfact * berr) + merger +
                         (ffact * ferr) + minerr;
                 }			/* end for each CURRENT mapping... */
-
-                if(debug & DEB_LPC_PARS){
-                    printf("\nFrame %4d  # candidates:%3d stat:%f prms:%f",i,ncan,rmsdffact,pole[i]->rms);
-                    for (j=0; j<ncan; j++){
-                        printf("\n	");
-                        for(k=0; k<nform; k++)
-                            if(pcan[j][k] >= 0)
-                                printf("%6.0f ",pole[i]->freq[fl[i]->cand[j][k]]);
-                            else
-                                printf("  NA   ");
-                        printf("  cum:%7.2f pp:%d",fl[i]->cumerr[j], fl[i]->prept[j]);
-                    }
-                }
             }				/* end for all analysis frames... */
             /**************************************************************************/
 
             /* Pick the candidate in the final frame with the lowest cost. */
             /* Starting with that min.-cost cand., work back thru the lattice. */
-            if(debug & DEB_ENTRY){
-                printf("Entering backtrack loop in dpform()\n");
-            }
             dmaxc = 0;
             dminc = 100;
             dcountc = dcountf = 0;
             for(mincan = -1, i=ps->length - 1; i>=0; i--){
-                if(debug & DEB_LPC_PARS){
-                    printf("\nFrame:%4d mincan:%2d ncand:%2d ",i,mincan,fl[i]->ncand);
-                }
                 if(mincan < 0)		/* need to find best starting candidate? */
                     if(fl[i]->ncand){	/* have candidates at this frame? */
                         minerr = fl[i]->cumerr[0];
@@ -546,9 +513,6 @@ static Sound *dpform(Sound *ps, int nform, double nom_f1) {
                         k = fl[i]->cand[mincan][j];
                         if(k >= 0){
                             fr[j][i] = pole[i]->freq[k];
-                            if(debug & DEB_LPC_PARS){
-                                printf("%6.0f",fr[j][i]);
-                            }
                             ba[j][i] = pole[i]->band[k];
                         } else {		/* IF FORMANT IS MISSING... */
                             if(i < ps->length - 1){
@@ -558,9 +522,6 @@ static Sound *dpform(Sound *ps, int nform, double nom_f1) {
                                 fr[j][i] = fnom[j]; /* or insert neutral values */
                                 ba[j][i] = NOBAND;
                             }
-                            if(debug & DEB_LPC_PARS){
-                                printf("%6.0f",fr[j][i]);
-                            }
                         }
                     }
                     mincan = fl[i]->prept[mincan];
@@ -568,18 +529,10 @@ static Sound *dpform(Sound *ps, int nform, double nom_f1) {
                     for(j=0; j < nform; j++){
                         fr[j][i] = fnom[j];
                         ba[j][i] = NOBAND;
-                        if(debug & DEB_LPC_PARS){
-                            printf("%6.0f",fr[j][i]);
-                        }
                     }
                 }			/* note that mincan will remain =-1 if no candidates */
             }				/* end unpacking formant tracks from the dp lattice */
             /* Deallocate all the DP lattice work space. */
-            /*if(debug & DEB_ENTRY){
-              printf("%s complete; max. cands:%d  min. cands.:%d average cands.:%f\n",
-              fbs->name,dmaxc,dminc,((double)dcountc)/dcountf);
-              printf("Entering memory deallocation in dpform()\n");
-              }*/
             for(i=ps->length - 1; i>=0; i--){
                 if(fl[i]->ncand){
                     if(fl[i]->cand) {
@@ -754,15 +707,6 @@ static Sound *lpc_poles(Sound *sp, double wdur, double frame_int, int lpc_ord,
                 pole[j]->npoles = 0;
                 init = true;		/* restart root search in a neutral zone */
             }
-            /*     if(debug & 4) {
-                   printf("\nfr:%4d np:%4d rms:%7.0f  ",j,pole[j]->npoles,pole[j]->rms);
-                   for(k=0; k<pole[j]->npoles; k++)
-                   printf(" %7.1f",pole[j]->freq[k]);
-                   printf("\n                   ");
-                   for(k=0; k<pole[j]->npoles; k++)
-                   printf(" %7.1f",pole[j]->band[k]);
-                   printf("\n");
-                   }*/
         } /* end LPC pole computation for all lp->buff_size frames */
         /*     lp->data = (caddr_t)pole;*/
         free(dporg);
