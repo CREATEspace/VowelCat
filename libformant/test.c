@@ -20,7 +20,7 @@ int main() {
         .len = st.st_size,
     };
 
-    Sound *s = Snack_NewSound(44100, LIN16, 2);
+    Sound *s = Snack_NewSound(44100, 2);
     LoadSound(s, &obj, 0, 44100);
 
     formantCmd(s);

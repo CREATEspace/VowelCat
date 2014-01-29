@@ -54,7 +54,7 @@
 
 #define Snack_GetLength(s)             (s)->length
 
-Sound *Snack_NewSound(int rate, int encoding, int nchannels) {
+Sound *Snack_NewSound(int rate, int nchannels) {
     Sound *s = malloc(sizeof(Sound));
 
     if (s == NULL) {
@@ -64,12 +64,7 @@ Sound *Snack_NewSound(int rate, int encoding, int nchannels) {
     /* Default sound specifications */
 
     s->samprate = rate;
-    s->encoding = encoding;
-    if (s->encoding == LIN16) {
-        s->sampsize = 2;
-    } else if (s->encoding == SNACK_FLOAT) {
-        s->sampsize = 4;
-    }
+    s->sampsize = 2;
     s->nchannels = nchannels;
     s->length    = 0;
     s->maxlength = 0;
@@ -207,7 +202,6 @@ void LoadSound(Sound *s, Tcl_Obj *obj, int startpos, int endpos) {
         tot -= size;
 
         short  *r  = (short *)  b;
-        float  *fs = (float *)  b;
 
         if (s->precision == SNACK_SINGLE_PREC) {
             for (i = 0; i < size / s->sampsize; i++, j++) {
@@ -216,14 +210,7 @@ void LoadSound(Sound *s, Tcl_Obj *obj, int startpos, int endpos) {
                     /* Reached end of allocated blocks for s */
                     break;
                 }
-                switch (s->encoding) {
-                    case LIN16:
-                        FSAMPLE(s, j) = (float) *r++;
-                        break;
-                    case SNACK_FLOAT:
-                        FSAMPLE(s, j) = (float) *fs++;
-                        break;
-                }
+                FSAMPLE(s, j) = (float) *r++;
             }
         } else {   /*s->precision == SNACK_DOUBLE_PREC */
             for (i = 0; i < size / s->sampsize; i++, j++) {
@@ -232,14 +219,7 @@ void LoadSound(Sound *s, Tcl_Obj *obj, int startpos, int endpos) {
                     /* Reached end of allocated blocks for s */
                     break;
                 }
-                switch (s->encoding) {
-                    case LIN16:
-                        DSAMPLE(s, j) = (float) *r++;
-                        break;
-                    case SNACK_FLOAT:
-                        DSAMPLE(s, j) = (float) *fs++;
-                        break;
-                }
+                DSAMPLE(s, j) = (float) *r++;
             }
         }  /*s->precision == SNACK_DOUBLE_PREC */
     }
@@ -625,7 +605,7 @@ static Sound *dpform(Sound *ps, int nform, double nom_f1) {
             for(i=0;i<MAXCAN;i++) free(pcan[i]);
             free(pcan);
 
-            fbs = Snack_NewSound(ps->samprate, SNACK_FLOAT, nform * 2);
+            fbs = Snack_NewSound(ps->samprate, nform * 2);
             Snack_ResizeSoundStorage(fbs, ps->length);
             for (i = 0; i < ps->length; i++) {
                 for (j = 0; j < nform * 2; j++) {
@@ -786,7 +766,7 @@ static Sound *lpc_poles(Sound *sp, double wdur, double frame_int, int lpc_ord,
         } /* end LPC pole computation for all lp->buff_size frames */
         /*     lp->data = (caddr_t)pole;*/
         free(dporg);
-        lp = Snack_NewSound((int)(1.0/frame_int), LIN16, lpc_ord);
+        lp = Snack_NewSound((int)(1.0/frame_int), lpc_ord);
         Snack_ResizeSoundStorage(lp, nfrm);
         for (i = 0; i < nfrm; i++) {
             for (j = 0; j < lpc_ord; j++) {
@@ -1033,7 +1013,7 @@ static Sound *Fdownsample(Sound *s, double freq2, int start, int end) {
         if(dwnsamp(bufin,end-start+1,bufout,&out_samps,insert,decimate,ncoefft,ic,
                     &smin,&smax)){
             /*      so->buff_size = so->file_size = out_samps;*/
-            so = Snack_NewSound(0, LIN16, s->nchannels);
+            so = Snack_NewSound(0, s->nchannels);
             Snack_ResizeSoundStorage(so, out_samps);
             for (i = 0; i < out_samps; i++) {
                 Snack_SetSample(so, 0, i, (float)(*bufout)[i]);
@@ -1083,7 +1063,7 @@ static Sound *highpass(Sound *s) {
             lcf[i] = (short) (scale * (.5 + (.4 * cos(fn * ((double)i)))));
     }
     do_fir(datain,s->length,dataout,len,lcf,1); /* in downsample.c */
-    so = Snack_NewSound(s->samprate, LIN16, s->nchannels);
+    so = Snack_NewSound(s->samprate, s->nchannels);
     if (so == NULL) return(NULL);
     Snack_ResizeSoundStorage(so, s->length);
     for (i = 0; i < s->length; i++) {

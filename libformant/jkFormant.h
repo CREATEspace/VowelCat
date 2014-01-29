@@ -22,7 +22,6 @@
 
 typedef struct Sound {
     int    samprate;
-    int    encoding;
     int    sampsize;
     int    nchannels;
     int    length;
@@ -39,11 +38,6 @@ typedef struct {
     size_t len;
     char *bytes;
 } Tcl_Obj;
-
-enum {
-    LIN16,
-    SNACK_FLOAT,
-};
 
 enum {
     SNACK_SINGLE_PREC,
@@ -72,7 +66,7 @@ typedef struct pole_array {   /* structure to hold raw LPC analysis data */
 } POLE;
 /* End of structure definitions for the formant tracker. */
 
-Sound *Snack_NewSound(int rate, int encoding, int nchannels);
+Sound *Snack_NewSound(int rate, int nchannels);
 void Snack_DeleteSound(Sound *s);
 void LoadSound(Sound *s, Tcl_Obj *obj, int startpos, int endpos);
 void formantCmd(Sound *s);
