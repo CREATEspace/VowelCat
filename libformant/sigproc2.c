@@ -180,7 +180,7 @@ static void dcwmtrx(s,ni,nl,np,phi,shi,ps,w)
         }
 }
 
-static double *psl,*pp2,*ppl2,*pc2,*pcl,*pph1,*pph2,*pph3,*pphl;
+static double *pp2,*ppl2,*pc2,*pcl,*pph1,*pph2,*pph3,*pphl;
 int dlpcwtd(s,ls,p,np,c,phi,shi,xl,w)
     double *s,*p,*c,*phi,*shi,*xl,*w;
     int *ls,*np;
@@ -406,6 +406,7 @@ static void w_window(din, dout, n, preemp, type)
     register short *din;
     register double *dout, preemp;
     register int n;
+    int type;
 {
     switch(type) {
         case 0:

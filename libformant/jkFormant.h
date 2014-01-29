@@ -136,3 +136,4 @@ typedef struct pole_array {   /* structure to hold raw LPC analysis data */
 Sound *Snack_NewSound(int rate, int encoding, int nchannels);
 void Snack_DeleteSound(Sound *s);
 void LoadSound(Sound *s, Tcl_Obj *obj, int startpos, int endpos);
+void formantCmd(Sound *s);

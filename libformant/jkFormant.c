@@ -19,7 +19,9 @@
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include "jkFormant.h"
+#include "sigproc2.h"
 
 #define RAW_STRING "RAW"
 #define MAXNBLKS 200
@@ -199,7 +201,8 @@ void Snack_DeleteSound(Sound *s) {
 }
 
 void LoadSound(Sound *s, Tcl_Obj *obj, int startpos, int endpos) {
-    int tot, totrlen = 0, res, i, j = s->loadOffset, size;
+    size_t tot;
+    int totrlen = 0, i, j = s->loadOffset, size;
     short shortBuffer[PBSIZE];
     char *b = (char *) shortBuffer;
 
@@ -220,14 +223,11 @@ void LoadSound(Sound *s, Tcl_Obj *obj, int startpos, int endpos) {
     }
 
     while (tot > 0) {
-        int rlen;
-
         size = tot < sizeof(short) * PBSIZE ? tot : sizeof(short) * PBSIZE;
         /* Samples on disk are 8 bytes -> make sure they fit in buffer */
         if (s->length == -1) {
             Snack_ResizeSoundStorage(s, s->maxlength+1);
         }
-        int length = 0;
         unsigned char *ptr = NULL;
         ptr = (unsigned char *) obj->bytes;
         memcpy(b, &ptr[totrlen + s->headSize + startpos * s->sampsize
@@ -235,12 +235,8 @@ void LoadSound(Sound *s, Tcl_Obj *obj, int startpos, int endpos) {
         totrlen += size;
         tot -= size;
 
-        unsigned char *q = (unsigned char *) b;
-        char   *sc = (char *)   b;
         short  *r  = (short *)  b;
-        int    *is = (int *)    b;
         float  *fs = (float *)  b;
-        double *fd = (double *) b;
 
         if (s->precision == SNACK_SINGLE_PREC) {
             for (i = 0; i < size / s->sampsize; i++, j++) {
@@ -301,7 +297,6 @@ void LoadSound(Sound *s, Tcl_Obj *obj, int startpos, int endpos) {
 
 
 static int debug = 0;
-static int w_verbose = 0;
 
 /*	dpform.c       */
 
@@ -395,10 +390,10 @@ static void candy(cand,pnumb,fnumb)
 /* Given a set of pole frequencies and allowable formant frequencies
    for nform formants, calculate all possible mappings of pole frequencies
    to formants, including, possibly, mappings with missing formants. */
-static void get_fcand(npole,freq,band,nform,pcan)
+static void get_fcand(npole,freq,nform,pcan)
     int	npole, nform;
     short **pcan;
-    double	*freq, *band; /* poles ordered by increasing FREQUENCY */
+    double	*freq; /* poles ordered by increasing FREQUENCY */
 {
 
     ncan = 0;
@@ -508,7 +503,7 @@ static Sound *dpform(ps, nform, nom_f1)
 
                 /* Get all likely mappings of the poles onto formants for this frame. */
                 if(pole[i]->npoles){	/* if there ARE pole frequencies available... */
-                    get_fcand(pole[i]->npoles,pole[i]->freq,pole[i]->band,nform,pcan);
+                    get_fcand(pole[i]->npoles,pole[i]->freq,nform,pcan);
 
                     /* Allocate space for this frame's candidates in the dp lattice. */
                     fl[i]->prept =  malloc(sizeof(short) * ncan);
@@ -724,13 +719,6 @@ static double integerize(time, freq)
     return(((double)i)/freq);
 }
 
-/*	Round the argument to the nearest integer.			*/
-static int eround(flnum)
-    register double	flnum;
-{
-    return((flnum >= 0.0) ? (int)(flnum + 0.5) : (int)(flnum - 0.5));
-}
-
 /**********************************************************************/
 static double frand()
 {
@@ -741,10 +729,10 @@ static double frand()
 /* a quick and dirty interface to bsa's stabilized covariance LPC */
 #define NPM	30	/* max lpc order		*/
 
-static int lpcbsa(np, lpc_stabl, wind, data, lpc, rho, nul1, nul2, energy, preemp)
+static int lpcbsa(np, wind, data, lpc, energy, preemp)
     int np, wind;
 short *data;
-double *lpc, *rho, *nul1, *nul2, *energy, lpc_stabl, preemp;
+double *lpc, *energy, preemp;
 {
     static int i, mm, owind=0, wind1;
     static double w[1000];
@@ -824,8 +812,7 @@ double wdur, frame_int, preemp;
                     }
                     break;
                 case 1:
-                    if(! lpcbsa(lpc_ord,lpc_stabl,size,datap,lpca,rhp,NULL,&normerr,
-                                &energy, preemp)){
+                    if(! lpcbsa(lpc_ord,size,datap,lpca, &energy, preemp)){
                         printf("Problems with lpc in lpc_poles()");
                         break;
                     }
@@ -1201,20 +1188,17 @@ static Sound
 
 void formantCmd(Sound *s) {
     int nform, i,j, lpc_ord, lpc_type, w_type;
-    char *w_type_str = NULL;
     double frame_int, wdur,
            ds_freq, nom_f1 = -10.0, preemp;
-    double cor_wdur;
     Sound *dssnd = NULL, *hpsnd = NULL, *polesnd = NULL;
     Sound *formantsnd = NULL, *hpsrcsnd, *polesrcsnd;
-    int arg, startpos = 0, endpos = -1;
+    int startpos = 0, endpos = -1;
 
     lpc_ord = 12;
     lpc_type = 0;			/* use bsa's stabilized covariance if != 0 */
     w_type = 2;			/* window type: 0=rectangular; 1=Hamming; 2=cos**4 */
     ds_freq = 10000.0;
     wdur = .049;			/* for LPC analysis */
-    cor_wdur = .01;		/* for crosscorrelation F0 estimator */
     frame_int = .01;
     preemp = .7;
     nform = 4;
