@@ -6,8 +6,9 @@
 /*	Copyright (c) 1987 AT&T	*/
 /*	  All Rights Reserved	*/
 
-#include <stdio.h>
 #include <math.h>
+#include <stdbool.h>
+#include <stdio.h>
 #include <string.h>
 
 static double *pxl,*pa,*py,*pyl,*pa1,*px;
@@ -263,8 +264,6 @@ int dlpcwtd(double *s, int *ls, double *p, int *np, double *c, double *phi,
 /* for definition of DBL_MAX */
 
 #define MAXORDER	60	/* maximum permissible LPC order */
-#define FALSE 0
-#define TRUE 1
 
 #ifndef M_PI
 #define M_PI    3.14159265358979323846
@@ -469,14 +468,14 @@ int lpc(int lpc_ord, double lpc_stabl, int wsize, short *data, double *lpca,
     double rho[MAXORDER+1], k[MAXORDER], a[MAXORDER+1],*r,*kp,*ap,en,er;
     double wfact = 1.0;
 
-    if((wsize <= 0) || (!data) || (lpc_ord > MAXORDER)) return(FALSE);
+    if((wsize <= 0) || (!data) || (lpc_ord > MAXORDER)) return(false);
 
     if(nwind != wsize) {
         if(dwind) dwind = realloc((void *)dwind,wsize*sizeof(double));
         else dwind = malloc(wsize*sizeof(double));
         if(!dwind) {
             printf("Can't allocate scratch memory in lpc()\n");
-            return(FALSE);
+            return(false);
         }
         nwind = wsize;
     }
@@ -501,7 +500,7 @@ int lpc(int lpc_ord, double lpc_stabl, int wsize, short *data, double *lpca,
     *ap = 1.0;
     if(rms) *rms = en/wfact;
     if(normerr) *normerr = er;
-    return(TRUE);
+    return(true);
 }
 
 /* covariance LPC analysis; originally from Markel and Gray */
@@ -522,7 +521,7 @@ int w_covar(short *xx, int *m, int n, int istrt, double *y, double *alpha,
         x = NULL;
         if(!(x = malloc((n+1)*sizeof(double)))) {
             printf("Allocation failure in w_covar()\n");
-            return(FALSE);
+            return(false);
         }
         memset(x, 0, (n+1) * sizeof(double));
         nold = n+1;
@@ -538,7 +537,7 @@ int w_covar(short *xx, int *m, int n, int istrt, double *y, double *alpha,
                     (grc = malloc(sizeof(double)*(mnew+3)))  &&
                     (cc = malloc(sizeof(double)*(mnew+3)))))   {
             printf("Allocation failure in w_covar()\n");
-            return(FALSE);
+            return(false);
         }
         mold = mnew;
     }
@@ -571,7 +570,7 @@ int w_covar(short *xx, int *m, int n, int istrt, double *y, double *alpha,
     y[0] = 1.0;
     y[1] = grc[1];
     *alpha += grc[1]*cc[1];
-    if( *m <= 1) return(FALSE);		/* need to correct indices?? */
+    if( *m <= 1) return(false);		/* need to correct indices?? */
     mf = *m;
     for( minc = 2; minc <= mf; minc++) {
         for(j=1; j <= minc; j++) {
@@ -593,7 +592,7 @@ int w_covar(short *xx, int *m, int n, int istrt, double *y, double *alpha,
             isub = (ip*ip - ip)/2;
             if(beta[ip] <= 0.0) {
                 *m = minc-1;
-                return(TRUE);
+                return(true);
             }
             gam = 0.0;
             for(j=1; j <= ip; j++)
@@ -607,7 +606,7 @@ int w_covar(short *xx, int *m, int n, int istrt, double *y, double *alpha,
             beta[minc] += cc[j+1]*b[msub+j];
         if(beta[minc] <= 0.0) {
             *m = minc-1;
-            return(TRUE);
+            return(true);
         }
         s = 0.0;
         for(ip=1; ip <= minc; ip++)
@@ -622,10 +621,10 @@ int w_covar(short *xx, int *m, int n, int istrt, double *y, double *alpha,
         *alpha -= s;
         if(*alpha <= 0.0) {
             if(minc < *m) *m = minc;
-            return(TRUE);
+            return(true);
         }
     }
-    return(TRUE);
+    return(true);
 }
 
 /*		lbpoly.c		*/
@@ -650,11 +649,11 @@ static int qquad(double a, double b, double c, double *r1r, double *r1i,
     if(a == 0.0){
         if(b == 0){
             printf("Bad coefficients to _quad().\n");
-            return(FALSE);
+            return(false);
         }
         *r1r = -c/b;
         *r1i = *r2r = *r2i = 0;
-        return(TRUE);
+        return(true);
     }
     numi = b*b - (4.0 * a * c);
     if(numi >= 0.0) {
@@ -678,18 +677,18 @@ static int qquad(double a, double b, double c, double *r1r, double *r1i,
             *r1r = (2.0 * c) / y;
             *r2r = y / (2.0 * a);
         }
-        return(TRUE);
+        return(true);
     }
     else {
         den = 2.0 * a;
         *r1i = sqrt( -numi )/den;
         *r2i = -*r1i;
         *r2r = *r1r = -b/den;
-        return(TRUE);
+        return(true);
     }
 }
 
-/* return FALSE on error */
+/* return false on error */
 /* a: coeffs. of the polynomial (increasing order) */
 /* order: the order of the polynomial */
 /* rootr, rooti: the real and imag. roots of the polynomial */
@@ -711,7 +710,7 @@ static int lbpoly(double *a, int order, double *rootr, double *rooti) {
         q = (rootr[ordm1] * rootr[ordm1]) + (rooti[ordm1] * rooti[ordm1]);
         for(ntrys = 0; ntrys < MAX_TRYS; ntrys++)
         {
-            int	found = FALSE;
+            int	found = false;
 
             for(itcnt = 0; itcnt < MAX_ITS; itcnt++)
             {
@@ -741,7 +740,7 @@ static int lbpoly(double *a, int order, double *rootr, double *rooti) {
                 err = fabs(b[0]) + fabs(b[1]);
 
                 if(err <= MAX_ERR) {
-                    found = TRUE;
+                    found = true;
                     break;
                 }
 
@@ -771,12 +770,12 @@ static int lbpoly(double *a, int order, double *rootr, double *rooti) {
         } /* for(ntrys... */
         if((itcnt >= MAX_ITS) && (ntrys >= MAX_TRYS)){
             /*	    printf("Exceeded maximum trial count in _lbpoly.\n");*/
-            return(FALSE);
+            return(false);
         }
 
         if(!qquad(1.0, p, q,
                     &rootr[ordm1], &rooti[ordm1], &rootr[ordm2], &rooti[ordm2]))
-            return(FALSE);
+            return(false);
 
         /* Update the coefficient array with the coeffs. of the
            reduced polynomial. */
@@ -786,12 +785,12 @@ static int lbpoly(double *a, int order, double *rootr, double *rooti) {
     if(ord == 2){		/* Is the last factor a quadratic? */
         if(!qquad(a[2], a[1], a[0],
                     &rootr[1], &rooti[1], &rootr[0], &rooti[0]))
-            return(FALSE);
-        return(TRUE);
+            return(false);
+        return(true);
     }
     if(ord < 1) {
         printf("Bad ORDER parameter in _lbpoly()\n");
-        return(FALSE);
+        return(false);
     }
 
     if( a[1] != 0.0) rootr[0] = -a[0]/a[1];
@@ -801,7 +800,7 @@ static int lbpoly(double *a, int order, double *rootr, double *rooti) {
     }
     rooti[0] = 0.0;
 
-    return(TRUE);
+    return(true);
 }
 
 /*      ----------------------------------------------------------      */
@@ -832,7 +831,7 @@ int formant(int lpc_order, double s_freq, double *lpca, int *n_form,
     }
     if(! lbpoly(lpca,lpc_order,rr,ri)){ /* find the roots of the LPC polynomial */
         *n_form = 0;		/* was there a problem in the root finder? */
-        return(FALSE);
+        return(false);
     }
 
     pi2t = M_PI * 2.0 /s_freq;
@@ -877,5 +876,5 @@ int formant(int lpc_order, double s_freq, double *lpca, int *n_form,
         if( (freq[i] > 1.0) && (freq[i] < theta) ) ii++;
     *n_form = ii;
 
-    return(TRUE);
+    return(true);
 }

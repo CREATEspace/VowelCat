@@ -17,12 +17,6 @@
 #define DEB_LPC_PARS	4
 #define DEB_PARAMS	2
 #define DEB_ENTRY	1
-#ifndef TRUE
-#define TRUE 1
-#endif
-#ifndef FALSE
-#define FALSE 0
-#endif
 #define PI 3.1415927
 #define MAXFORMANTS 7
 

@@ -15,8 +15,9 @@
  */
 
 #include <assert.h>
-#include <stdio.h>
 #include <math.h>
+#include <stdbool.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -305,7 +306,7 @@ static double	*fre,
 
 static int	maxp,	/* number of poles to consider */
                 maxf,	/* number of formants to find */
-                ncan,  domerge = TRUE;
+                ncan,  domerge = true;
 
 static short **pc;
 
@@ -414,7 +415,7 @@ static Sound *dpform(Sound *ps, int nform, double nom_f1) {
         bfact = BAND_FACT /(.01 * ps->samprate);
         ffact = DFN_FACT /(.01 * ps->samprate);
         merge_cost = F_MERGE;
-        if(merge_cost > 1000.0) domerge = FALSE;
+        if(merge_cost > 1000.0) domerge = false;
 
         /* Allocate space for the formant and bandwidth arrays to be passed back. */
         if(debug & DEB_ENTRY){
@@ -714,9 +715,9 @@ static int lpcbsa(int np, int wind, short *data, double *lpc, double *energy,
         *psp3 *= amax;
     if((mm=dlpcwtd(sig,&wind1,lpc,&np,rc,phi,shi,&xl,w))!=np) {
         printf("LPCWTD error mm<np %d %d\n",mm,np);
-        return(FALSE);
+        return(false);
     }
-    return(TRUE);
+    return(true);
 }
 
 /*************************************************************************/
@@ -748,7 +749,7 @@ static Sound *lpc_poles(Sound *sp, double wdur, double frame_int, int lpc_ord,
         for (i = 0; i < Snack_GetLength(sp); i++) {
             datap[i] = (short) Snack_GetSample(sp, 0, i);
         }
-        for(j=0, init=TRUE/*, datap=((short**)sp->data)[0]*/; j < nfrm/*lp->buff_size*/;j++, datap += step){
+        for(j=0, init=true/*, datap=((short**)sp->data)[0]*/; j < nfrm/*lp->buff_size*/;j++, datap += step){
             pole[j] = malloc(sizeof(POLE));
             pole[j]->freq = frp = malloc(sizeof(double)*lpc_ord);
             pole[j]->band = bap = malloc(sizeof(double)*lpc_ord);
@@ -784,10 +785,10 @@ static Sound *lpc_poles(Sound *sp, double wdur, double frame_int, int lpc_ord,
             if((pole[j]->rms = energy) > 1.0){
                 formant(lpc_ord,(double)sp->samprate, lpca, &nform, frp, bap, init);
                 pole[j]->npoles = nform;
-                init=FALSE;		/* use old poles to start next search */
+                init=false;		/* use old poles to start next search */
             } else {			/* write out no pole frequencies */
                 pole[j]->npoles = 0;
-                init = TRUE;		/* restart root search in a neutral zone */
+                init = true;		/* restart root search in a neutral zone */
             }
             /*     if(debug & 4) {
                    printf("\nfr:%4d np:%4d rms:%7.0f  ",j,pole[j]->npoles,pole[j]->rms);
@@ -827,11 +828,6 @@ static Sound *lpc_poles(Sound *sp, double wdur, double frame_int, int lpc_ord,
 /* downsample.c */
 /* a quick and dirty downsampler */
 
-#ifndef TRUE
-# define TRUE 1
-# define FALSE 0
-#endif
-
 #define PI 3.1415927
 
 /*      ----------------------------------------------------------      */
@@ -859,7 +855,7 @@ static int lc_lin_fir(double fc, int *nf, double *coef) {
     for(i=0;i<n;i++)
         coef[i] *= (.5 + (.5 * cos(fn * ((double)i))));
 
-    return(TRUE);
+    return(true);
 }
 
 /*      ----------------------------------------------------------      */
@@ -942,7 +938,7 @@ static int dwnsamp(short *buf, int in_samps, short **buf2, int *out_samps,
 
     if(!(*buf2 = buft = malloc(sizeof(short)*insert*in_samps))) {
         perror("ckalloc() in dwnsamp()");
-        return(FALSE);
+        return(false);
     }
 
     k = imax = get_abs_maximum(buf,in_samps);
@@ -974,7 +970,7 @@ static int dwnsamp(short *buf, int in_samps, short **buf2, int *out_samps,
     *smin = imin;
     *smax = imax;
     *buf2 = realloc(*buf2,sizeof(short) * (*out_samps));
-    return(TRUE);
+    return(true);
 }
 
 /*      ----------------------------------------------------------      */
@@ -1003,7 +999,7 @@ static int ratprx(double a, int *k, int *l, int qlim) {
     *k = (int) ((ai * qq) + pp);
     *k = (a > 0)? *k : -(*k);
     *l = (int) qq;
-    return(TRUE);
+    return(true);
 }
 
 /* ----------------------------------------------------------------------- */
@@ -1040,7 +1036,7 @@ static Sound *Fdownsample(Sound *s, double freq2, int start, int end) {
             beta = beta_new;
             if( !lc_lin_fir(beta,&ncoeff,b)) {
                 printf("\nProblems computing interpolation filter\n");
-                return(FALSE);
+                return(false);
             }
             maxi = (1 << nbits) - 1;
             j = (ncoeff/2) + 1;
