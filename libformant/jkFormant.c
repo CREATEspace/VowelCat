@@ -27,18 +27,18 @@
 #define PI 3.1415927
 #define MAXFORMANTS 7
 
-static inline void Snack_SetSample(Sound *s, size_t chan, size_t i,
+static inline void Snack_SetSample(sound_t *s, size_t chan, size_t i,
                                    storage_t val)
 {
     s->blocks[i * s->nchannels + chan] = val;
 }
 
-static inline storage_t Snack_GetSample(Sound *s, size_t chan, size_t i) {
+static inline storage_t Snack_GetSample(sound_t *s, size_t chan, size_t i) {
     return s->blocks[i * s->nchannels + chan];
 }
 
-Sound *Snack_NewSound(int rate, int nchannels) {
-    Sound *s = malloc(sizeof(Sound));
+sound_t *Snack_NewSound(int rate, int nchannels) {
+    sound_t *s = malloc(sizeof(sound_t));
 
     if (s == NULL) {
         return NULL;
@@ -55,19 +55,19 @@ Sound *Snack_NewSound(int rate, int nchannels) {
     return s;
 }
 
-void Snack_ResizeSoundStorage(Sound *s, int len) {
+void Snack_ResizeSoundStorage(sound_t *s, int len) {
     free(s->blocks);
 
     s->length = len;
     s->blocks = malloc(len * sizeof(storage_t) * s->nchannels);
 }
 
-void Snack_DeleteSound(Sound *s) {
+void Snack_DeleteSound(sound_t *s) {
     free(s->blocks);
     free(s);
 }
 
-void LoadSound(Sound *s, short *samples, size_t len) {
+void LoadSound(sound_t *s, short *samples, size_t len) {
     Snack_ResizeSoundStorage(s, len);
 
     for (size_t i = 0; i < s->length * s->nchannels; i += 1)
@@ -197,7 +197,7 @@ static double get_stat_max(pole_t **pole, int nframes) {
     return(amax);
 }
 
-static Sound *dpform(Sound *ps, int nform, double nom_f1) {
+static sound_t *dpform(sound_t *ps, int nform, double nom_f1) {
     double pferr, conerr, minerr, dffact, ftemp, berr, ferr, bfact, ffact,
            rmsmax, fbias, **fr, **ba, rmsdffact, merger=0.0, merge_cost,
            FBIAS;
@@ -205,7 +205,7 @@ static Sound *dpform(Sound *ps, int nform, double nom_f1) {
     short	**pcan;
     form_t	**fl;
     pole_t	**pole; /* raw LPC pole data structure array */
-    Sound *fbs;
+    sound_t *fbs;
     int dmaxc,dminc,dcountc,dcountf;
 
     if(ps) {
@@ -480,7 +480,7 @@ static int lpcbsa(int np, int wind, short *data, double *lpc, double *energy,
 }
 
 /*************************************************************************/
-static Sound *lpc_poles(Sound *sp, double wdur, double frame_int, int lpc_ord,
+static sound_t *lpc_poles(sound_t *sp, double wdur, double frame_int, int lpc_ord,
                         double preemp, int lpc_type, int w_type)
 {
     int i, j, size, step, nform, init, nfrm;
@@ -488,7 +488,7 @@ static Sound *lpc_poles(Sound *sp, double wdur, double frame_int, int lpc_ord,
     double lpc_stabl = 70.0, energy, lpca[MAXORDER], normerr,
            *bap=NULL, *frp=NULL, *rhp=NULL;
     short *datap, *dporg;
-    Sound *lp;
+    sound_t *lp;
 
     if(lpc_type == 1) { /* force "standard" stabilized covariance (ala bsa) */
         wdur = 0.025;
@@ -754,14 +754,14 @@ static int ratprx(double a, int *k, int *l, int qlim) {
 
 /* ----------------------------------------------------------------------- */
 
-static Sound *Fdownsample(Sound *s, double freq2, int start, int end) {
+static sound_t *Fdownsample(sound_t *s, double freq2, int start, int end) {
     short	*bufin, **bufout;
     static double	beta = 0.0, b[256];
     double	ratio_t, maxi, ratio, beta_new, freq1;
     static int	ncoeff = 127, ncoefft = 0, nbits = 15;
     static short	ic[256];
     int	insert, decimate, out_samps, smin, smax;
-    Sound *so;
+    sound_t *so;
 
     int i, j;
 
@@ -820,13 +820,13 @@ static Sound *Fdownsample(Sound *s, double freq2, int start, int end) {
 
 /*      ----------------------------------------------------------      */
 
-static Sound *highpass(Sound *s) {
+static sound_t *highpass(sound_t *s) {
     short *datain, *dataout;
     static short *lcf;
     static int len = 0;
     double scale, fn;
     int i;
-    Sound *so;
+    sound_t *so;
 
     /*  Header *h, *dup_header();*/
 
@@ -861,12 +861,12 @@ static Sound *highpass(Sound *s) {
     return(so);
 }
 
-void formantCmd(Sound *s) {
+void formantCmd(sound_t *s) {
     int nform, i,j, lpc_ord, lpc_type, w_type;
     double frame_int, wdur,
            ds_freq, nom_f1 = -10.0, preemp;
-    Sound *dssnd = NULL, *hpsnd = NULL, *polesnd = NULL;
-    Sound *formantsnd = NULL, *hpsrcsnd, *polesrcsnd;
+    sound_t *dssnd = NULL, *hpsnd = NULL, *polesnd = NULL;
+    sound_t *formantsnd = NULL, *hpsrcsnd, *polesrcsnd;
     int startpos = 0, endpos = -1;
 
     lpc_ord = 12;

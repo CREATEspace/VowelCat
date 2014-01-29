@@ -34,16 +34,16 @@ typedef struct {   /* structure to hold raw LPC analysis data */
     double *band;  /* array of complex pole bandwidths (Hz) */
 } pole_t;
 
-typedef struct Sound {
+typedef struct sound_t {
     size_t samprate;
     size_t nchannels;
     int length;
     storage_t *blocks;
 
     pole_t **pole;
-} Sound;
+} sound_t;
 
-Sound *Snack_NewSound(int rate, int nchannels);
-void Snack_DeleteSound(Sound *s);
-void LoadSound(Sound *s, short *samples, size_t len);
-void formantCmd(Sound *s);
+sound_t *Snack_NewSound(int rate, int nchannels);
+void Snack_DeleteSound(sound_t *s);
+void LoadSound(sound_t *s, short *samples, size_t len);
+void formantCmd(sound_t *s);
