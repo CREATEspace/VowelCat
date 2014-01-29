@@ -38,18 +38,11 @@
 #define CBLKSIZE (1<<CEXP)
 
 #define FSAMPLE(s, i) (s)->blocks[(i)]
-#define DSAMPLE(s, i) ((double *)((s)->blocks))[i]
 
 #define Snack_SetSample(s, c, i, val) \
-    if ((s)->precision == SNACK_DOUBLE_PREC) { \
-        DSAMPLE((s),(i)*(s)->nchannels+(c)) = (val); \
-    } else { \
         FSAMPLE((s),(i)*(s)->nchannels+(c)) = (val); \
-    }
 
 #define Snack_GetSample(s, c, i) ( \
-        ((s)->precision == SNACK_DOUBLE_PREC) ? \
-        DSAMPLE((s), (i)*(s)->nchannels+(c)): \
         FSAMPLE(s, (i)*(s)->nchannels+(c)))
 
 #define Snack_GetLength(s)             (s)->length
@@ -68,7 +61,6 @@ Sound *Snack_NewSound(int rate, int nchannels) {
     s->cap = 0;
     s->length    = 0;
     s->blocks = NULL;
-    s->precision = SNACK_SINGLE_PREC;
     s->extHead    = NULL;
 
     return s;
@@ -77,7 +69,7 @@ Sound *Snack_NewSound(int rate, int nchannels) {
 void Snack_ResizeSoundStorage(Sound *s, int len) {
     free(s->blocks);
 
-    s->cap = len * sizeof(float) * s->nchannels;
+    s->cap = len * sizeof(storage_t) * s->nchannels;
     s->blocks = malloc(s->cap);
 }
 
@@ -120,13 +112,8 @@ void LoadSound(Sound *s, Tcl_Obj *obj, int startpos, int endpos) {
 
         short  *r  = (short *)  b;
 
-        if (s->precision == SNACK_SINGLE_PREC) {
-            for (size_t i = 0; i < size / sizeof(sample_t); i++, j++)
-                FSAMPLE(s, j) = *r++;
-        } else {   /*s->precision == SNACK_DOUBLE_PREC */
-            for (size_t i = 0; i < size / sizeof(sample_t); i++, j++)
-                DSAMPLE(s, j) = *r++;
-        }  /*s->precision == SNACK_DOUBLE_PREC */
+        for (size_t i = 0; i < size / sizeof(sample_t); i++, j++)
+            FSAMPLE(s, j) = (storage_t) *r++;
     }
 
     if (s->length * sizeof(sample_t) * s->nchannels != totrlen) {

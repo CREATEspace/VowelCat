@@ -17,26 +17,16 @@
 #define MAXFORMANTS 7
 
 typedef short sample_t;
+typedef float storage_t;
 
 typedef struct Sound {
     int    samprate;
     int    nchannels;
     size_t cap;
     int    length;
-    float  *blocks;
-    int    precision;
+    storage_t  *blocks;
     char *extHead;
 } Sound;
-
-typedef struct {
-    size_t len;
-    char *bytes;
-} Tcl_Obj;
-
-enum {
-    SNACK_SINGLE_PREC,
-    SNACK_DOUBLE_PREC,
-};
 
 /*+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 /* Structure definitions for the formant tracker.. */
