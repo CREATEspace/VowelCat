@@ -45,8 +45,6 @@
 #define Snack_GetSample(s, c, i) ( \
         FSAMPLE(s, (i)*(s)->nchannels+(c)))
 
-#define Snack_GetLength(s)             (s)->length
-
 Sound *Snack_NewSound(int rate, int nchannels) {
     Sound *s = malloc(sizeof(Sound));
 
@@ -515,7 +513,7 @@ static Sound *lpc_poles(Sound *sp, double wdur, double frame_int, int lpc_ord,
         step = (int) (.5 + (frame_int * sp->samprate));
         pole = malloc(nfrm/*lp->buff_size*/ * sizeof(pole_t*));
         datap = dporg = malloc(sizeof(short) * sp->length);
-        for (i = 0; i < Snack_GetLength(sp); i++) {
+        for (i = 0; i < sp->length; i++) {
             datap[i] = (short) Snack_GetSample(sp, 0, i);
         }
         for(j=0, init=true/*, datap=((short**)sp->data)[0]*/; j < nfrm/*lp->buff_size*/;j++, datap += step){
@@ -846,7 +844,7 @@ static Sound *highpass(Sound *s) {
 
     datain = malloc(sizeof(short) * s->length);
     dataout = malloc(sizeof(short) * s->length);
-    for (i = 0; i < Snack_GetLength(s); i++) {
+    for (i = 0; i < s->length; i++) {
         datain[i] = (short) Snack_GetSample(s, 0, i);
     }
 
