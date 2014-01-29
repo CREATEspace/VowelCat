@@ -84,7 +84,6 @@ Sound *Snack_NewSound(int rate, int encoding, int nchannels) {
     s->exact     = 0;
     s->precision = SNACK_SINGLE_PREC;
     s->extHead    = NULL;
-    s->extHead2   = NULL;
     s->loadOffset = 0;
 
     return s;
