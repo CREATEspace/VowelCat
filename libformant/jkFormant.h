@@ -20,7 +20,7 @@ typedef short sample_t;
 typedef float storage_t;
 
 typedef struct Sound {
-    int    samprate;
+    size_t  samprate;
     size_t    nchannels;
     int    length;
     storage_t  *blocks;
