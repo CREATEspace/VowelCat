@@ -48,9 +48,9 @@ Sound *Snack_NewSound(int rate, int nchannels) {
 
     s->samprate = rate;
     s->nchannels = nchannels;
-    s->length    = 0;
+    s->length = 0;
     s->blocks = NULL;
-    s->pole    = NULL;
+    s->pole = NULL;
 
     return s;
 }
