@@ -88,29 +88,6 @@ enum {
     SNACK_DOUBLE_PREC,
 };
 
-/* structure definitions for the pitch tracker */
-#define CROSS  struct cross_rec
-struct cross_rec { /* for storing the crosscorrelation information */
-    double	rms;	/* rms energy in the reference window */
-    double	k1;	/* 1st-order autoregressive flattening constant. */
-    double	maxval;	/* max in the crosscorr. fun. q15 */
-    short	maxloc; /* lag # at which max occured	*/
-    short	nlags;	/* the number of correlation lags computed */
-    short	firstlag; /* the first non-zero lag computed */
-    short	*correl; /* the normalized corsscor. fun. q15 */
-};
-
-#define DPREC struct dp_rec
-struct dp_rec { /* for storing the DP information */
-    short	ncands;	/* # of candidate pitch intervals in the frame */
-    short	*locs; /* locations of the candidates */
-    short	*pvals; /* peak values of the candidates */
-    double	*mpvals; /* modified peak values of the candidates */
-    short	*prept; /* pointers to best previous cands. */
-    double	*dpvals; /* cumulative error for each candidate */
-};
-/* end of structure definitions for the pitch tracker */
-
 /*+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 /* Structure definitions for the formant tracker.. */
 
