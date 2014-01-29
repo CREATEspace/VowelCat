@@ -716,181 +716,181 @@ Sound *dpform(ps, nform, nom_f1)
 
     extern int formant(), lpc(), lpcbsa(), dlpcwtd(), w_covar();
 
-    /*************************************************************************/
-    double integerize(time, freq)
-        register double time, freq;
-    {
-        register int i;
+/*************************************************************************/
+double integerize(time, freq)
+    register double time, freq;
+{
+    register int i;
 
-        i = (int) (.5 + (freq * time));
-        return(((double)i)/freq);
+    i = (int) (.5 + (freq * time));
+    return(((double)i)/freq);
+}
+
+/*	Round the argument to the nearest integer.			*/
+int eround(flnum)
+    register double	flnum;
+{
+    return((flnum >= 0.0) ? (int)(flnum + 0.5) : (int)(flnum - 0.5));
+}
+
+/*************************************************************************/
+Sound *lpc_poles(sp,wdur,frame_int,lpc_ord,preemp,lpc_type,w_type)
+    Sound *sp;
+int lpc_ord, lpc_type, w_type;
+double wdur, frame_int, preemp;
+{
+    int i, j, size, step, nform, init, nfrm;
+    POLE **pole;
+    double lpc_stabl = 70.0, energy, lpca[MAXORDER], normerr,
+           *bap=NULL, *frp=NULL, *rhp=NULL;
+    short *datap, *dporg;
+    Sound *lp;
+
+    if(lpc_type == 1) { /* force "standard" stabilized covariance (ala bsa) */
+        wdur = 0.025;
+        preemp = exp(-62.831853 * 90. / sp->samprate); /* exp(-1800*pi*T) */
     }
-
-    /*	Round the argument to the nearest integer.			*/
-    int eround(flnum)
-        register double	flnum;
-    {
-        return((flnum >= 0.0) ? (int)(flnum + 0.5) : (int)(flnum - 0.5));
-    }
-
-    /*************************************************************************/
-    Sound *lpc_poles(sp,wdur,frame_int,lpc_ord,preemp,lpc_type,w_type)
-        Sound *sp;
-    int lpc_ord, lpc_type, w_type;
-    double wdur, frame_int, preemp;
-    {
-        int i, j, size, step, nform, init, nfrm;
-        POLE **pole;
-        double lpc_stabl = 70.0, energy, lpca[MAXORDER], normerr,
-               *bap=NULL, *frp=NULL, *rhp=NULL;
-        short *datap, *dporg;
-        Sound *lp;
-
-        if(lpc_type == 1) { /* force "standard" stabilized covariance (ala bsa) */
-            wdur = 0.025;
-            preemp = exp(-62.831853 * 90. / sp->samprate); /* exp(-1800*pi*T) */
-        }
-        if((lpc_ord > MAXORDER) || (lpc_ord < 2)/* || (! ((short**)sp->data)[0])*/)
-            return(NULL);
-        /*  np = (char*)new_ext(sp->name,"pole");*/
-        wdur = integerize(wdur,(double)sp->samprate);
-        frame_int = integerize(frame_int,(double)sp->samprate);
-        nfrm= 1 + (int) (((((double)sp->length)/sp->samprate) - wdur)/(frame_int));
-        if(nfrm >= 1/*lp->buff_size >= 1*/) {
-            size = (int) (.5 + (wdur * sp->samprate));
-            step = (int) (.5 + (frame_int * sp->samprate));
-            pole = malloc(nfrm/*lp->buff_size*/ * sizeof(POLE*));
-            datap = dporg = malloc(sizeof(short) * sp->length);
-            for (i = 0; i < Snack_GetLength(sp); i++) {
-                datap[i] = (short) Snack_GetSample(sp, 0, i);
-            }
-            for(j=0, init=TRUE/*, datap=((short**)sp->data)[0]*/; j < nfrm/*lp->buff_size*/;j++, datap += step){
-                pole[j] = malloc(sizeof(POLE));
-                pole[j]->freq = frp = malloc(sizeof(double)*lpc_ord);
-                pole[j]->band = bap = malloc(sizeof(double)*lpc_ord);
-
-                switch(lpc_type) {
-                    case 0:
-                        if(! lpc(lpc_ord,lpc_stabl,size,datap,lpca,rhp,NULL,&normerr,
-                                    &energy, preemp, w_type)){
-                            printf("Problems with lpc in lpc_poles()");
-                            break;
-                        }
-                        break;
-                    case 1:
-                        if(! lpcbsa(lpc_ord,lpc_stabl,size,datap,lpca,rhp,NULL,&normerr,
-                                    &energy, preemp)){
-                            printf("Problems with lpc in lpc_poles()");
-                            break;
-                        }
-                        break;
-                    case 2:
-                        {
-                            int Ord = lpc_ord;
-                            double alpha, r0;
-
-                            w_covar(datap, &Ord, size, 0, lpca, &alpha, &r0, preemp, 0);
-                            if((Ord != lpc_ord) || (alpha <= 0.0))
-                                printf("Problems with covar(); alpha:%f  Ord:%d\n",alpha,Ord);
-                            energy = sqrt(r0/(size-Ord));
-                        }
-                        break;
-                }
-                pole[j]->change = 0.0;
-                /* don't waste time on low energy frames */
-                if((pole[j]->rms = energy) > 1.0){
-                    formant(lpc_ord,(double)sp->samprate, lpca, &nform, frp, bap, init);
-                    pole[j]->npoles = nform;
-                    init=FALSE;		/* use old poles to start next search */
-                } else {			/* write out no pole frequencies */
-                    pole[j]->npoles = 0;
-                    init = TRUE;		/* restart root search in a neutral zone */
-                }
-                /*     if(debug & 4) {
-                       printf("\nfr:%4d np:%4d rms:%7.0f  ",j,pole[j]->npoles,pole[j]->rms);
-                       for(k=0; k<pole[j]->npoles; k++)
-                       printf(" %7.1f",pole[j]->freq[k]);
-                       printf("\n                   ");
-                       for(k=0; k<pole[j]->npoles; k++)
-                       printf(" %7.1f",pole[j]->band[k]);
-                       printf("\n");
-                       }*/
-            } /* end LPC pole computation for all lp->buff_size frames */
-            /*     lp->data = (caddr_t)pole;*/
-            free((void *)dporg);
-            lp = Snack_NewSound((int)(1.0/frame_int), LIN16, lpc_ord);
-            Snack_ResizeSoundStorage(lp, nfrm);
-            for (i = 0; i < nfrm; i++) {
-                for (j = 0; j < lpc_ord; j++) {
-                    Snack_SetSample(lp, j, i, (float)pole[i]->freq[j]);
-                }
-            }
-            lp->length = nfrm;
-            lp->extHead = (char *)pole;
-            return(lp);
-        } else {
-            printf("Bad buffer size in lpc_poles()\n");
-        }
+    if((lpc_ord > MAXORDER) || (lpc_ord < 2)/* || (! ((short**)sp->data)[0])*/)
         return(NULL);
-    }
+    /*  np = (char*)new_ext(sp->name,"pole");*/
+    wdur = integerize(wdur,(double)sp->samprate);
+    frame_int = integerize(frame_int,(double)sp->samprate);
+    nfrm= 1 + (int) (((((double)sp->length)/sp->samprate) - wdur)/(frame_int));
+    if(nfrm >= 1/*lp->buff_size >= 1*/) {
+        size = (int) (.5 + (wdur * sp->samprate));
+        step = (int) (.5 + (frame_int * sp->samprate));
+        pole = malloc(nfrm/*lp->buff_size*/ * sizeof(POLE*));
+        datap = dporg = malloc(sizeof(short) * sp->length);
+        for (i = 0; i < Snack_GetLength(sp); i++) {
+            datap[i] = (short) Snack_GetSample(sp, 0, i);
+        }
+        for(j=0, init=TRUE/*, datap=((short**)sp->data)[0]*/; j < nfrm/*lp->buff_size*/;j++, datap += step){
+            pole[j] = malloc(sizeof(POLE));
+            pole[j]->freq = frp = malloc(sizeof(double)*lpc_ord);
+            pole[j]->band = bap = malloc(sizeof(double)*lpc_ord);
 
-    /**********************************************************************/
-    double frand()
-    {
-        return (((double)rand())/(double)RAND_MAX);
-    }
+            switch(lpc_type) {
+                case 0:
+                    if(! lpc(lpc_ord,lpc_stabl,size,datap,lpca,rhp,NULL,&normerr,
+                                &energy, preemp, w_type)){
+                        printf("Problems with lpc in lpc_poles()");
+                        break;
+                    }
+                    break;
+                case 1:
+                    if(! lpcbsa(lpc_ord,lpc_stabl,size,datap,lpca,rhp,NULL,&normerr,
+                                &energy, preemp)){
+                        printf("Problems with lpc in lpc_poles()");
+                        break;
+                    }
+                    break;
+                case 2:
+                    {
+                        int Ord = lpc_ord;
+                        double alpha, r0;
 
-    /**********************************************************************/
-    /* a quick and dirty interface to bsa's stabilized covariance LPC */
+                        w_covar(datap, &Ord, size, 0, lpca, &alpha, &r0, preemp, 0);
+                        if((Ord != lpc_ord) || (alpha <= 0.0))
+                            printf("Problems with covar(); alpha:%f  Ord:%d\n",alpha,Ord);
+                        energy = sqrt(r0/(size-Ord));
+                    }
+                    break;
+            }
+            pole[j]->change = 0.0;
+            /* don't waste time on low energy frames */
+            if((pole[j]->rms = energy) > 1.0){
+                formant(lpc_ord,(double)sp->samprate, lpca, &nform, frp, bap, init);
+                pole[j]->npoles = nform;
+                init=FALSE;		/* use old poles to start next search */
+            } else {			/* write out no pole frequencies */
+                pole[j]->npoles = 0;
+                init = TRUE;		/* restart root search in a neutral zone */
+            }
+            /*     if(debug & 4) {
+                   printf("\nfr:%4d np:%4d rms:%7.0f  ",j,pole[j]->npoles,pole[j]->rms);
+                   for(k=0; k<pole[j]->npoles; k++)
+                   printf(" %7.1f",pole[j]->freq[k]);
+                   printf("\n                   ");
+                   for(k=0; k<pole[j]->npoles; k++)
+                   printf(" %7.1f",pole[j]->band[k]);
+                   printf("\n");
+                   }*/
+        } /* end LPC pole computation for all lp->buff_size frames */
+        /*     lp->data = (caddr_t)pole;*/
+        free((void *)dporg);
+        lp = Snack_NewSound((int)(1.0/frame_int), LIN16, lpc_ord);
+        Snack_ResizeSoundStorage(lp, nfrm);
+        for (i = 0; i < nfrm; i++) {
+            for (j = 0; j < lpc_ord; j++) {
+                Snack_SetSample(lp, j, i, (float)pole[i]->freq[j]);
+            }
+        }
+        lp->length = nfrm;
+        lp->extHead = (char *)pole;
+        return(lp);
+    } else {
+        printf("Bad buffer size in lpc_poles()\n");
+    }
+    return(NULL);
+}
+
+/**********************************************************************/
+double frand()
+{
+    return (((double)rand())/(double)RAND_MAX);
+}
+
+/**********************************************************************/
+/* a quick and dirty interface to bsa's stabilized covariance LPC */
 #define NPM	30	/* max lpc order		*/
 
-    int lpcbsa(np, lpc_stabl, wind, data, lpc, rho, nul1, nul2, energy, preemp)
-        int np, wind;
-    short *data;
-    double *lpc, *rho, *nul1, *nul2, *energy, lpc_stabl, preemp;
-    {
-        static int i, mm, owind=0, wind1;
-        static double w[1000];
-        double rc[NPM],phi[NPM*NPM],shi[NPM],sig[1000];
-        double xl = .09, fham, amax;
-        register double *psp1, *psp3, *pspl;
+int lpcbsa(np, lpc_stabl, wind, data, lpc, rho, nul1, nul2, energy, preemp)
+    int np, wind;
+short *data;
+double *lpc, *rho, *nul1, *nul2, *energy, lpc_stabl, preemp;
+{
+    static int i, mm, owind=0, wind1;
+    static double w[1000];
+    double rc[NPM],phi[NPM*NPM],shi[NPM],sig[1000];
+    double xl = .09, fham, amax;
+    register double *psp1, *psp3, *pspl;
 
-        if(owind != wind) {		/* need to compute a new window? */
-            fham = 6.28318506 / wind;
-            for(psp1=w,i=0;i<wind;i++,psp1++)
-                *psp1 = .54 - .46 * cos(i * fham);
-            owind = wind;
-        }
-        wind += np + 1;
-        wind1 = wind-1;
-
-        for(psp3=sig,pspl=sig+wind; psp3 < pspl; )
-            *psp3++ = (double)(*data++) + .016 * frand() - .008;
-        for(psp3=sig+1,pspl=sig+wind;psp3<pspl;psp3++)
-            *(psp3-1) = *psp3 - preemp * *(psp3-1);
-        for(amax = 0.,psp3=sig+np,pspl=sig+wind1;psp3<pspl;psp3++)
-            amax += *psp3 * *psp3;
-        *energy = sqrt(amax / (double)owind);
-        amax = 1.0/(*energy);
-
-        for(psp3=sig,pspl=sig+wind1;psp3<pspl;psp3++)
-            *psp3 *= amax;
-        if((mm=dlpcwtd(sig,&wind1,lpc,&np,rc,phi,shi,&xl,w))!=np) {
-            printf("LPCWTD error mm<np %d %d\n",mm,np);
-            return(FALSE);
-        }
-        return(TRUE);
+    if(owind != wind) {		/* need to compute a new window? */
+        fham = 6.28318506 / wind;
+        for(psp1=w,i=0;i<wind;i++,psp1++)
+            *psp1 = .54 - .46 * cos(i * fham);
+        owind = wind;
     }
+    wind += np + 1;
+    wind1 = wind-1;
 
-    /*	Copyright (c) 1987, 1988, 1989 AT&T	*/
-    /*	  All Rights Reserved	*/
+    for(psp3=sig,pspl=sig+wind; psp3 < pspl; )
+        *psp3++ = (double)(*data++) + .016 * frand() - .008;
+    for(psp3=sig+1,pspl=sig+wind;psp3<pspl;psp3++)
+        *(psp3-1) = *psp3 - preemp * *(psp3-1);
+    for(amax = 0.,psp3=sig+np,pspl=sig+wind1;psp3<pspl;psp3++)
+        amax += *psp3 * *psp3;
+    *energy = sqrt(amax / (double)owind);
+    amax = 1.0/(*energy);
 
-    /*	THIS IS UNPUBLISHED PROPRIETARY SOURCE CODE OF AT&T	*/
-    /*	The copyright notice above does not evidence any	*/
-    /*	actual or intended publication of such source code.	*/
+    for(psp3=sig,pspl=sig+wind1;psp3<pspl;psp3++)
+        *psp3 *= amax;
+    if((mm=dlpcwtd(sig,&wind1,lpc,&np,rc,phi,shi,&xl,w))!=np) {
+        printf("LPCWTD error mm<np %d %d\n",mm,np);
+        return(FALSE);
+    }
+    return(TRUE);
+}
 
-    /* downsample.c */
-    /* a quick and dirty downsampler */
+/*	Copyright (c) 1987, 1988, 1989 AT&T	*/
+/*	  All Rights Reserved	*/
+
+/*	THIS IS UNPUBLISHED PROPRIETARY SOURCE CODE OF AT&T	*/
+/*	The copyright notice above does not evidence any	*/
+/*	actual or intended publication of such source code.	*/
+
+/* downsample.c */
+/* a quick and dirty downsampler */
 
 #ifndef TRUE
 # define TRUE 1
@@ -899,367 +899,367 @@ Sound *dpform(ps, nform, nom_f1)
 
 #define PI 3.1415927
 
-    /*      ----------------------------------------------------------      */
-    int lc_lin_fir(fc,nf,coef)
-        /* create the coefficients for a symmetric FIR lowpass filter using the
-           window technique with a Hanning window. */
-        register double	fc;
-    double	coef[];
-    int	*nf;
-    {
-        register int	i, n;
-        register double	twopi, fn, c;
+/*      ----------------------------------------------------------      */
+int lc_lin_fir(fc,nf,coef)
+    /* create the coefficients for a symmetric FIR lowpass filter using the
+       window technique with a Hanning window. */
+    register double	fc;
+double	coef[];
+int	*nf;
+{
+    register int	i, n;
+    register double	twopi, fn, c;
 
-        if(((*nf % 2) != 1) || (*nf > 127)) {
-            if(*nf <= 126) *nf = *nf + 1;
-            else *nf = 127;
-        }
-        n = (*nf + 1)/2;
-
-        /*  compute part of the ideal impulse response */
-        twopi = PI * 2.0;
-        coef[0] = 2.0 * fc;
-        c = PI;
-        fn = twopi * fc;
-        for(i=1;i < n; i++) coef[i] = sin(i * fn)/(c * i);
-
-        /* Now apply a Hanning window to the (infinite) impulse response. */
-        fn = twopi/((double)(*nf - 1));
-        for(i=0;i<n;i++)
-            coef[i] *= (.5 + (.5 * cos(fn * ((double)i))));
-
-        return(TRUE);
+    if(((*nf % 2) != 1) || (*nf > 127)) {
+        if(*nf <= 126) *nf = *nf + 1;
+        else *nf = 127;
     }
+    n = (*nf + 1)/2;
 
-    /*      ----------------------------------------------------------      */
+    /*  compute part of the ideal impulse response */
+    twopi = PI * 2.0;
+    coef[0] = 2.0 * fc;
+    c = PI;
+    fn = twopi * fc;
+    for(i=1;i < n; i++) coef[i] = sin(i * fn)/(c * i);
 
-    void do_fir(buf,in_samps,bufo,ncoef,ic,invert)
-        /* ic contains 1/2 the coefficients of a symmetric FIR filter with unity
-           passband gain.  This filter is convolved with the signal in buf.
-           The output is placed in buf2.  If invert != 0, the filter magnitude
-           response will be inverted. */
-        short	*buf, *bufo, ic[];
-    int	in_samps, ncoef, invert;
-    {
-        register short  *buft, *bufp, *bufp2, stem;
-        short co[256], mem[256];
-        register int i, j, k, l, m, sum, integral;
+    /* Now apply a Hanning window to the (infinite) impulse response. */
+    fn = twopi/((double)(*nf - 1));
+    for(i=0;i<n;i++)
+        coef[i] *= (.5 + (.5 * cos(fn * ((double)i))));
 
-        for(i=ncoef-1, bufp=ic+ncoef-1, bufp2=co, buft = co+((ncoef-1)*2),
-                integral = 0; i-- > 0; )
-            if(!invert) *buft-- = *bufp2++ = *bufp--;
-            else {
-                integral += (stem = *bufp--);
-                *buft-- = *bufp2++ = -stem;
-            }
-        if(!invert)  *buft-- = *bufp2++ = *bufp--; /* point of symmetry */
+    return(TRUE);
+}
+
+/*      ----------------------------------------------------------      */
+
+void do_fir(buf,in_samps,bufo,ncoef,ic,invert)
+    /* ic contains 1/2 the coefficients of a symmetric FIR filter with unity
+       passband gain.  This filter is convolved with the signal in buf.
+       The output is placed in buf2.  If invert != 0, the filter magnitude
+       response will be inverted. */
+    short	*buf, *bufo, ic[];
+int	in_samps, ncoef, invert;
+{
+    register short  *buft, *bufp, *bufp2, stem;
+    short co[256], mem[256];
+    register int i, j, k, l, m, sum, integral;
+
+    for(i=ncoef-1, bufp=ic+ncoef-1, bufp2=co, buft = co+((ncoef-1)*2),
+            integral = 0; i-- > 0; )
+        if(!invert) *buft-- = *bufp2++ = *bufp--;
         else {
-            integral *= 2;
-            integral += *bufp;
-            *buft-- = integral - *bufp;
+            integral += (stem = *bufp--);
+            *buft-- = *bufp2++ = -stem;
         }
-        /*         for(i=(ncoef*2)-2; i >= 0; i--) printf("\n%4d%7d",i,co[i]);  */
-        for(i=ncoef-1, buft=mem; i-- > 0; ) *buft++ = 0;
-        for(i=ncoef; i-- > 0; ) *buft++ = *buf++;
-        l = 16384;
-        m = 15;
-        k = (ncoef << 1) -1;
-        for(i=in_samps-ncoef; i-- > 0; ) {
-            for(j=k, buft=mem, bufp=co, bufp2=mem+1, sum = 0; j-- > 0;
-                    *buft++ = *bufp2++ )
-                sum += (((*bufp++ * *buft) + l) >> m);
+    if(!invert)  *buft-- = *bufp2++ = *bufp--; /* point of symmetry */
+    else {
+        integral *= 2;
+        integral += *bufp;
+        *buft-- = integral - *bufp;
+    }
+    /*         for(i=(ncoef*2)-2; i >= 0; i--) printf("\n%4d%7d",i,co[i]);  */
+    for(i=ncoef-1, buft=mem; i-- > 0; ) *buft++ = 0;
+    for(i=ncoef; i-- > 0; ) *buft++ = *buf++;
+    l = 16384;
+    m = 15;
+    k = (ncoef << 1) -1;
+    for(i=in_samps-ncoef; i-- > 0; ) {
+        for(j=k, buft=mem, bufp=co, bufp2=mem+1, sum = 0; j-- > 0;
+                *buft++ = *bufp2++ )
+            sum += (((*bufp++ * *buft) + l) >> m);
 
-            *--buft = *buf++;		/* new data to memory */
-            *bufo++ = sum;
-        }
-        for(i=ncoef; i-- > 0; ) {	/* pad data end with zeros */
-            for(j=k, buft=mem, bufp=co, bufp2=mem+1, sum = 0; j-- > 0;
-                    *buft++ = *bufp2++ )
-                sum += (((*bufp++ * *buft) + l) >> m);
-            *--buft = 0;
-            *bufo++ = sum;
+        *--buft = *buf++;		/* new data to memory */
+        *bufo++ = sum;
+    }
+    for(i=ncoef; i-- > 0; ) {	/* pad data end with zeros */
+        for(j=k, buft=mem, bufp=co, bufp2=mem+1, sum = 0; j-- > 0;
+                *buft++ = *bufp2++ )
+            sum += (((*bufp++ * *buft) + l) >> m);
+        *--buft = 0;
+        *bufo++ = sum;
+    }
+}
+
+/* ******************************************************************** */
+
+int get_abs_maximum(d,n)
+    register short *d;
+register int n;
+{
+    register int i;
+    register short amax, t;
+
+    if((t = *d++) >= 0) amax = t;
+    else amax = -t;
+
+    for(i = n-1; i-- > 0; ) {
+        if((t = *d++) > amax) amax = t;
+        else {
+            if(-t > amax) amax = -t;
         }
     }
+    return((int)amax);
+}
 
-    /* ******************************************************************** */
+/* ******************************************************************** */
 
-    int get_abs_maximum(d,n)
-        register short *d;
-    register int n;
-    {
-        register int i;
-        register short amax, t;
+int dwnsamp(buf,in_samps,buf2,out_samps,insert,decimate,ncoef,ic,smin,smax)
+    short	*buf, **buf2;
+int	in_samps, *out_samps, insert, decimate, ncoef, *smin, *smax;
+short ic[];
+{
+    register short  *bufp, *bufp2;
+    short	*buft;
+    register int i, j, k, l, m;
+    int imax, imin;
 
-        if((t = *d++) >= 0) amax = t;
-        else amax = -t;
+    if(!(*buf2 = buft = malloc(sizeof(short)*insert*in_samps))) {
+        perror("ckalloc() in dwnsamp()");
+        return(FALSE);
+    }
 
-        for(i = n-1; i-- > 0; ) {
-            if((t = *d++) > amax) amax = t;
-            else {
-                if(-t > amax) amax = -t;
+    k = imax = get_abs_maximum(buf,in_samps);
+    if (k == 0) k = 1;
+    if(insert > 1) k = (32767 * 32767)/k;	/*  prepare to scale data */
+    else k = (16384 * 32767)/k;
+    l = 16384;
+    m = 15;
+
+
+    /* Insert zero samples to boost the sampling frequency and scale the
+       signal to maintain maximum precision. */
+    for(i=0, bufp=buft, bufp2=buf; i < in_samps; i++) {
+        *bufp++ = ((k * (*bufp2++)) + l) >> m ;
+        for(j=1; j < insert; j++) *bufp++ = 0;
+    }
+
+    do_fir(buft,in_samps*insert,buft,ncoef,ic,0);
+
+    /*	Finally, decimate and return the downsampled signal. */
+    *out_samps = j = (in_samps * insert)/decimate;
+    k = decimate;
+    for(i=0, bufp=buft, imax = imin = *bufp; i < j; bufp += k,i++) {
+        *buft++ = *bufp;
+        if(imax < *bufp) imax = *bufp;
+        else
+            if(imin > *bufp) imin = *bufp;
+    }
+    *smin = imin;
+    *smax = imax;
+    *buf2 = realloc((void *) *buf2,sizeof(short) * (*out_samps));
+    return(TRUE);
+}
+
+/*      ----------------------------------------------------------      */
+
+int ratprx(a,k,l,qlim)
+    double	a;
+int	*l, *k, qlim;
+{
+    double aa, af, q, em, qq = 0, pp = 0, ps, e;
+    int	ai, ip, i;
+
+    aa = fabs(a);
+    ai = (int) aa;
+    /*    af = fmod(aa,1.0); */
+    i = (int) aa;
+    af = aa - i;
+    q = 0;
+    em = 1.0;
+    while(++q <= qlim) {
+        ps = q * af;
+        ip = (int) (ps + 0.5);
+        e = fabs((ps - (double)ip)/q);
+        if(e < em) {
+            em = e;
+            pp = ip;
+            qq = q;
+        }
+    };
+    *k = (int) ((ai * qq) + pp);
+    *k = (a > 0)? *k : -(*k);
+    *l = (int) qq;
+    return(TRUE);
+}
+
+/* ----------------------------------------------------------------------- */
+
+Sound *Fdownsample(s,freq2,start,end)
+    double freq2;
+Sound *s;
+int start;
+int end;
+{
+    short	*bufin, **bufout;
+    static double	beta = 0.0, b[256];
+    double	ratio_t, maxi, ratio, beta_new, freq1;
+    static int	ncoeff = 127, ncoefft = 0, nbits = 15;
+    static short	ic[256];
+    int	insert, decimate, out_samps, smin, smax;
+    Sound *so;
+
+    register int i, j;
+
+    freq1 = s->samprate;
+
+    if((bufout = malloc(sizeof(short*)))) {
+        bufin = malloc(sizeof(short) * (end - start + 1));
+        for (i = start; i <= end; i++) {
+            bufin[i-start] = (short) Snack_GetSample(s, 0, i);
+        }
+
+        ratio = freq2/freq1;
+        ratprx(ratio,&insert,&decimate,10);
+        ratio_t = ((double)insert)/((double)decimate);
+
+        if(ratio_t > .99) return(s);
+
+        freq2 = ratio_t * freq1;
+        beta_new = (.5 * freq2)/(insert * freq1);
+
+        if(beta != beta_new){
+            beta = beta_new;
+            if( !lc_lin_fir(beta,&ncoeff,b)) {
+                printf("\nProblems computing interpolation filter\n");
+                return(FALSE);
             }
-        }
-        return((int)amax);
-    }
-
-    /* ******************************************************************** */
-
-    int dwnsamp(buf,in_samps,buf2,out_samps,insert,decimate,ncoef,ic,smin,smax)
-        short	*buf, **buf2;
-    int	in_samps, *out_samps, insert, decimate, ncoef, *smin, *smax;
-    short ic[];
-    {
-        register short  *bufp, *bufp2;
-        short	*buft;
-        register int i, j, k, l, m;
-        int imax, imin;
-
-        if(!(*buf2 = buft = malloc(sizeof(short)*insert*in_samps))) {
-            perror("ckalloc() in dwnsamp()");
-            return(FALSE);
-        }
-
-        k = imax = get_abs_maximum(buf,in_samps);
-        if (k == 0) k = 1;
-        if(insert > 1) k = (32767 * 32767)/k;	/*  prepare to scale data */
-        else k = (16384 * 32767)/k;
-        l = 16384;
-        m = 15;
-
-
-        /* Insert zero samples to boost the sampling frequency and scale the
-           signal to maintain maximum precision. */
-        for(i=0, bufp=buft, bufp2=buf; i < in_samps; i++) {
-            *bufp++ = ((k * (*bufp2++)) + l) >> m ;
-            for(j=1; j < insert; j++) *bufp++ = 0;
-        }
-
-        do_fir(buft,in_samps*insert,buft,ncoef,ic,0);
-
-        /*	Finally, decimate and return the downsampled signal. */
-        *out_samps = j = (in_samps * insert)/decimate;
-        k = decimate;
-        for(i=0, bufp=buft, imax = imin = *bufp; i < j; bufp += k,i++) {
-            *buft++ = *bufp;
-            if(imax < *bufp) imax = *bufp;
-            else
-                if(imin > *bufp) imin = *bufp;
-        }
-        *smin = imin;
-        *smax = imax;
-        *buf2 = realloc((void *) *buf2,sizeof(short) * (*out_samps));
-        return(TRUE);
-    }
-
-    /*      ----------------------------------------------------------      */
-
-    int ratprx(a,k,l,qlim)
-        double	a;
-    int	*l, *k, qlim;
-    {
-        double aa, af, q, em, qq = 0, pp = 0, ps, e;
-        int	ai, ip, i;
-
-        aa = fabs(a);
-        ai = (int) aa;
-        /*    af = fmod(aa,1.0); */
-        i = (int) aa;
-        af = aa - i;
-        q = 0;
-        em = 1.0;
-        while(++q <= qlim) {
-            ps = q * af;
-            ip = (int) (ps + 0.5);
-            e = fabs((ps - (double)ip)/q);
-            if(e < em) {
-                em = e;
-                pp = ip;
-                qq = q;
+            maxi = (1 << nbits) - 1;
+            j = (ncoeff/2) + 1;
+            for(ncoefft = 0, i=0; i < j; i++){
+                ic[i] = (int) (0.5 + (maxi * b[i]));
+                if(ic[i]) ncoefft = i+1;
             }
-        };
-        *k = (int) ((ai * qq) + pp);
-        *k = (a > 0)? *k : -(*k);
-        *l = (int) qq;
-        return(TRUE);
-    }
+        }				/*  endif new coefficients need to be computed */
 
-    /* ----------------------------------------------------------------------- */
-
-    Sound *Fdownsample(s,freq2,start,end)
-        double freq2;
-    Sound *s;
-    int start;
-    int end;
-    {
-        short	*bufin, **bufout;
-        static double	beta = 0.0, b[256];
-        double	ratio_t, maxi, ratio, beta_new, freq1;
-        static int	ncoeff = 127, ncoefft = 0, nbits = 15;
-        static short	ic[256];
-        int	insert, decimate, out_samps, smin, smax;
-        Sound *so;
-
-        register int i, j;
-
-        freq1 = s->samprate;
-
-        if((bufout = malloc(sizeof(short*)))) {
-            bufin = malloc(sizeof(short) * (end - start + 1));
-            for (i = start; i <= end; i++) {
-                bufin[i-start] = (short) Snack_GetSample(s, 0, i);
+        if(dwnsamp(bufin,end-start+1,bufout,&out_samps,insert,decimate,ncoefft,ic,
+                    &smin,&smax)){
+            /*      so->buff_size = so->file_size = out_samps;*/
+            so = Snack_NewSound(0, LIN16, s->nchannels);
+            Snack_ResizeSoundStorage(so, out_samps);
+            for (i = 0; i < out_samps; i++) {
+                Snack_SetSample(so, 0, i, (float)(*bufout)[i]);
             }
-
-            ratio = freq2/freq1;
-            ratprx(ratio,&insert,&decimate,10);
-            ratio_t = ((double)insert)/((double)decimate);
-
-            if(ratio_t > .99) return(s);
-
-            freq2 = ratio_t * freq1;
-            beta_new = (.5 * freq2)/(insert * freq1);
-
-            if(beta != beta_new){
-                beta = beta_new;
-                if( !lc_lin_fir(beta,&ncoeff,b)) {
-                    printf("\nProblems computing interpolation filter\n");
-                    return(FALSE);
-                }
-                maxi = (1 << nbits) - 1;
-                j = (ncoeff/2) + 1;
-                for(ncoefft = 0, i=0; i < j; i++){
-                    ic[i] = (int) (0.5 + (maxi * b[i]));
-                    if(ic[i]) ncoefft = i+1;
-                }
-            }				/*  endif new coefficients need to be computed */
-
-            if(dwnsamp(bufin,end-start+1,bufout,&out_samps,insert,decimate,ncoefft,ic,
-                        &smin,&smax)){
-                /*      so->buff_size = so->file_size = out_samps;*/
-                so = Snack_NewSound(0, LIN16, s->nchannels);
-                Snack_ResizeSoundStorage(so, out_samps);
-                for (i = 0; i < out_samps; i++) {
-                    Snack_SetSample(so, 0, i, (float)(*bufout)[i]);
-                }
-                so->length = out_samps;
-                so->samprate = (int)freq2;
-                free((void *)*bufout);
-                free((void *)bufout);
-                free((void *)bufin);
-                return(so);
-            } else
-                printf("Problems in dwnsamp() in downsample()\n");
+            so->length = out_samps;
+            so->samprate = (int)freq2;
+            free((void *)*bufout);
+            free((void *)bufout);
+            free((void *)bufin);
+            return(so);
         } else
-            printf("Can't create a new Signal in downsample()\n");
+            printf("Problems in dwnsamp() in downsample()\n");
+    } else
+        printf("Can't create a new Signal in downsample()\n");
 
-        return(NULL);
-    }
+    return(NULL);
+}
 
-    /*      ----------------------------------------------------------      */
+/*      ----------------------------------------------------------      */
 
-    Sound
-        *highpass(s)
-        Sound *s;
-    {
+Sound
+    *highpass(s)
+    Sound *s;
+{
 
-        short *datain, *dataout;
-        static short *lcf;
-        static int len = 0;
-        double scale, fn;
-        register int i;
-        Sound *so;
+    short *datain, *dataout;
+    static short *lcf;
+    static int len = 0;
+    double scale, fn;
+    register int i;
+    Sound *so;
 
-        /*  Header *h, *dup_header();*/
+    /*  Header *h, *dup_header();*/
 
 #define LCSIZ 101
-        /* This assumes the sampling frequency is 10kHz and that the FIR
-           is a Hanning function of (LCSIZ/10)ms duration. */
+    /* This assumes the sampling frequency is 10kHz and that the FIR
+       is a Hanning function of (LCSIZ/10)ms duration. */
 
-        datain = malloc(sizeof(short) * s->length);
-        dataout = malloc(sizeof(short) * s->length);
-        for (i = 0; i < Snack_GetLength(s); i++) {
-            datain[i] = (short) Snack_GetSample(s, 0, i);
-        }
-
-        if(!len) {		/* need to create a Hanning FIR? */
-            lcf = malloc(sizeof(short) * LCSIZ);
-            len = 1 + (LCSIZ/2);
-            fn = PI * 2.0 / (LCSIZ - 1);
-            scale = 32767.0/(.5 * LCSIZ);
-            for(i=0; i < len; i++)
-                lcf[i] = (short) (scale * (.5 + (.4 * cos(fn * ((double)i)))));
-        }
-        do_fir(datain,s->length,dataout,len,lcf,1); /* in downsample.c */
-        so = Snack_NewSound(s->samprate, LIN16, s->nchannels);
-        if (so == NULL) return(NULL);
-        Snack_ResizeSoundStorage(so, s->length);
-        for (i = 0; i < s->length; i++) {
-            Snack_SetSample(so, 0, i, (float)dataout[i]);
-        }
-        so->length = s->length;
-        free((void *)dataout);
-        free((void *)datain);
-        return(so);
+    datain = malloc(sizeof(short) * s->length);
+    dataout = malloc(sizeof(short) * s->length);
+    for (i = 0; i < Snack_GetLength(s); i++) {
+        datain[i] = (short) Snack_GetSample(s, 0, i);
     }
 
-    void formantCmd(Sound *s) {
-        int nform, i,j, lpc_ord, lpc_type, w_type;
-        char *w_type_str = NULL;
-        double frame_int, wdur,
-               ds_freq, nom_f1 = -10.0, preemp;
-        double cor_wdur;
-        Sound *dssnd = NULL, *hpsnd = NULL, *polesnd = NULL;
-        Sound *formantsnd = NULL, *hpsrcsnd, *polesrcsnd;
-        int arg, startpos = 0, endpos = -1;
-
-        lpc_ord = 12;
-        lpc_type = 0;			/* use bsa's stabilized covariance if != 0 */
-        w_type = 2;			/* window type: 0=rectangular; 1=Hamming; 2=cos**4 */
-        ds_freq = 10000.0;
-        wdur = .049;			/* for LPC analysis */
-        cor_wdur = .01;		/* for crosscorrelation F0 estimator */
-        frame_int = .01;
-        preemp = .7;
-        nform = 4;
-
-        if (startpos < 0) startpos = 0;
-        if (endpos >= (s->length - 1) || endpos == -1)
-            endpos = s->length - 1;
-
-        if (startpos > endpos)
-            return;
-
-        assert(!(nform > (lpc_ord-4)/2));
-        assert(!(nform > MAXFORMANTS));
-
-        w_type = 0;
-
-        if(ds_freq < s->samprate) {
-            dssnd = Fdownsample(s,ds_freq, startpos, endpos);
-        }
-
-        hpsrcsnd = (dssnd ? dssnd : s);
-
-        if (preemp < 1.0) { /* be sure DC and rumble are gone! */
-            hpsnd = highpass(hpsrcsnd);
-        }
-
-        polesrcsnd = (hpsnd ? hpsnd : s);
-
-        polesnd = lpc_poles(polesrcsnd, wdur, frame_int, lpc_ord,
-                preemp, lpc_type, w_type);
-
-        formantsnd = dpform(polesnd, nform, nom_f1);
-
-        if (dssnd) Snack_DeleteSound(dssnd);
-        if (hpsnd) Snack_DeleteSound(hpsnd);
-        Snack_DeleteSound(polesnd);
-
-        for (i = 0; i < formantsnd->length; i += 1) {
-            for (j = 0; j < nform * 2; j += 1)
-                printf("%f\n", (double)(Snack_GetSample(formantsnd, j, i)));
-
-            putchar('\n');
-        }
-
-        Snack_DeleteSound(formantsnd);
+    if(!len) {		/* need to create a Hanning FIR? */
+        lcf = malloc(sizeof(short) * LCSIZ);
+        len = 1 + (LCSIZ/2);
+        fn = PI * 2.0 / (LCSIZ - 1);
+        scale = 32767.0/(.5 * LCSIZ);
+        for(i=0; i < len; i++)
+            lcf[i] = (short) (scale * (.5 + (.4 * cos(fn * ((double)i)))));
     }
+    do_fir(datain,s->length,dataout,len,lcf,1); /* in downsample.c */
+    so = Snack_NewSound(s->samprate, LIN16, s->nchannels);
+    if (so == NULL) return(NULL);
+    Snack_ResizeSoundStorage(so, s->length);
+    for (i = 0; i < s->length; i++) {
+        Snack_SetSample(so, 0, i, (float)dataout[i]);
+    }
+    so->length = s->length;
+    free((void *)dataout);
+    free((void *)datain);
+    return(so);
+}
+
+void formantCmd(Sound *s) {
+    int nform, i,j, lpc_ord, lpc_type, w_type;
+    char *w_type_str = NULL;
+    double frame_int, wdur,
+           ds_freq, nom_f1 = -10.0, preemp;
+    double cor_wdur;
+    Sound *dssnd = NULL, *hpsnd = NULL, *polesnd = NULL;
+    Sound *formantsnd = NULL, *hpsrcsnd, *polesrcsnd;
+    int arg, startpos = 0, endpos = -1;
+
+    lpc_ord = 12;
+    lpc_type = 0;			/* use bsa's stabilized covariance if != 0 */
+    w_type = 2;			/* window type: 0=rectangular; 1=Hamming; 2=cos**4 */
+    ds_freq = 10000.0;
+    wdur = .049;			/* for LPC analysis */
+    cor_wdur = .01;		/* for crosscorrelation F0 estimator */
+    frame_int = .01;
+    preemp = .7;
+    nform = 4;
+
+    if (startpos < 0) startpos = 0;
+    if (endpos >= (s->length - 1) || endpos == -1)
+        endpos = s->length - 1;
+
+    if (startpos > endpos)
+        return;
+
+    assert(!(nform > (lpc_ord-4)/2));
+    assert(!(nform > MAXFORMANTS));
+
+    w_type = 0;
+
+    if(ds_freq < s->samprate) {
+        dssnd = Fdownsample(s,ds_freq, startpos, endpos);
+    }
+
+    hpsrcsnd = (dssnd ? dssnd : s);
+
+    if (preemp < 1.0) { /* be sure DC and rumble are gone! */
+        hpsnd = highpass(hpsrcsnd);
+    }
+
+    polesrcsnd = (hpsnd ? hpsnd : s);
+
+    polesnd = lpc_poles(polesrcsnd, wdur, frame_int, lpc_ord,
+            preemp, lpc_type, w_type);
+
+    formantsnd = dpform(polesnd, nform, nom_f1);
+
+    if (dssnd) Snack_DeleteSound(dssnd);
+    if (hpsnd) Snack_DeleteSound(hpsnd);
+    Snack_DeleteSound(polesnd);
+
+    for (i = 0; i < formantsnd->length; i += 1) {
+        for (j = 0; j < nform * 2; j += 1)
+            printf("%f\n", (double)(Snack_GetSample(formantsnd, j, i)));
+
+        putchar('\n');
+    }
+
+    Snack_DeleteSound(formantsnd);
+}
