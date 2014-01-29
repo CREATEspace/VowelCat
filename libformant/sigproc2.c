@@ -59,7 +59,7 @@ static void dreflpc(c,a,n) double *c,*a; int *n;{
     }
 }
 
-double *pa_1,*pa_2,*pa_3,*pa_4,*pa_5,*pal,*pt;
+static double *pa_1,*pa_2,*pa_3,*pa_4,*pa_5,*pal,*pt;
 static int dchlsky(a,n,t,det)
     double *a,*t,*det;
     int *n;
@@ -180,7 +180,7 @@ static void dcwmtrx(s,ni,nl,np,phi,shi,ps,w)
         }
 }
 
-double *psl,*pp2,*ppl2,*pc2,*pcl,*pph1,*pph2,*pph3,*pphl;
+static double *psl,*pp2,*ppl2,*pc2,*pcl,*pph1,*pph2,*pph3,*pphl;
 int dlpcwtd(s,ls,p,np,c,phi,shi,xl,w)
     double *s,*p,*c,*phi,*shi,*xl,*w;
     int *ls,*np;

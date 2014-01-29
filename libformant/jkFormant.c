@@ -300,8 +300,8 @@ void LoadSound(Sound *s, Tcl_Obj *obj, int startpos, int endpos) {
 }
 
 
-int debug = 0;
-int w_verbose = 0;
+static int debug = 0;
+static int w_verbose = 0;
 
 /*	dpform.c       */
 
@@ -395,7 +395,7 @@ static void candy(cand,pnumb,fnumb)
 /* Given a set of pole frequencies and allowable formant frequencies
    for nform formants, calculate all possible mappings of pole frequencies
    to formants, including, possibly, mappings with missing formants. */
-void get_fcand(npole,freq,band,nform,pcan)
+static void get_fcand(npole,freq,band,nform,pcan)
     int	npole, nform;
     short **pcan;
     double	*freq, *band; /* poles ordered by increasing FREQUENCY */
@@ -410,7 +410,7 @@ void get_fcand(npole,freq,band,nform,pcan)
     ncan++;	/* (converts ncan as an index to ncan as a candidate count) */
 }
 
-void set_nominal_freqs(f1)
+static void set_nominal_freqs(f1)
     double f1;
 {
     int i;
@@ -423,7 +423,7 @@ void set_nominal_freqs(f1)
 
 /*      ----------------------------------------------------------      */
 /* find the maximum in the "stationarity" function (stored in rms) */
-double get_stat_max(pole, nframes)
+static double get_stat_max(pole, nframes)
     register POLE **pole;
     register int nframes;
 {
@@ -436,7 +436,7 @@ double get_stat_max(pole, nframes)
     return(amax);
 }
 
-Sound *dpform(ps, nform, nom_f1)
+static Sound *dpform(ps, nform, nom_f1)
     Sound *ps;
     int nform;
     double nom_f1;
@@ -714,10 +714,8 @@ Sound *dpform(ps, nform, nom_f1)
 
 #define MAXORDER 30
 
-    extern int formant(), lpc(), lpcbsa(), dlpcwtd(), w_covar();
-
 /*************************************************************************/
-double integerize(time, freq)
+static double integerize(time, freq)
     register double time, freq;
 {
     register int i;
@@ -727,14 +725,62 @@ double integerize(time, freq)
 }
 
 /*	Round the argument to the nearest integer.			*/
-int eround(flnum)
+static int eround(flnum)
     register double	flnum;
 {
     return((flnum >= 0.0) ? (int)(flnum + 0.5) : (int)(flnum - 0.5));
 }
 
+/**********************************************************************/
+static double frand()
+{
+    return (((double)rand())/(double)RAND_MAX);
+}
+
+/**********************************************************************/
+/* a quick and dirty interface to bsa's stabilized covariance LPC */
+#define NPM	30	/* max lpc order		*/
+
+static int lpcbsa(np, lpc_stabl, wind, data, lpc, rho, nul1, nul2, energy, preemp)
+    int np, wind;
+short *data;
+double *lpc, *rho, *nul1, *nul2, *energy, lpc_stabl, preemp;
+{
+    static int i, mm, owind=0, wind1;
+    static double w[1000];
+    double rc[NPM],phi[NPM*NPM],shi[NPM],sig[1000];
+    double xl = .09, fham, amax;
+    register double *psp1, *psp3, *pspl;
+
+    if(owind != wind) {		/* need to compute a new window? */
+        fham = 6.28318506 / wind;
+        for(psp1=w,i=0;i<wind;i++,psp1++)
+            *psp1 = .54 - .46 * cos(i * fham);
+        owind = wind;
+    }
+    wind += np + 1;
+    wind1 = wind-1;
+
+    for(psp3=sig,pspl=sig+wind; psp3 < pspl; )
+        *psp3++ = (double)(*data++) + .016 * frand() - .008;
+    for(psp3=sig+1,pspl=sig+wind;psp3<pspl;psp3++)
+        *(psp3-1) = *psp3 - preemp * *(psp3-1);
+    for(amax = 0.,psp3=sig+np,pspl=sig+wind1;psp3<pspl;psp3++)
+        amax += *psp3 * *psp3;
+    *energy = sqrt(amax / (double)owind);
+    amax = 1.0/(*energy);
+
+    for(psp3=sig,pspl=sig+wind1;psp3<pspl;psp3++)
+        *psp3 *= amax;
+    if((mm=dlpcwtd(sig,&wind1,lpc,&np,rc,phi,shi,&xl,w))!=np) {
+        printf("LPCWTD error mm<np %d %d\n",mm,np);
+        return(FALSE);
+    }
+    return(TRUE);
+}
+
 /*************************************************************************/
-Sound *lpc_poles(sp,wdur,frame_int,lpc_ord,preemp,lpc_type,w_type)
+static Sound *lpc_poles(sp,wdur,frame_int,lpc_ord,preemp,lpc_type,w_type)
     Sound *sp;
 int lpc_ord, lpc_type, w_type;
 double wdur, frame_int, preemp;
@@ -834,54 +880,6 @@ double wdur, frame_int, preemp;
     return(NULL);
 }
 
-/**********************************************************************/
-double frand()
-{
-    return (((double)rand())/(double)RAND_MAX);
-}
-
-/**********************************************************************/
-/* a quick and dirty interface to bsa's stabilized covariance LPC */
-#define NPM	30	/* max lpc order		*/
-
-int lpcbsa(np, lpc_stabl, wind, data, lpc, rho, nul1, nul2, energy, preemp)
-    int np, wind;
-short *data;
-double *lpc, *rho, *nul1, *nul2, *energy, lpc_stabl, preemp;
-{
-    static int i, mm, owind=0, wind1;
-    static double w[1000];
-    double rc[NPM],phi[NPM*NPM],shi[NPM],sig[1000];
-    double xl = .09, fham, amax;
-    register double *psp1, *psp3, *pspl;
-
-    if(owind != wind) {		/* need to compute a new window? */
-        fham = 6.28318506 / wind;
-        for(psp1=w,i=0;i<wind;i++,psp1++)
-            *psp1 = .54 - .46 * cos(i * fham);
-        owind = wind;
-    }
-    wind += np + 1;
-    wind1 = wind-1;
-
-    for(psp3=sig,pspl=sig+wind; psp3 < pspl; )
-        *psp3++ = (double)(*data++) + .016 * frand() - .008;
-    for(psp3=sig+1,pspl=sig+wind;psp3<pspl;psp3++)
-        *(psp3-1) = *psp3 - preemp * *(psp3-1);
-    for(amax = 0.,psp3=sig+np,pspl=sig+wind1;psp3<pspl;psp3++)
-        amax += *psp3 * *psp3;
-    *energy = sqrt(amax / (double)owind);
-    amax = 1.0/(*energy);
-
-    for(psp3=sig,pspl=sig+wind1;psp3<pspl;psp3++)
-        *psp3 *= amax;
-    if((mm=dlpcwtd(sig,&wind1,lpc,&np,rc,phi,shi,&xl,w))!=np) {
-        printf("LPCWTD error mm<np %d %d\n",mm,np);
-        return(FALSE);
-    }
-    return(TRUE);
-}
-
 /*	Copyright (c) 1987, 1988, 1989 AT&T	*/
 /*	  All Rights Reserved	*/
 
@@ -900,7 +898,7 @@ double *lpc, *rho, *nul1, *nul2, *energy, lpc_stabl, preemp;
 #define PI 3.1415927
 
 /*      ----------------------------------------------------------      */
-int lc_lin_fir(fc,nf,coef)
+static int lc_lin_fir(fc,nf,coef)
     /* create the coefficients for a symmetric FIR lowpass filter using the
        window technique with a Hanning window. */
     register double	fc;
@@ -933,7 +931,7 @@ int	*nf;
 
 /*      ----------------------------------------------------------      */
 
-void do_fir(buf,in_samps,bufo,ncoef,ic,invert)
+static void do_fir(buf,in_samps,bufo,ncoef,ic,invert)
     /* ic contains 1/2 the coefficients of a symmetric FIR filter with unity
        passband gain.  This filter is convolved with the signal in buf.
        The output is placed in buf2.  If invert != 0, the filter magnitude
@@ -983,7 +981,7 @@ int	in_samps, ncoef, invert;
 
 /* ******************************************************************** */
 
-int get_abs_maximum(d,n)
+static int get_abs_maximum(d,n)
     register short *d;
 register int n;
 {
@@ -1004,7 +1002,7 @@ register int n;
 
 /* ******************************************************************** */
 
-int dwnsamp(buf,in_samps,buf2,out_samps,insert,decimate,ncoef,ic,smin,smax)
+static int dwnsamp(buf,in_samps,buf2,out_samps,insert,decimate,ncoef,ic,smin,smax)
     short	*buf, **buf2;
 int	in_samps, *out_samps, insert, decimate, ncoef, *smin, *smax;
 short ic[];
@@ -1053,7 +1051,7 @@ short ic[];
 
 /*      ----------------------------------------------------------      */
 
-int ratprx(a,k,l,qlim)
+static int ratprx(a,k,l,qlim)
     double	a;
 int	*l, *k, qlim;
 {
@@ -1085,7 +1083,7 @@ int	*l, *k, qlim;
 
 /* ----------------------------------------------------------------------- */
 
-Sound *Fdownsample(s,freq2,start,end)
+static Sound *Fdownsample(s,freq2,start,end)
     double freq2;
 Sound *s;
 int start;
@@ -1156,7 +1154,7 @@ int end;
 
 /*      ----------------------------------------------------------      */
 
-Sound
+static Sound
     *highpass(s)
     Sound *s;
 {
