@@ -37,8 +37,8 @@
 #define DBLKSIZE (1<<DEXP)
 #define CBLKSIZE (1<<CEXP)
 
-#define FSAMPLE(s, i) (s)->blocks[(i)>>FEXP][((i)&(FBLKSIZE-1))]
-#define DSAMPLE(s, i) ((double **)(s)->blocks)[(i)>>DEXP][((i)&(DBLKSIZE-1))]
+#define FSAMPLE(s, i) (s)->blocks[(i)]
+#define DSAMPLE(s, i) ((double *)((s)->blocks))[i]
 
 #define Snack_SetSample(s, c, i, val) \
     if ((s)->precision == SNACK_DOUBLE_PREC) { \
@@ -65,17 +65,9 @@ Sound *Snack_NewSound(int rate, int nchannels) {
 
     s->samprate = rate;
     s->nchannels = nchannels;
+    s->cap = 0;
     s->length    = 0;
-    s->maxlength = 0;
-    s->blocks    = malloc(MAXNBLKS * sizeof(float*));
-    if (s->blocks == NULL) {
-        free(s);
-        return NULL;
-    }
-    s->blocks[0] = NULL;
-    s->maxblks   = MAXNBLKS;
-    s->nblks     = 0;
-    s->exact     = 0;
+    s->blocks = NULL;
     s->precision = SNACK_SINGLE_PREC;
     s->extHead    = NULL;
 
@@ -83,84 +75,13 @@ Sound *Snack_NewSound(int rate, int nchannels) {
 }
 
 void Snack_ResizeSoundStorage(Sound *s, int len) {
-    int neededblks, i, blockSize, sampSize;
+    free(s->blocks);
 
-    if (s->precision == SNACK_SINGLE_PREC) {
-        blockSize = FBLKSIZE;
-        sampSize = sizeof(float);
-    } else {
-        blockSize = DBLKSIZE;
-        sampSize = sizeof(double);
-    }
-    neededblks = 1 + (len * s->nchannels - 1) / blockSize;
-
-    if (len == 0) {
-        neededblks = 0;
-        s->exact = 0;
-    }
-
-    if (neededblks > s->maxblks) {
-        void *tmp = realloc(s->blocks, neededblks * sizeof(float*));
-
-        s->maxblks = neededblks;
-        s->blocks = (float **)tmp;
-    }
-
-    if (s->maxlength == 0 && len * s->nchannels < blockSize) {
-
-        /* Allocate exactly as much as needed. */
-
-        s->exact = len * s->nchannels * sampSize;
-        s->blocks[0] = malloc(s->exact);
-        i = 1;
-        s->maxlength = len;
-    } else if (neededblks > s->nblks) {
-        float *tmp = s->blocks[0];
-
-        /* Do not count exact block, needs to be re-allocated */
-        if (s->exact > 0) {
-            s->nblks = 0;
-        }
-
-        for (i = s->nblks; i < neededblks; i++) {
-            s->blocks[i] = malloc(CBLKSIZE);
-        }
-
-        /* Copy and de-allocate any exact block */
-        if (s->exact > 0) {
-            memcpy(s->blocks[0], tmp, s->exact);
-            free(tmp);
-            s->exact = 0;
-        }
-
-        s->maxlength = neededblks * blockSize / s->nchannels;
-    } else if (neededblks == 1 && s->exact > 0) {
-
-        /* Reallocate to one full block */
-
-        float *tmp = malloc(CBLKSIZE);
-
-        if (tmp != NULL) {
-            memcpy(tmp, s->blocks[0], s->exact);
-            free(s->blocks[0]);
-            s->blocks[0] = tmp;
-            s->maxlength = blockSize / s->nchannels;
-        }
-        s->exact = 0;
-    }
-
-    if (neededblks < s->nblks) {
-        for (i = neededblks; i < s->nblks; i++) {
-            free(s->blocks[i]);
-        }
-        s->maxlength = neededblks * blockSize / s->nchannels;
-    }
-
-    s->nblks = neededblks;
+    s->cap = len * sizeof(float) * s->nchannels;
+    s->blocks = malloc(s->cap);
 }
 
 void Snack_DeleteSound(Sound *s) {
-    Snack_ResizeSoundStorage(s, 0);
     free(s->blocks);
     free(s);
 }
@@ -190,10 +111,6 @@ void LoadSound(Sound *s, Tcl_Obj *obj, int startpos, int endpos) {
 
     while (tot > 0) {
         size = tot < sizeof(short) * PBSIZE ? tot : sizeof(short) * PBSIZE;
-        /* Samples on disk are 8 bytes -> make sure they fit in buffer */
-        if (s->length == -1) {
-            Snack_ResizeSoundStorage(s, s->maxlength+1);
-        }
         unsigned char *ptr = NULL;
         ptr = (unsigned char *) obj->bytes;
         memcpy(b, &ptr[totrlen + startpos * sizeof(sample_t)
@@ -204,23 +121,11 @@ void LoadSound(Sound *s, Tcl_Obj *obj, int startpos, int endpos) {
         short  *r  = (short *)  b;
 
         if (s->precision == SNACK_SINGLE_PREC) {
-            for (size_t i = 0; i < size / sizeof(sample_t); i++, j++) {
-                int writeblock = (j >> FEXP);
-                if (writeblock >= s->nblks) {
-                    /* Reached end of allocated blocks for s */
-                    break;
-                }
+            for (size_t i = 0; i < size / sizeof(sample_t); i++, j++)
                 FSAMPLE(s, j) = *r++;
-            }
         } else {   /*s->precision == SNACK_DOUBLE_PREC */
-            for (size_t i = 0; i < size / sizeof(sample_t); i++, j++) {
-                int writeblock = (j >> DEXP);
-                if (writeblock >= s->nblks) {
-                    /* Reached end of allocated blocks for s */
-                    break;
-                }
+            for (size_t i = 0; i < size / sizeof(sample_t); i++, j++)
                 DSAMPLE(s, j) = *r++;
-            }
         }  /*s->precision == SNACK_DOUBLE_PREC */
     }
 

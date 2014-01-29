@@ -21,12 +21,9 @@ typedef short sample_t;
 typedef struct Sound {
     int    samprate;
     int    nchannels;
+    size_t cap;
     int    length;
-    int    maxlength;
-    float  **blocks;
-    int    maxblks;
-    int    nblks;
-    int    exact;
+    float  *blocks;
     int    precision;
     char *extHead;
 } Sound;
