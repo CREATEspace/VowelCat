@@ -68,22 +68,10 @@ Sound *Snack_NewSound(int rate, int encoding, int nchannels) {
         s->sampsize = 2;
     } else if (s->encoding == SNACK_FLOAT) {
         s->sampsize = 4;
-    } else {
-        s->sampsize = 1;
     }
-    s->maxsamp = 0.0f;
-    s->minsamp = 0.0f;
     s->nchannels = nchannels;
     s->length    = 0;
     s->maxlength = 0;
-    s->abmax     = 0.0f;
-    s->firstCB   = NULL;
-    s->fileType  = RAW_STRING;
-    s->tmpbuf    = NULL;
-    s->swap      = 0;
-    s->headSize  = 0;
-    s->skipBytes = 0;
-    s->fcname    = NULL;
     s->blocks    = malloc(MAXNBLKS * sizeof(float*));
     if (s->blocks == NULL) {
         free((char *) s);
@@ -94,25 +82,9 @@ Sound *Snack_NewSound(int rate, int encoding, int nchannels) {
     s->nblks     = 0;
     s->exact     = 0;
     s->precision = SNACK_SINGLE_PREC;
-    s->blockingPlay = 0;
-    s->debug     = 0;
-    s->destroy   = 0;
-    s->guessEncoding = 0;
-    s->guessRate = 0;
-    s->firstNRead = 0;
-    s->buffersize = 0;
-    s->forceFormat = 0;
-    s->itemRefCnt = 0;
-    s->validStart = 0;
-    s->devStr = NULL;
-    s->filterName = NULL;
     s->extHead    = NULL;
-    s->extHeadType = 0;
     s->extHead2   = NULL;
-    s->extHead2Type = 0;
     s->loadOffset = 0;
-    s->userFlag   = 0;
-    s->userData   = NULL;
 
     return s;
 }
@@ -230,7 +202,7 @@ void LoadSound(Sound *s, Tcl_Obj *obj, int startpos, int endpos) {
         }
         unsigned char *ptr = NULL;
         ptr = (unsigned char *) obj->bytes;
-        memcpy(b, &ptr[totrlen + s->headSize + startpos * s->sampsize
+        memcpy(b, &ptr[totrlen + startpos * s->sampsize
                 * s->nchannels], size);
         totrlen += size;
         tot -= size;

@@ -33,44 +33,14 @@ typedef struct Sound {
     int    nchannels;
     int    length;
     int    maxlength;
-    float  maxsamp;
-    float  minsamp;
-    float  abmax;
     float  **blocks;
     int    maxblks;
     int    nblks;
     int    exact;
     int    precision;
-    int    writeStatus;
-    int    readStatus;
-    short  *tmpbuf;
-    int    swap;
-    int    headSize;
-    int    skipBytes;
-    int    buffersize;
-    char           *fcname;
-    struct jkCallback *firstCB;
-    char *fileType;
-    int blockingPlay;
-    int debug;
-    int destroy;
-    int guessEncoding;
-    int inByteOrder;
-    int firstNRead;
-    int guessRate;
-    int forceFormat;
-    int itemRefCnt;
-    int validStart;
-    char *devStr;
-    char *filterName;
     char *extHead;
     char *extHead2;
-    int extHeadType;
-    int extHead2Type;
     int loadOffset;
-    unsigned int userFlag; /* User flags, for new file formats, etc */
-    char *userData;        /* User data pointer */
-
 } Sound;
 
 typedef struct {
