@@ -309,18 +309,16 @@ static int	maxp,	/* number of poles to consider */
 
 static short **pc;
 
-static int canbe(pnumb, fnumb) /* can this pole be this freq.? */
-    int	pnumb, fnumb;
-{
+/* can this pole be this freq.? */
+static int canbe(int pnumb, int fnumb) {
     return((fre[pnumb] >= fmins[fnumb])&&(fre[pnumb] <= fmaxs[fnumb]));
 }
 
 /* This does the real work of mapping frequencies to formants. */
-static void candy(cand,pnumb,fnumb)
-    int	cand, /* candidate number being considered */
-    pnumb, /* pole number under consideration */
-    fnumb;	/* formant number under consideration */
-{
+/* cand: candidate number being considered */
+/* pnumb: pole number under consideration */
+/* fnumb: formant number under consideration */
+static void candy(int cand, int pnumb, int fnumb) {
     int i,j;
 
     if(fnumb < maxf) pc[cand][fnumb] = -1;
@@ -362,12 +360,8 @@ static void candy(cand,pnumb,fnumb)
 /* Given a set of pole frequencies and allowable formant frequencies
    for nform formants, calculate all possible mappings of pole frequencies
    to formants, including, possibly, mappings with missing formants. */
-static void get_fcand(npole,freq,nform,pcan)
-    int	npole, nform;
-    short **pcan;
-    double	*freq; /* poles ordered by increasing FREQUENCY */
-{
-
+/* freq: poles ordered by increasing FREQUENCY */
+static void get_fcand(int npole, double *freq, int nform, short **pcan) {
     ncan = 0;
     pc = pcan;
     fre = freq;
@@ -377,9 +371,7 @@ static void get_fcand(npole,freq,nform,pcan)
     ncan++;	/* (converts ncan as an index to ncan as a candidate count) */
 }
 
-static void set_nominal_freqs(f1)
-    double f1;
-{
+static void set_nominal_freqs(double f1) {
     int i;
     for(i=0; i < MAXFORMANTS; i++) {
         fnom[i] = ((i * 2) + 1) * f1;
@@ -390,10 +382,7 @@ static void set_nominal_freqs(f1)
 
 /*      ----------------------------------------------------------      */
 /* find the maximum in the "stationarity" function (stored in rms) */
-static double get_stat_max(pole, nframes)
-    register POLE **pole;
-    register int nframes;
-{
+static double get_stat_max(POLE **pole, int nframes) {
     register int i;
     register double amax, t;
 
@@ -403,11 +392,7 @@ static double get_stat_max(pole, nframes)
     return(amax);
 }
 
-static Sound *dpform(ps, nform, nom_f1)
-    Sound *ps;
-    int nform;
-    double nom_f1;
-{
+static Sound *dpform(Sound *ps, int nform, double nom_f1) {
     double pferr, conerr, minerr, dffact, ftemp, berr, ferr, bfact, ffact,
            rmsmax, fbias, **fr, **ba, rmsdffact, merger=0.0, merge_cost,
            FBIAS;
@@ -682,9 +667,7 @@ static Sound *dpform(ps, nform, nom_f1)
 #define MAXORDER 30
 
 /*************************************************************************/
-static double integerize(time, freq)
-    register double time, freq;
-{
+static double integerize(double time, double freq) {
     register int i;
 
     i = (int) (.5 + (freq * time));
@@ -692,8 +675,7 @@ static double integerize(time, freq)
 }
 
 /**********************************************************************/
-static double frand()
-{
+static double frand() {
     return (((double)rand())/(double)RAND_MAX);
 }
 
@@ -701,10 +683,8 @@ static double frand()
 /* a quick and dirty interface to bsa's stabilized covariance LPC */
 #define NPM	30	/* max lpc order		*/
 
-static int lpcbsa(np, wind, data, lpc, energy, preemp)
-    int np, wind;
-short *data;
-double *lpc, *energy, preemp;
+static int lpcbsa(int np, int wind, short *data, double *lpc, double *energy,
+                  double preemp)
 {
     static int i, mm, owind=0, wind1;
     static double w[1000];
@@ -740,10 +720,8 @@ double *lpc, *energy, preemp;
 }
 
 /*************************************************************************/
-static Sound *lpc_poles(sp,wdur,frame_int,lpc_ord,preemp,lpc_type,w_type)
-    Sound *sp;
-int lpc_ord, lpc_type, w_type;
-double wdur, frame_int, preemp;
+static Sound *lpc_poles(Sound *sp, double wdur, double frame_int, int lpc_ord,
+                        double preemp, int lpc_type, int w_type)
 {
     int i, j, size, step, nform, init, nfrm;
     POLE **pole;
@@ -857,13 +835,9 @@ double wdur, frame_int, preemp;
 #define PI 3.1415927
 
 /*      ----------------------------------------------------------      */
-static int lc_lin_fir(fc,nf,coef)
-    /* create the coefficients for a symmetric FIR lowpass filter using the
-       window technique with a Hanning window. */
-    register double	fc;
-double	coef[];
-int	*nf;
-{
+/* create the coefficients for a symmetric FIR lowpass filter using the
+   window technique with a Hanning window. */
+static int lc_lin_fir(double fc, int *nf, double *coef) {
     register int	i, n;
     register double	twopi, fn, c;
 
@@ -890,13 +864,12 @@ int	*nf;
 
 /*      ----------------------------------------------------------      */
 
-static void do_fir(buf,in_samps,bufo,ncoef,ic,invert)
-    /* ic contains 1/2 the coefficients of a symmetric FIR filter with unity
-       passband gain.  This filter is convolved with the signal in buf.
-       The output is placed in buf2.  If invert != 0, the filter magnitude
-       response will be inverted. */
-    short	*buf, *bufo, ic[];
-int	in_samps, ncoef, invert;
+/* ic contains 1/2 the coefficients of a symmetric FIR filter with unity
+   passband gain.  This filter is convolved with the signal in buf.
+   The output is placed in buf2.  If invert != 0, the filter magnitude
+   response will be inverted. */
+static void do_fir(short *buf, int in_samps, short *bufo, int ncoef,
+                   short *ic, int invert)
 {
     register short  *buft, *bufp, *bufp2, stem;
     short co[256], mem[256];
@@ -940,10 +913,7 @@ int	in_samps, ncoef, invert;
 
 /* ******************************************************************** */
 
-static int get_abs_maximum(d,n)
-    register short *d;
-register int n;
-{
+static int get_abs_maximum(short *d, int n) {
     register int i;
     register short amax, t;
 
@@ -961,10 +931,9 @@ register int n;
 
 /* ******************************************************************** */
 
-static int dwnsamp(buf,in_samps,buf2,out_samps,insert,decimate,ncoef,ic,smin,smax)
-    short	*buf, **buf2;
-int	in_samps, *out_samps, insert, decimate, ncoef, *smin, *smax;
-short ic[];
+static int dwnsamp(short *buf, int in_samps, short **buf2, int *out_samps,
+                   int insert, int decimate, int ncoef, short *ic, int *smin,
+                   int *smax)
 {
     register short  *bufp, *bufp2;
     short	*buft;
@@ -1010,10 +979,7 @@ short ic[];
 
 /*      ----------------------------------------------------------      */
 
-static int ratprx(a,k,l,qlim)
-    double	a;
-int	*l, *k, qlim;
-{
+static int ratprx(double a, int *k, int *l, int qlim) {
     double aa, af, q, em, qq = 0, pp = 0, ps, e;
     int	ai, ip, i;
 
@@ -1042,12 +1008,7 @@ int	*l, *k, qlim;
 
 /* ----------------------------------------------------------------------- */
 
-static Sound *Fdownsample(s,freq2,start,end)
-    double freq2;
-Sound *s;
-int start;
-int end;
-{
+static Sound *Fdownsample(Sound *s, double freq2, int start, int end) {
     short	*bufin, **bufout;
     static double	beta = 0.0, b[256];
     double	ratio_t, maxi, ratio, beta_new, freq1;
@@ -1113,11 +1074,7 @@ int end;
 
 /*      ----------------------------------------------------------      */
 
-static Sound
-    *highpass(s)
-    Sound *s;
-{
-
+static Sound *highpass(Sound *s) {
     short *datain, *dataout;
     static short *lcf;
     static int len = 0;

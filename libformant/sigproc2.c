@@ -11,13 +11,11 @@
 #include <string.h>
 
 static double *pxl,*pa,*py,*pyl,*pa1,*px;
-static void dlwrtrn(a,n,x,y)
-    double *a,*x,*y; int *n;
-    /*	routine to solve ax=y with cholesky
-        a - nxn matrix
-        x,y -vectors
-        */
-{
+/*	routine to solve ax=y with cholesky
+    a - nxn matrix
+    x,y -vectors
+    */
+static void dlwrtrn(double *a, int *n, double *x, double *y) {
     double sm;
     *x = *y / *a;
     pxl = x + 1;
@@ -34,13 +32,13 @@ static void dlwrtrn(a,n,x,y)
 }
 
 static double *pa1,*pa2,*pa3,*pa4,*pa5,*pc;
-static void dreflpc(c,a,n) double *c,*a; int *n;{
+/*	convert ref to lpc
+    c - ref
+    a - polyn
+    n - no of coef
+    */
+static void dreflpc(double *c, double *a, int *n) {
     double ta1;
-    /*	convert ref to lpc
-        c - ref
-        a - polyn
-        n - no of coef
-        */
     *a = 1.;
     *(a+1) = *c;
     pc = c; pa2 = a+ *n;
@@ -60,19 +58,16 @@ static void dreflpc(c,a,n) double *c,*a; int *n;{
 }
 
 static double *pa_1,*pa_2,*pa_3,*pa_4,*pa_5,*pal,*pt;
-static int dchlsky(a,n,t,det)
-    double *a,*t,*det;
-    int *n;
-    /*	performs cholesky decomposition
-        a - l * l(transpose)
-        l - lower triangle
-        det det(a)
-        a - nxn matrix
-        return - no of reduced elements
-        results in lower half + diagonal
-        upper half undisturbed.
-        */
-{
+/*	performs cholesky decomposition
+    a - l * l(transpose)
+    l - lower triangle
+    det det(a)
+    a - nxn matrix
+    return - no of reduced elements
+    results in lower half + diagonal
+    upper half undisturbed.
+    */
+static int dchlsky(double *a, int *n, double *t, double *det) {
     double sm;
     double sqrt();
     int m;
@@ -105,16 +100,13 @@ static int dchlsky(a,n,t,det)
 
 
 static double *pp,*ppl,*pa;
-static int dcovlpc(p,s,a,n,c)
-    double *p,*s,*a,*c;
-    int *n;
-    /*	solve p*a=s using stabilized covariance method
-        p - cov nxn matrix
-        s - corrvec
-        a lpc coef *a = 1.
-        c - ref coefs
-        */
-{
+/*	solve p*a=s using stabilized covariance method
+    p - cov nxn matrix
+    s - corrvec
+    a lpc coef *a = 1.
+    c - ref coefs
+    */
+static int dcovlpc(double *p, double *s, double *a, int *n, double *c) {
     double ee;
     double sqrt(),ps,ps1,thres,d;
     int m,n1;
@@ -151,8 +143,8 @@ static int dcovlpc(p,s,a,n,c)
 
 /* cov mat for wtd lpc	*/
 static double *pdl1,*pdl2,*pdl3,*pdl4,*pdl5,*pdl6,*pdll;
-static void dcwmtrx(s,ni,nl,np,phi,shi,ps,w)
-    double *s,*phi,*shi,*ps,*w; int *ni,*nl,*np;
+static void dcwmtrx(double *s, int *ni, int *nl, int *np, double *phi,
+                    double *shi, double *ps, double *w)
 {
     double sm;
     int i,j;
@@ -181,18 +173,17 @@ static void dcwmtrx(s,ni,nl,np,phi,shi,ps,w)
 }
 
 static double *pp2,*ppl2,*pc2,*pcl,*pph1,*pph2,*pph3,*pphl;
-int dlpcwtd(s,ls,p,np,c,phi,shi,xl,w)
-    double *s,*p,*c,*phi,*shi,*xl,*w;
-    int *ls,*np;
-    /*	pred anal subroutine with ridge reg
-        s - speech
-        ls - length of s
-        p - pred coefs
-        np - polyn order
-        c - ref coers
-        phi - cov matrix
-        shi - cov vect
-        */
+/*	pred anal subroutine with ridge reg
+    s - speech
+    ls - length of s
+    p - pred coefs
+    np - polyn order
+    c - ref coers
+    phi - cov matrix
+    shi - cov vect
+    */
+int dlpcwtd(double *s, int *ls, double *p, int *np, double *c, double *phi,
+            double *shi, double *xl, double *w)
 {
     int m,np1,mm;
     double d,pre,pre3,pre2,pre0,pss,pss7,thres;
@@ -282,11 +273,7 @@ int dlpcwtd(s,ls,p,np,c,phi,shi,xl,w)
 #endif
 
 /*+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
-static void rwindow(din, dout, n, preemp)
-    register short *din;
-    register double *dout, preemp;
-    register int n;
-{
+static void rwindow(short *din, double *dout, int n, double preemp) {
     register short *p;
 
     /* If preemphasis is to be performed,  this assumes that there are n+1 valid
@@ -302,11 +289,7 @@ static void rwindow(din, dout, n, preemp)
 
 
 /*+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
-static void cwindow(din, dout, n, preemp)
-    register short *din;
-    register double *dout, preemp;
-    register int n;
-{
+static void cwindow(short *din, double *dout, int n, double preemp) {
     register int i;
     register short *p;
     static int wsize = 0;
@@ -337,11 +320,7 @@ static void cwindow(din, dout, n, preemp)
 
 
 /*+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
-static void hwindow(din, dout, n, preemp)
-    register short *din;
-    register double *dout, preemp;
-    register int n;
-{
+static void hwindow(short *din, double *dout, int n, double preemp) {
     register int i;
     register short *p;
     static int wsize = 0;
@@ -370,11 +349,7 @@ static void hwindow(din, dout, n, preemp)
 
 
 /*+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
-static void hnwindow(din, dout, n, preemp)
-    register short *din;
-    register double *dout, preemp;
-    register int n;
-{
+static void hnwindow(short *din, double *dout, int n, double preemp) {
     register int i;
     register short *p;
     static int wsize = 0;
@@ -402,12 +377,7 @@ static void hnwindow(din, dout, n, preemp)
 }
 
 /*+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
-static void w_window(din, dout, n, preemp, type)
-    register short *din;
-    register double *dout, preemp;
-    register int n;
-    int type;
-{
+static void w_window(short *din, double *dout, int n, double preemp, int type) {
     switch(type) {
         case 0:
             rwindow(din, dout, n, preemp);
@@ -427,15 +397,12 @@ static void w_window(din, dout, n, preemp, type)
 }
 
 /*+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
-static void autoc( windowsize, s, p, r, e )
-    register int windowsize, p;
-    register double *s, *r, *e;
-    /*
-     * Compute the pp+1 autocorrelation lags of the windowsize samples in s.
-     * Return the normalized autocorrelation coefficients in r.
-     * The rms is returned in e.
-     */
-{
+/*
+ * Compute the pp+1 autocorrelation lags of the windowsize samples in s.
+ * Return the normalized autocorrelation coefficients in r.
+ * The rms is returned in e.
+ */
+static void autoc(int windowsize, double *s, int p, double *r, double *e) {
     register int i, j;
     register double *q, *t, sum, sum0;
 
@@ -461,16 +428,12 @@ static void autoc( windowsize, s, p, r, e )
     *e = sqrt(sum0/windowsize);
 }
 
-
-static void durbin ( r, k, a, p, ex)
-    register int p;
-    register double *r, *k, *a, *ex;
-    /*
-     * Compute the AR and PARCOR coefficients using Durbin's recursion.
-     * Note: Durbin returns the coefficients in normal sign format.
-     *	(i.e. a[0] is assumed to be = +1.)
-     */
-{
+/*
+ * Compute the AR and PARCOR coefficients using Durbin's recursion.
+ * Note: Durbin returns the coefficients in normal sign format.
+ *	(i.e. a[0] is assumed to be = +1.)
+ */
+static void durbin (double *r, double *k, double *a, int p, double *ex) {
     double b[MAXORDER];
     register int i, j;
     register double e, s;
@@ -497,10 +460,9 @@ static void durbin ( r, k, a, p, ex)
     *ex = e;
 }
 
-int lpc(lpc_ord,lpc_stabl,wsize,data,lpca,ar,lpck,normerr,rms,preemp,type)
-    int lpc_ord, wsize, type;
-    double lpc_stabl, *lpca, *ar, *lpck, *normerr, *rms, preemp;
-    short *data;
+int lpc(int lpc_ord, double lpc_stabl, int wsize, short *data, double *lpca,
+        double *ar, double *lpck, double *normerr, double *rms, double preemp,
+        int type)
 {
     static double *dwind=NULL;
     static int nwind=0;
@@ -544,12 +506,8 @@ int lpc(lpc_ord,lpc_stabl,wsize,data,lpca,ar,lpck,normerr,rms,preemp,type)
 
 /* covariance LPC analysis; originally from Markel and Gray */
 /* (a translation from the fortran) */
-
-int w_covar(xx,m,n,istrt,y,alpha,r0,preemp,w_type)
-    double *y, *alpha, *r0, preemp;
-    short *xx;
-    int *m,n,istrt;
-    int w_type;
+int w_covar(short *xx, int *m, int n, int istrt, double *y, double *alpha,
+            double *r0, double preemp, int w_type)
 {
     static double *x=NULL;
     static int nold = 0;
@@ -681,9 +639,10 @@ int w_covar(xx,m,n,istrt,y,alpha,r0,preemp,w_type)
 #define MAX_TRYS	100	/* Max number of times to try new starts */
 #define MAX_ERR		1.e-6	/* Max acceptable error in quad factor */
 
-static int qquad(a,b,c,r1r,r1i,r2r,r2i) /* find x, where a*x**2 + b*x + c = 0 	*/
-    double	a, b, c;
-    double *r1r, *r2r, *r1i, *r2i; /* return real and imag. parts of roots */
+/* find x, where a*x**2 + b*x + c = 0   */
+/* return real and imag. parts of roots */
+static int qquad(double a, double b, double c, double *r1r, double *r1i,
+                 double *r2r, double *r2i)
 {
     double  sqrt(), numi;
     double  den, y;
@@ -730,13 +689,13 @@ static int qquad(a,b,c,r1r,r1i,r2r,r2i) /* find x, where a*x**2 + b*x + c = 0 	*
     }
 }
 
-static int lbpoly(a, order, rootr, rooti) /* return FALSE on error */
-    double  *a;		    /* coeffs. of the polynomial (increasing order) */
-    int	    order;	    /* the order of the polynomial */
-    double  *rootr, *rooti; /* the real and imag. roots of the polynomial */
-    /* Rootr and rooti are assumed to contain starting points for the root
-       search on entry to lbpoly(). */
-{
+/* return FALSE on error */
+/* a: coeffs. of the polynomial (increasing order) */
+/* order: the order of the polynomial */
+/* rootr, rooti: the real and imag. roots of the polynomial */
+/* Rootr and rooti are assumed to contain starting points for the root
+   search on entry to lbpoly(). */
+static int lbpoly(double *a, int order, double *rootr, double *rooti) {
     int	    ord, ordm1, ordm2, itcnt, i, k, mmk, mmkp2, mmkp1, ntrys;
     double  err, p, q, delp, delq, b[MAXORDER], c[MAXORDER], den;
     double  lim0 = 0.5*sqrt(DBL_MAX);
@@ -849,14 +808,15 @@ static int lbpoly(a, order, rootr, rooti) /* return FALSE on error */
 /* Find the roots of the LPC denominator polynomial and convert the z-plane
    zeros to equivalent resonant frequencies and bandwidths.	*/
 /* The complex poles are then ordered by frequency.  */
-int formant(lpc_order,s_freq,lpca,n_form,freq,band,init)
-    int	lpc_order, /* order of the LP model */
-    *n_form,   /* number of COMPLEX roots of the LPC polynomial */
-    init; 	   /* preset to true if no root candidates are available */
-double	s_freq,    /* the sampling frequency of the speech waveform data */
-        *lpca, 	   /* linear predictor coefficients */
-        *freq,     /* returned array of candidate formant frequencies */
-        *band;     /* returned array of candidate formant bandwidths */
+/* lpc_ord: order of the LP model */
+/* n_form: number of COMPLEX roots of the LPC polynomial */
+/* init: preset to true if no root candidates are available */
+/* s_freq: the sampling frequency of the speech waveform data */
+/* lpca: linear predictor coefficients */
+/* freq: returned array of candidate formant frequencies */
+/* band: returned array of candidate formant bandwidths */
+int formant(int lpc_order, double s_freq, double *lpca, int *n_form,
+            double *freq, double *band, int init)
 {
     double  x, flo, pi2t, theta;
     static double  rr[MAXORDER], ri[MAXORDER];
