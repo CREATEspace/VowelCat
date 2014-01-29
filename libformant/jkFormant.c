@@ -84,7 +84,6 @@ Sound *Snack_NewSound(int rate, int encoding, int nchannels) {
     s->exact     = 0;
     s->precision = SNACK_SINGLE_PREC;
     s->extHead    = NULL;
-    s->loadOffset = 0;
 
     return s;
 }
@@ -174,7 +173,7 @@ void Snack_DeleteSound(Sound *s) {
 
 void LoadSound(Sound *s, Tcl_Obj *obj, int startpos, int endpos) {
     size_t tot;
-    int totrlen = 0, i, j = s->loadOffset, size;
+    int totrlen = 0, i, j = 0, size;
     short shortBuffer[PBSIZE];
     char *b = (char *) shortBuffer;
 
@@ -191,7 +190,7 @@ void LoadSound(Sound *s, Tcl_Obj *obj, int startpos, int endpos) {
     if (s->length == -1) {
         tot = 1 << 30;
     } else {
-        tot = (s->length - s->loadOffset) * s->sampsize * s->nchannels;
+        tot = s->length * s->sampsize * s->nchannels;
     }
 
     while (tot > 0) {
@@ -250,20 +249,6 @@ void LoadSound(Sound *s, Tcl_Obj *obj, int startpos, int endpos) {
     }
     if (s->length == -1) {
         s->length = totrlen / (s->sampsize * s->nchannels);
-    }
-
-    if (s->loadOffset > 0) {
-        if (s->precision == SNACK_SINGLE_PREC) {
-            for (i = 0; i < s->loadOffset; i++) {
-                FSAMPLE(s, i) = 0.0f;
-            }
-        } else {
-            for (i = 0; i < s->loadOffset; i++) {
-                DSAMPLE(s, i) = 0.0;
-            }
-        }
-        s->length += s->loadOffset;
-        s->loadOffset = 0;
     }
 }
 

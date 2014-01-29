@@ -33,7 +33,6 @@ typedef struct Sound {
     int    exact;
     int    precision;
     char *extHead;
-    int loadOffset;
 } Sound;
 
 typedef struct {
