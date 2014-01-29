@@ -48,12 +48,12 @@ enum {
 /*+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 /* Structure definitions for the formant tracker.. */
 
-typedef struct form_latt { /* structure of a DP lattice node for formant tracking */
+typedef struct { /* structure of a DP lattice node for formant tracking */
     short ncand; /* # of candidate mappings for this frame */
     short **cand;      /* pole-to-formant map-candidate array */
     short *prept;	 /* backpointer array for each frame */
     double *cumerr; 	 /* cum. errors associated with each cand. */
-} FORM;
+} form_t;
 
 typedef struct pole_array {   /* structure to hold raw LPC analysis data */
     double rms;    /* rms for current LPC analysis frame */

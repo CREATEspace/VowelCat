@@ -167,7 +167,8 @@ void Snack_DeleteSound(Sound *s) {
 
 void LoadSound(Sound *s, Tcl_Obj *obj, int startpos, int endpos) {
     size_t tot;
-    int totrlen = 0, i, j = 0, size;
+    size_t totrlen = 0;
+    int j = 0, size;
     short shortBuffer[PBSIZE];
     char *b = (char *) shortBuffer;
 
@@ -362,7 +363,7 @@ static Sound *dpform(Sound *ps, int nform, double nom_f1) {
            FBIAS;
     int	i, j, k, l, ic, ip, mincan=0;
     short	**pcan;
-    FORM	**fl;
+    form_t	**fl;
     POLE	**pole; /* raw LPC pole data structure array */
     Sound *fbs;
     int dmaxc,dminc,dcountc,dcountf;
@@ -403,9 +404,9 @@ static Sound *dpform(Sound *ps, int nform, double nom_f1) {
             if(debug & DEB_ENTRY){
                 printf("Allocating DP lattice structure in dpform()\n");
             }
-            fl = malloc(sizeof(FORM*) * ps->length);
+            fl = malloc(sizeof(form_t*) * ps->length);
             for(i=0;i < ps->length; i++)
-                fl[i] = malloc(sizeof(FORM));
+                fl[i] = malloc(sizeof(form_t));
 
             /*******************************************************************/
             /* main formant tracking loop */
