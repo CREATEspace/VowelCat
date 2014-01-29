@@ -24,21 +24,8 @@
 #include "jkFormant.h"
 #include "sigproc2.h"
 
-#define RAW_STRING "RAW"
-#define MAXNBLKS 200
-#  define PBSIZE 64000
-#  define NMAX 8192
-
 #define PI 3.1415927
 #define MAXFORMANTS 7
-
-#define MAXNBLKS 200
-#define FEXP 17
-#define CEXP (FEXP+2)
-#define DEXP (FEXP-1)
-#define FBLKSIZE (1<<FEXP)
-#define DBLKSIZE (1<<DEXP)
-#define CBLKSIZE (1<<CEXP)
 
 #define FSAMPLE(s, i) (s)->blocks[(i)]
 
