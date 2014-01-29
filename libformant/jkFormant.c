@@ -27,13 +27,15 @@
 #define PI 3.1415927
 #define MAXFORMANTS 7
 
-#define FSAMPLE(s, i) (s)->blocks[(i)]
+static inline void Snack_SetSample(Sound *s, size_t chan, size_t i,
+                                   storage_t val)
+{
+    s->blocks[i * s->nchannels + chan] = val;
+}
 
-#define Snack_SetSample(s, c, i, val) \
-        FSAMPLE((s),(i)*(s)->nchannels+(c)) = (val); \
-
-#define Snack_GetSample(s, c, i) ( \
-        FSAMPLE(s, (i)*(s)->nchannels+(c)))
+static inline storage_t Snack_GetSample(Sound *s, size_t chan, size_t i) {
+    return s->blocks[i * s->nchannels + chan];
+}
 
 Sound *Snack_NewSound(int rate, int nchannels) {
     Sound *s = malloc(sizeof(Sound));
@@ -69,7 +71,7 @@ void LoadSound(Sound *s, short *samples, size_t len) {
     Snack_ResizeSoundStorage(s, len);
 
     for (size_t i = 0; i < s->length * s->nchannels; i += 1)
-        FSAMPLE(s, i) = (storage_t) samples[i];
+        s->blocks[i] = (storage_t) samples[i];
 }
 
 
