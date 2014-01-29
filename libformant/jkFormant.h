@@ -19,17 +19,6 @@
 typedef short sample_t;
 typedef float storage_t;
 
-typedef struct Sound {
-    size_t samprate;
-    size_t nchannels;
-    int length;
-    storage_t *blocks;
-    char *extHead;
-} Sound;
-
-/*+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
-/* Structure definitions for the formant tracker.. */
-
 typedef struct { /* structure of a DP lattice node for formant tracking */
     short ncand; /* # of candidate mappings for this frame */
     short **cand;      /* pole-to-formant map-candidate array */
@@ -47,7 +36,15 @@ typedef struct {   /* structure to hold raw LPC analysis data */
     double *freq;  /* array of complex pole frequencies (Hz) */
     double *band;  /* array of complex pole bandwidths (Hz) */
 } pole_t;
-/* End of structure definitions for the formant tracker. */
+
+typedef struct Sound {
+    size_t samprate;
+    size_t nchannels;
+    int length;
+    storage_t *blocks;
+
+    pole_t **pole;
+} Sound;
 
 Sound *Snack_NewSound(int rate, int nchannels);
 void Snack_DeleteSound(Sound *s);

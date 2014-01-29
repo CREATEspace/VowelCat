@@ -58,7 +58,7 @@ Sound *Snack_NewSound(int rate, int nchannels) {
     s->nchannels = nchannels;
     s->length    = 0;
     s->blocks = NULL;
-    s->extHead    = NULL;
+    s->pole    = NULL;
 
     return s;
 }
@@ -219,7 +219,7 @@ static Sound *dpform(Sound *ps, int nform, double nom_f1) {
     if(ps) {
         if(nom_f1 > 0.0)
             set_nominal_freqs(nom_f1);
-        pole = (pole_t**)ps->extHead;
+        pole = ps->pole;
         rmsmax = get_stat_max(pole, ps->length);
         FBIAS = F_BIAS /(.01 * ps->samprate);
         /* Setup working values of the cost weights. */
@@ -568,7 +568,7 @@ static Sound *lpc_poles(Sound *sp, double wdur, double frame_int, int lpc_ord,
             }
         }
         lp->length = nfrm;
-        lp->extHead = (char *)pole;
+        lp->pole = pole;
         return(lp);
     } else {
         printf("Bad buffer size in lpc_poles()\n");
