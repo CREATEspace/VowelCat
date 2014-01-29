@@ -274,7 +274,7 @@ int dlpcwtd(double *s, int *ls, double *p, int *np, double *c, double *phi,
 
 /*+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 static void rwindow(short *din, double *dout, int n, double preemp) {
-    register short *p;
+    short *p;
 
     /* If preemphasis is to be performed,  this assumes that there are n+1 valid
        samples in the input buffer (din). */
@@ -290,14 +290,14 @@ static void rwindow(short *din, double *dout, int n, double preemp) {
 
 /*+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 static void cwindow(short *din, double *dout, int n, double preemp) {
-    register int i;
-    register short *p;
+    int i;
+    short *p;
     static int wsize = 0;
     static double *wind=NULL;
-    register double *q, co;
+    double *q, co;
 
     if(wsize != n) {		/* Need to create a new cos**4 window? */
-        register double arg, half=0.5;
+        double arg, half=0.5;
 
         if(wind) wind = realloc((void *)wind,n*sizeof(double));
         else wind = malloc(n*sizeof(double));
@@ -321,14 +321,14 @@ static void cwindow(short *din, double *dout, int n, double preemp) {
 
 /*+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 static void hwindow(short *din, double *dout, int n, double preemp) {
-    register int i;
-    register short *p;
+    int i;
+    short *p;
     static int wsize = 0;
     static double *wind=NULL;
-    register double *q;
+    double *q;
 
     if(wsize != n) {		/* Need to create a new Hamming window? */
-        register double arg, half=0.5;
+        double arg, half=0.5;
 
         if(wind) wind = realloc((void *)wind,n*sizeof(double));
         else wind = malloc(n*sizeof(double));
@@ -350,14 +350,14 @@ static void hwindow(short *din, double *dout, int n, double preemp) {
 
 /*+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 static void hnwindow(short *din, double *dout, int n, double preemp) {
-    register int i;
-    register short *p;
+    int i;
+    short *p;
     static int wsize = 0;
     static double *wind=NULL;
-    register double *q;
+    double *q;
 
     if(wsize != n) {		/* Need to create a new Hamming window? */
-        register double arg, half=0.5;
+        double arg, half=0.5;
 
         if(wind) wind = realloc((void *)wind,n*sizeof(double));
         else wind = malloc(n*sizeof(double));
@@ -403,8 +403,8 @@ static void w_window(short *din, double *dout, int n, double preemp, int type) {
  * The rms is returned in e.
  */
 static void autoc(int windowsize, double *s, int p, double *r, double *e) {
-    register int i, j;
-    register double *q, *t, sum, sum0;
+    int i, j;
+    double *q, *t, sum, sum0;
 
     for ( i=0, q=s, sum0=0.; i< windowsize; q++, i++){
         sum0 += (*q) * (*q);
@@ -435,8 +435,8 @@ static void autoc(int windowsize, double *s, int p, double *r, double *e) {
  */
 static void durbin (double *r, double *k, double *a, int p, double *ex) {
     double b[MAXORDER];
-    register int i, j;
-    register double e, s;
+    int i, j;
+    double e, s;
 
     e = *r;
     *k = -r[1]/e;

@@ -383,8 +383,8 @@ static void set_nominal_freqs(double f1) {
 /*      ----------------------------------------------------------      */
 /* find the maximum in the "stationarity" function (stored in rms) */
 static double get_stat_max(POLE **pole, int nframes) {
-    register int i;
-    register double amax, t;
+    int i;
+    double amax, t;
 
     for(i=1, amax = (*pole++)->rms; i++ < nframes; )
         if((t = (*pole++)->rms) > amax) amax = t;
@@ -396,7 +396,7 @@ static Sound *dpform(Sound *ps, int nform, double nom_f1) {
     double pferr, conerr, minerr, dffact, ftemp, berr, ferr, bfact, ffact,
            rmsmax, fbias, **fr, **ba, rmsdffact, merger=0.0, merge_cost,
            FBIAS;
-    register int	i, j, k, l, ic, ip, mincan=0;
+    int	i, j, k, l, ic, ip, mincan=0;
     short	**pcan;
     FORM	**fl;
     POLE	**pole; /* raw LPC pole data structure array */
@@ -668,7 +668,7 @@ static Sound *dpform(Sound *ps, int nform, double nom_f1) {
 
 /*************************************************************************/
 static double integerize(double time, double freq) {
-    register int i;
+    int i;
 
     i = (int) (.5 + (freq * time));
     return(((double)i)/freq);
@@ -690,7 +690,7 @@ static int lpcbsa(int np, int wind, short *data, double *lpc, double *energy,
     static double w[1000];
     double rc[NPM],phi[NPM*NPM],shi[NPM],sig[1000];
     double xl = .09, fham, amax;
-    register double *psp1, *psp3, *pspl;
+    double *psp1, *psp3, *pspl;
 
     if(owind != wind) {		/* need to compute a new window? */
         fham = 6.28318506 / wind;
@@ -838,8 +838,8 @@ static Sound *lpc_poles(Sound *sp, double wdur, double frame_int, int lpc_ord,
 /* create the coefficients for a symmetric FIR lowpass filter using the
    window technique with a Hanning window. */
 static int lc_lin_fir(double fc, int *nf, double *coef) {
-    register int	i, n;
-    register double	twopi, fn, c;
+    int	i, n;
+    double	twopi, fn, c;
 
     if(((*nf % 2) != 1) || (*nf > 127)) {
         if(*nf <= 126) *nf = *nf + 1;
@@ -871,9 +871,9 @@ static int lc_lin_fir(double fc, int *nf, double *coef) {
 static void do_fir(short *buf, int in_samps, short *bufo, int ncoef,
                    short *ic, int invert)
 {
-    register short  *buft, *bufp, *bufp2, stem;
+    short  *buft, *bufp, *bufp2, stem;
     short co[256], mem[256];
-    register int i, j, k, l, m, sum, integral;
+    int i, j, k, l, m, sum, integral;
 
     for(i=ncoef-1, bufp=ic+ncoef-1, bufp2=co, buft = co+((ncoef-1)*2),
             integral = 0; i-- > 0; )
@@ -914,8 +914,8 @@ static void do_fir(short *buf, int in_samps, short *bufo, int ncoef,
 /* ******************************************************************** */
 
 static int get_abs_maximum(short *d, int n) {
-    register int i;
-    register short amax, t;
+    int i;
+    short amax, t;
 
     if((t = *d++) >= 0) amax = t;
     else amax = -t;
@@ -935,9 +935,9 @@ static int dwnsamp(short *buf, int in_samps, short **buf2, int *out_samps,
                    int insert, int decimate, int ncoef, short *ic, int *smin,
                    int *smax)
 {
-    register short  *bufp, *bufp2;
+    short  *bufp, *bufp2;
     short	*buft;
-    register int i, j, k, l, m;
+    int i, j, k, l, m;
     int imax, imin;
 
     if(!(*buf2 = buft = malloc(sizeof(short)*insert*in_samps))) {
@@ -1017,7 +1017,7 @@ static Sound *Fdownsample(Sound *s, double freq2, int start, int end) {
     int	insert, decimate, out_samps, smin, smax;
     Sound *so;
 
-    register int i, j;
+    int i, j;
 
     freq1 = s->samprate;
 
@@ -1079,7 +1079,7 @@ static Sound *highpass(Sound *s) {
     static short *lcf;
     static int len = 0;
     double scale, fn;
-    register int i;
+    int i;
     Sound *so;
 
     /*  Header *h, *dup_header();*/
