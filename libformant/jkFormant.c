@@ -58,7 +58,6 @@ Sound *Snack_NewSound(int rate, int nchannels) {
 
     s->samprate = rate;
     s->nchannels = nchannels;
-    s->cap = 0;
     s->length    = 0;
     s->blocks = NULL;
     s->extHead    = NULL;
@@ -69,8 +68,8 @@ Sound *Snack_NewSound(int rate, int nchannels) {
 void Snack_ResizeSoundStorage(Sound *s, int len) {
     free(s->blocks);
 
-    s->cap = len * sizeof(storage_t) * s->nchannels;
-    s->blocks = malloc(s->cap);
+    s->length = len;
+    s->blocks = malloc(len * sizeof(storage_t) * s->nchannels);
 }
 
 void Snack_DeleteSound(Sound *s) {
@@ -78,50 +77,11 @@ void Snack_DeleteSound(Sound *s) {
     free(s);
 }
 
-void LoadSound(Sound *s, Tcl_Obj *obj, int startpos, int endpos) {
-    size_t tot;
-    size_t totrlen = 0;
-    int j = 0, size;
-    short shortBuffer[PBSIZE];
-    char *b = (char *) shortBuffer;
+void LoadSound(Sound *s, short *samples, size_t len) {
+    Snack_ResizeSoundStorage(s, len);
 
-    s->length = obj->len / (sizeof(sample_t) * s->nchannels);
-
-    if (s->length > 0) {
-        if (endpos < 0 || endpos > (s->length - 1)) {
-            endpos = s->length - 1;
-        }
-        s->length = endpos - startpos + 1;
-        if (s->length < 0) s->length = 0;
-        Snack_ResizeSoundStorage(s, s->length);
-    }
-    if (s->length == -1) {
-        tot = 1 << 30;
-    } else {
-        tot = s->length * sizeof(sample_t) * s->nchannels;
-    }
-
-    while (tot > 0) {
-        size = tot < sizeof(short) * PBSIZE ? tot : sizeof(short) * PBSIZE;
-        unsigned char *ptr = NULL;
-        ptr = (unsigned char *) obj->bytes;
-        memcpy(b, &ptr[totrlen + startpos * sizeof(sample_t)
-                * s->nchannels], size);
-        totrlen += size;
-        tot -= size;
-
-        short  *r  = (short *)  b;
-
-        for (size_t i = 0; i < size / sizeof(sample_t); i++, j++)
-            FSAMPLE(s, j) = (storage_t) *r++;
-    }
-
-    if (s->length * sizeof(sample_t) * s->nchannels != totrlen) {
-        s->length = totrlen / (sizeof(sample_t) * s->nchannels);
-    }
-    if (s->length == -1) {
-        s->length = totrlen / (sizeof(sample_t) * s->nchannels);
-    }
+    for (size_t i = 0; i < s->length * s->nchannels; i += 1)
+        FSAMPLE(s, i) = (storage_t) samples[i];
 }
 
 

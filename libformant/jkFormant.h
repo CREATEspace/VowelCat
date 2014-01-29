@@ -21,8 +21,7 @@ typedef float storage_t;
 
 typedef struct Sound {
     int    samprate;
-    int    nchannels;
-    size_t cap;
+    size_t    nchannels;
     int    length;
     storage_t  *blocks;
     char *extHead;
@@ -52,5 +51,5 @@ typedef struct {   /* structure to hold raw LPC analysis data */
 
 Sound *Snack_NewSound(int rate, int nchannels);
 void Snack_DeleteSound(Sound *s);
-void LoadSound(Sound *s, Tcl_Obj *obj, int startpos, int endpos);
+void LoadSound(Sound *s, short *samples, size_t len);
 void formantCmd(Sound *s);
