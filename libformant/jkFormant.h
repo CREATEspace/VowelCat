@@ -20,9 +20,10 @@
 #define PI 3.1415927
 #define MAXFORMANTS 7
 
+typedef short sample_t;
+
 typedef struct Sound {
     int    samprate;
-    int    sampsize;
     int    nchannels;
     int    length;
     int    maxlength;

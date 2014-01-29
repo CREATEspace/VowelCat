@@ -64,7 +64,6 @@ Sound *Snack_NewSound(int rate, int nchannels) {
     /* Default sound specifications */
 
     s->samprate = rate;
-    s->sampsize = 2;
     s->nchannels = nchannels;
     s->length    = 0;
     s->maxlength = 0;
@@ -172,7 +171,7 @@ void LoadSound(Sound *s, Tcl_Obj *obj, int startpos, int endpos) {
     short shortBuffer[PBSIZE];
     char *b = (char *) shortBuffer;
 
-    s->length = obj->len / (s->sampsize * s->nchannels);
+    s->length = obj->len / (sizeof(sample_t) * s->nchannels);
 
     if (s->length > 0) {
         if (endpos < 0 || endpos > (s->length - 1)) {
@@ -185,7 +184,7 @@ void LoadSound(Sound *s, Tcl_Obj *obj, int startpos, int endpos) {
     if (s->length == -1) {
         tot = 1 << 30;
     } else {
-        tot = s->length * s->sampsize * s->nchannels;
+        tot = s->length * sizeof(sample_t) * s->nchannels;
     }
 
     while (tot > 0) {
@@ -196,7 +195,7 @@ void LoadSound(Sound *s, Tcl_Obj *obj, int startpos, int endpos) {
         }
         unsigned char *ptr = NULL;
         ptr = (unsigned char *) obj->bytes;
-        memcpy(b, &ptr[totrlen + startpos * s->sampsize
+        memcpy(b, &ptr[totrlen + startpos * sizeof(sample_t)
                 * s->nchannels], size);
         totrlen += size;
         tot -= size;
@@ -204,7 +203,7 @@ void LoadSound(Sound *s, Tcl_Obj *obj, int startpos, int endpos) {
         short  *r  = (short *)  b;
 
         if (s->precision == SNACK_SINGLE_PREC) {
-            for (i = 0; i < size / s->sampsize; i++, j++) {
+            for (size_t i = 0; i < size / sizeof(sample_t); i++, j++) {
                 int writeblock = (j >> FEXP);
                 if (writeblock >= s->nblks) {
                     /* Reached end of allocated blocks for s */
@@ -213,7 +212,7 @@ void LoadSound(Sound *s, Tcl_Obj *obj, int startpos, int endpos) {
                 FSAMPLE(s, j) = (float) *r++;
             }
         } else {   /*s->precision == SNACK_DOUBLE_PREC */
-            for (i = 0; i < size / s->sampsize; i++, j++) {
+            for (size_t i = 0; i < size / sizeof(sample_t); i++, j++) {
                 int writeblock = (j >> DEXP);
                 if (writeblock >= s->nblks) {
                     /* Reached end of allocated blocks for s */
@@ -224,11 +223,11 @@ void LoadSound(Sound *s, Tcl_Obj *obj, int startpos, int endpos) {
         }  /*s->precision == SNACK_DOUBLE_PREC */
     }
 
-    if (s->length * s->sampsize * s->nchannels != totrlen) {
-        s->length = totrlen / (s->sampsize * s->nchannels);
+    if (s->length * sizeof(sample_t) * s->nchannels != totrlen) {
+        s->length = totrlen / (sizeof(sample_t) * s->nchannels);
     }
     if (s->length == -1) {
-        s->length = totrlen / (s->sampsize * s->nchannels);
+        s->length = totrlen / (sizeof(sample_t) * s->nchannels);
     }
 }
 
