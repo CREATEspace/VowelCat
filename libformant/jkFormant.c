@@ -198,30 +198,12 @@ void Snack_DeleteSound(Sound *s) {
     free((char *) s);
 }
 
-void GetHeader(Sound *s, Tcl_Obj *obj) {
-    int buflen = 4096;
-
-    if (s->tmpbuf != NULL) {
-        free((char *)s->tmpbuf);
-    }
-    s->tmpbuf = malloc(buflen);
-    unsigned char *ptr = NULL;
-
-    int len = obj->len < buflen ? obj->len : buflen;
-    memcpy((char *)s->tmpbuf, obj->bytes, len);
-
-    s->firstNRead = len;
-    s->length = obj->len / (s->sampsize * s->nchannels);
-    s->headSize = 0;
-
-    free((char *)s->tmpbuf);
-    s->tmpbuf = NULL;
-}
-
-static void ReadSound(Sound *s, Tcl_Obj *obj, int startpos, int endpos) {
+void LoadSound(Sound *s, Tcl_Obj *obj, int startpos, int endpos) {
     int tot, totrlen = 0, res, i, j = s->loadOffset, size;
     short shortBuffer[PBSIZE];
     char *b = (char *) shortBuffer;
+
+    s->length = obj->len / (s->sampsize * s->nchannels);
 
     if (s->length > 0) {
         if (endpos < 0 || endpos > (s->length - 1)) {
@@ -315,15 +297,6 @@ static void ReadSound(Sound *s, Tcl_Obj *obj, int startpos, int endpos) {
         s->length += s->loadOffset;
         s->loadOffset = 0;
     }
-}
-
-void LoadSound(Sound *s, Tcl_Obj *obj, int startpos, int endpos) {
-    int oldsampfmt = s->encoding;
-
-    GetHeader(s, obj);
-
-    int pos = 0;
-    ReadSound(s, obj, startpos, endpos);
 }
 
 
