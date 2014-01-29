@@ -13,9 +13,6 @@
     of formant
  */
 
-#define PI 3.1415927
-#define MAXFORMANTS 7
-
 typedef short sample_t;
 typedef float storage_t;
 

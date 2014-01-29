@@ -29,6 +29,9 @@
 #  define PBSIZE 64000
 #  define NMAX 8192
 
+#define PI 3.1415927
+#define MAXFORMANTS 7
+
 #define MAXNBLKS 200
 #define FEXP 17
 #define CEXP (FEXP+2)
