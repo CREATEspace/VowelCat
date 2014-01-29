@@ -42,9 +42,9 @@
 
 #define Snack_SetSample(s, c, i, val) \
     if ((s)->precision == SNACK_DOUBLE_PREC) { \
-        DSAMPLE((s),(i)*(s)->nchannels+(c)) = (double) (val); \
+        DSAMPLE((s),(i)*(s)->nchannels+(c)) = (val); \
     } else { \
-        FSAMPLE((s),(i)*(s)->nchannels+(c)) = (float) (val); \
+        FSAMPLE((s),(i)*(s)->nchannels+(c)) = (val); \
     }
 
 #define Snack_GetSample(s, c, i) ( \
@@ -210,7 +210,7 @@ void LoadSound(Sound *s, Tcl_Obj *obj, int startpos, int endpos) {
                     /* Reached end of allocated blocks for s */
                     break;
                 }
-                FSAMPLE(s, j) = (float) *r++;
+                FSAMPLE(s, j) = *r++;
             }
         } else {   /*s->precision == SNACK_DOUBLE_PREC */
             for (size_t i = 0; i < size / sizeof(sample_t); i++, j++) {
@@ -219,7 +219,7 @@ void LoadSound(Sound *s, Tcl_Obj *obj, int startpos, int endpos) {
                     /* Reached end of allocated blocks for s */
                     break;
                 }
-                DSAMPLE(s, j) = (float) *r++;
+                DSAMPLE(s, j) = *r++;
             }
         }  /*s->precision == SNACK_DOUBLE_PREC */
     }
@@ -562,7 +562,7 @@ static Sound *dpform(Sound *ps, int nform, double nom_f1) {
             Snack_ResizeSoundStorage(fbs, ps->length);
             for (i = 0; i < ps->length; i++) {
                 for (j = 0; j < nform * 2; j++) {
-                    Snack_SetSample(fbs, j, i, (float)fr[j][i]);
+                    Snack_SetSample(fbs, j, i, fr[j][i]);
                 }
             }
             fbs->length = ps->length;
@@ -714,7 +714,7 @@ static Sound *lpc_poles(Sound *sp, double wdur, double frame_int, int lpc_ord,
         Snack_ResizeSoundStorage(lp, nfrm);
         for (i = 0; i < nfrm; i++) {
             for (j = 0; j < lpc_ord; j++) {
-                Snack_SetSample(lp, j, i, (float)pole[i]->freq[j]);
+                Snack_SetSample(lp, j, i, pole[i]->freq[j]);
             }
         }
         lp->length = nfrm;
@@ -960,7 +960,7 @@ static Sound *Fdownsample(Sound *s, double freq2, int start, int end) {
             so = Snack_NewSound(0, s->nchannels);
             Snack_ResizeSoundStorage(so, out_samps);
             for (i = 0; i < out_samps; i++) {
-                Snack_SetSample(so, 0, i, (float)(*bufout)[i]);
+                Snack_SetSample(so, 0, i, (*bufout)[i]);
             }
             so->length = out_samps;
             so->samprate = (int)freq2;
@@ -1011,7 +1011,7 @@ static Sound *highpass(Sound *s) {
     if (so == NULL) return(NULL);
     Snack_ResizeSoundStorage(so, s->length);
     for (i = 0; i < s->length; i++) {
-        Snack_SetSample(so, 0, i, (float)dataout[i]);
+        Snack_SetSample(so, 0, i, dataout[i]);
     }
     so->length = s->length;
     free(dataout);
