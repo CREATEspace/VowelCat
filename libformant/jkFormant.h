@@ -55,7 +55,7 @@ typedef struct { /* structure of a DP lattice node for formant tracking */
     double *cumerr; 	 /* cum. errors associated with each cand. */
 } form_t;
 
-typedef struct pole_array {   /* structure to hold raw LPC analysis data */
+typedef struct {   /* structure to hold raw LPC analysis data */
     double rms;    /* rms for current LPC analysis frame */
     double rms2;    /* rms for current F0 analysis frame */
     double f0;     /* fundamental frequency estimate for this frame */
@@ -64,7 +64,7 @@ typedef struct pole_array {   /* structure to hold raw LPC analysis data */
     short npoles; /* # of complex poles from roots of LPC polynomial */
     double *freq;  /* array of complex pole frequencies (Hz) */
     double *band;  /* array of complex pole bandwidths (Hz) */
-} POLE;
+} pole_t;
 /* End of structure definitions for the formant tracker. */
 
 Sound *Snack_NewSound(int rate, int nchannels);

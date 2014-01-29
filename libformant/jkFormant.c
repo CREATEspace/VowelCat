@@ -347,7 +347,7 @@ static void set_nominal_freqs(double f1) {
 
 /*      ----------------------------------------------------------      */
 /* find the maximum in the "stationarity" function (stored in rms) */
-static double get_stat_max(POLE **pole, int nframes) {
+static double get_stat_max(pole_t **pole, int nframes) {
     int i;
     double amax, t;
 
@@ -364,14 +364,14 @@ static Sound *dpform(Sound *ps, int nform, double nom_f1) {
     int	i, j, k, l, ic, ip, mincan=0;
     short	**pcan;
     form_t	**fl;
-    POLE	**pole; /* raw LPC pole data structure array */
+    pole_t	**pole; /* raw LPC pole data structure array */
     Sound *fbs;
     int dmaxc,dminc,dcountc,dcountf;
 
     if(ps) {
         if(nom_f1 > 0.0)
             set_nominal_freqs(nom_f1);
-        pole = (POLE**)ps->extHead;
+        pole = (pole_t**)ps->extHead;
         rmsmax = get_stat_max(pole, ps->length);
         FBIAS = F_BIAS /(.01 * ps->samprate);
         /* Setup working values of the cost weights. */
@@ -689,7 +689,7 @@ static Sound *lpc_poles(Sound *sp, double wdur, double frame_int, int lpc_ord,
                         double preemp, int lpc_type, int w_type)
 {
     int i, j, size, step, nform, init, nfrm;
-    POLE **pole;
+    pole_t **pole;
     double lpc_stabl = 70.0, energy, lpca[MAXORDER], normerr,
            *bap=NULL, *frp=NULL, *rhp=NULL;
     short *datap, *dporg;
@@ -708,13 +708,13 @@ static Sound *lpc_poles(Sound *sp, double wdur, double frame_int, int lpc_ord,
     if(nfrm >= 1/*lp->buff_size >= 1*/) {
         size = (int) (.5 + (wdur * sp->samprate));
         step = (int) (.5 + (frame_int * sp->samprate));
-        pole = malloc(nfrm/*lp->buff_size*/ * sizeof(POLE*));
+        pole = malloc(nfrm/*lp->buff_size*/ * sizeof(pole_t*));
         datap = dporg = malloc(sizeof(short) * sp->length);
         for (i = 0; i < Snack_GetLength(sp); i++) {
             datap[i] = (short) Snack_GetSample(sp, 0, i);
         }
         for(j=0, init=true/*, datap=((short**)sp->data)[0]*/; j < nfrm/*lp->buff_size*/;j++, datap += step){
-            pole[j] = malloc(sizeof(POLE));
+            pole[j] = malloc(sizeof(pole_t));
             pole[j]->freq = frp = malloc(sizeof(double)*lpc_ord);
             pole[j]->band = bap = malloc(sizeof(double)*lpc_ord);
 
