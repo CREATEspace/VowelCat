@@ -74,7 +74,7 @@ Sound *Snack_NewSound(int rate, int encoding, int nchannels) {
     s->maxlength = 0;
     s->blocks    = malloc(MAXNBLKS * sizeof(float*));
     if (s->blocks == NULL) {
-        free((char *) s);
+        free(s);
         return NULL;
     }
     s->blocks[0] = NULL;
@@ -107,7 +107,7 @@ void Snack_ResizeSoundStorage(Sound *s, int len) {
     }
 
     if (neededblks > s->maxblks) {
-        void *tmp = realloc((char *)s->blocks, neededblks * sizeof(float*));
+        void *tmp = realloc(s->blocks, neededblks * sizeof(float*));
 
         s->maxblks = neededblks;
         s->blocks = (float **)tmp;
@@ -136,7 +136,7 @@ void Snack_ResizeSoundStorage(Sound *s, int len) {
         /* Copy and de-allocate any exact block */
         if (s->exact > 0) {
             memcpy(s->blocks[0], tmp, s->exact);
-            free((char *) tmp);
+            free(tmp);
             s->exact = 0;
         }
 
@@ -149,7 +149,7 @@ void Snack_ResizeSoundStorage(Sound *s, int len) {
 
         if (tmp != NULL) {
             memcpy(tmp, s->blocks[0], s->exact);
-            free((char *) s->blocks[0]);
+            free(s->blocks[0]);
             s->blocks[0] = tmp;
             s->maxlength = blockSize / s->nchannels;
         }
@@ -158,7 +158,7 @@ void Snack_ResizeSoundStorage(Sound *s, int len) {
 
     if (neededblks < s->nblks) {
         for (i = neededblks; i < s->nblks; i++) {
-            free((char *) s->blocks[i]);
+            free(s->blocks[i]);
         }
         s->maxlength = neededblks * blockSize / s->nchannels;
     }
@@ -168,8 +168,8 @@ void Snack_ResizeSoundStorage(Sound *s, int len) {
 
 void Snack_DeleteSound(Sound *s) {
     Snack_ResizeSoundStorage(s, 0);
-    free((char *) s->blocks);
-    free((char *) s);
+    free(s->blocks);
+    free(s);
 }
 
 void LoadSound(Sound *s, Tcl_Obj *obj, int startpos, int endpos) {
@@ -633,27 +633,27 @@ static Sound *dpform(ps, nform, nom_f1)
             for(i=ps->length - 1; i>=0; i--){
                 if(fl[i]->ncand){
                     if(fl[i]->cand) {
-                        for(j=0; j<fl[i]->ncand; j++) free((void *)fl[i]->cand[j]);
-                        free((void *)fl[i]->cand);
-                        free((void *)fl[i]->cumerr);
-                        free((void *)fl[i]->prept);
+                        for(j=0; j<fl[i]->ncand; j++) free(fl[i]->cand[j]);
+                        free(fl[i]->cand);
+                        free(fl[i]->cumerr);
+                        free(fl[i]->prept);
                     }
                 }
             }
-            for(i=0; i<ps->length; i++)	free((void *)fl[i]);
-            free((void *)fl);
+            for(i=0; i<ps->length; i++)	free(fl[i]);
+            free(fl);
             fl = 0;
 
             for(i=0; i<ps->length; i++) {
-                free((void *)pole[i]->freq);
-                free((void *)pole[i]->band);
-                free((void *)pole[i]);
+                free(pole[i]->freq);
+                free(pole[i]->band);
+                free(pole[i]);
             }
-            free((void *)pole);
+            free(pole);
 
             /* Deallocate space for the raw candidate aray. */
-            for(i=0;i<MAXCAN;i++) free((void *)pcan[i]);
-            free((void *)pcan);
+            for(i=0;i<MAXCAN;i++) free(pcan[i]);
+            free(pcan);
 
             fbs = Snack_NewSound(ps->samprate, SNACK_FLOAT, nform * 2);
             Snack_ResizeSoundStorage(fbs, ps->length);
@@ -664,8 +664,8 @@ static Sound *dpform(ps, nform, nom_f1)
             }
             fbs->length = ps->length;
 
-            for(i = 0; i < nform*2; i++) free((void *)fr[i]);
-            free((void *)fr);
+            for(i = 0; i < nform*2; i++) free(fr[i]);
+            free(fr);
 
             return(fbs);
         } else
@@ -822,7 +822,7 @@ double wdur, frame_int, preemp;
                    }*/
         } /* end LPC pole computation for all lp->buff_size frames */
         /*     lp->data = (caddr_t)pole;*/
-        free((void *)dporg);
+        free(dporg);
         lp = Snack_NewSound((int)(1.0/frame_int), LIN16, lpc_ord);
         Snack_ResizeSoundStorage(lp, nfrm);
         for (i = 0; i < nfrm; i++) {
@@ -1004,7 +1004,7 @@ short ic[];
     }
     *smin = imin;
     *smax = imax;
-    *buf2 = realloc((void *) *buf2,sizeof(short) * (*out_samps));
+    *buf2 = realloc(*buf2,sizeof(short) * (*out_samps));
     return(TRUE);
 }
 
@@ -1099,9 +1099,9 @@ int end;
             }
             so->length = out_samps;
             so->samprate = (int)freq2;
-            free((void *)*bufout);
-            free((void *)bufout);
-            free((void *)bufin);
+            free(*bufout);
+            free(bufout);
+            free(bufin);
             return(so);
         } else
             printf("Problems in dwnsamp() in downsample()\n");
@@ -1153,8 +1153,8 @@ static Sound
         Snack_SetSample(so, 0, i, (float)dataout[i]);
     }
     so->length = s->length;
-    free((void *)dataout);
-    free((void *)datain);
+    free(dataout);
+    free(datain);
     return(so);
 }
 
