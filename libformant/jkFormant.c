@@ -24,7 +24,6 @@
 #include "jkFormant.h"
 #include "sigproc2.h"
 
-#define PI 3.1415927
 #define MAXFORMANTS 7
 
 static inline void Snack_SetSample(sound_t *s, size_t chan, size_t i,
