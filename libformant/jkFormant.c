@@ -157,7 +157,7 @@ static int candy(short **pc, double *fre, int maxp, int maxf, bool domerge,
    to formants, including, possibly, mappings with missing formants. */
 /* freq: poles ordered by increasing FREQUENCY */
 static int get_fcand(int npole, double *freq, int nform, short **pcan,
-                      bool domerge, const double *fmins, const double *fmaxs)
+                     bool domerge, const double *fmins, const double *fmaxs)
 {
     return candy(pcan, freq, npole, nform, domerge, 0, 0, 0, 0, fmins, fmaxs) + 1;
 }
