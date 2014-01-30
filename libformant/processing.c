@@ -288,8 +288,8 @@ static void rwindow(short *din, double *dout, int n, double preemp) {
 static void cwindow(short *din, double *dout, int n, double preemp) {
     int i;
     short *p;
-    static int wsize = 0;
-    static double *wind=NULL;
+    int wsize = 0;
+    double *wind=NULL;
     double *q, co;
 
     if(wsize != n) {		/* Need to create a new cos**4 window? */
@@ -319,8 +319,8 @@ static void cwindow(short *din, double *dout, int n, double preemp) {
 static void hwindow(short *din, double *dout, int n, double preemp) {
     int i;
     short *p;
-    static int wsize = 0;
-    static double *wind=NULL;
+    int wsize = 0;
+    double *wind=NULL;
     double *q;
 
     if(wsize != n) {		/* Need to create a new Hamming window? */
@@ -348,8 +348,8 @@ static void hwindow(short *din, double *dout, int n, double preemp) {
 static void hnwindow(short *din, double *dout, int n, double preemp) {
     int i;
     short *p;
-    static int wsize = 0;
-    static double *wind=NULL;
+    int wsize = 0;
+    double *wind=NULL;
     double *q;
 
     if(wsize != n) {		/* Need to create a new Hamming window? */
@@ -460,8 +460,8 @@ int lpc(int lpc_ord, double lpc_stabl, int wsize, short *data, double *lpca,
         double *ar, double *lpck, double *normerr, double *rms, double preemp,
         int type)
 {
-    static double *dwind=NULL;
-    static int nwind=0;
+    double *dwind=NULL;
+    int nwind=0;
     double rho[MAXORDER+1], k[MAXORDER], a[MAXORDER+1],*r,*kp,*ap,en,er;
     double wfact = 1.0;
 
@@ -501,10 +501,10 @@ int lpc(int lpc_ord, double lpc_stabl, int wsize, short *data, double *lpca,
 int w_covar(short *xx, int *m, int n, int istrt, double *y, double *alpha,
             double *r0, double preemp, int w_type)
 {
-    static double *x=NULL;
-    static int nold = 0;
-    static int mold = 0;
-    static double *b = NULL, *beta = NULL, *grc = NULL, *cc = NULL, gam,s;
+    double *x=NULL;
+    int nold = 0;
+    int mold = 0;
+    double *b = NULL, *beta = NULL, *grc = NULL, *cc = NULL, gam,s;
     int ibeg, ibeg1, ibeg2, ibegmp, np0, ibegm1, msq, np, np1, mf, jp, ip,
         mp, i, j, minc, n1, n2, n3, npb, msub, mm1, isub, m2;
     int mnew = 0;
@@ -806,7 +806,7 @@ int formant(int lpc_order, double s_freq, double *lpca, int *n_form,
             double *freq, double *band, int init)
 {
     double  x, flo, pi2t, theta;
-    static double  rr[MAXORDER], ri[MAXORDER];
+    double  rr[MAXORDER], ri[MAXORDER];
     int	i,ii,iscomp1,iscomp2,fc,swit;
 
     if(init){ /* set up starting points for the root search near unit circle */
