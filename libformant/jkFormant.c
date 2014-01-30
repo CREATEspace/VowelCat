@@ -464,10 +464,11 @@ static int lpcbsa(int np, int wind, short *data, double *lpc, double *energy,
 static void lpc_poles(sound_t *sp, double wdur, double frame_int, int lpc_ord,
                         double preemp, int lpc_type, int w_type)
 {
+    enum { LPC_STABLE = 70 };
+
     int i, j, size, step, nform, init, nfrm;
     pole_t **pole;
-    double lpc_stabl = 70.0, energy, lpca[MAXORDER], normerr,
-           *bap=NULL, *frp=NULL, *rhp=NULL;
+    double energy, lpca[MAXORDER], normerr, *bap=NULL, *frp=NULL, *rhp=NULL;
     short *datap, *dporg;
 
     if(lpc_type == 1) { /* force "standard" stabilized covariance (ala bsa) */
@@ -498,7 +499,7 @@ static void lpc_poles(sound_t *sp, double wdur, double frame_int, int lpc_ord,
 
         switch(lpc_type) {
             case 0:
-                if(! lpc(lpc_ord,lpc_stabl,size,datap,lpca,rhp,NULL,&normerr,
+                if(! lpc(lpc_ord,LPC_STABLE,size,datap,lpca,rhp,NULL,&normerr,
                             &energy, preemp, w_type)){
                     break;
                 }
