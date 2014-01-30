@@ -32,7 +32,7 @@ static inline void Snack_SetSample(sound_t *s, size_t chan, size_t i,
     s->blocks[i * s->nchannels + chan] = val;
 }
 
-static inline storage_t Snack_GetSample(sound_t *s, size_t chan, size_t i) {
+static inline storage_t Snack_GetSample(const sound_t *s, size_t chan, size_t i) {
     return s->blocks[i * s->nchannels + chan];
 }
 
@@ -59,7 +59,7 @@ void Snack_DeleteSound(sound_t *s) {
     free(s);
 }
 
-void LoadSound(sound_t *s, short *samples, size_t len) {
+void LoadSound(sound_t *s, const short *samples, size_t len) {
     Snack_ResizeSoundStorage(s, len);
 
     for (size_t i = 0; i < s->length * s->nchannels; i += 1)
