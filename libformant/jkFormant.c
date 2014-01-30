@@ -52,7 +52,7 @@ void sound_destroy(sound_t *s) {
 
 static void sound_resize(sound_t *s, size_t len) {
     s->length = len;
-    s->blocks = realloc(s->blocks, len * sizeof(storage_t) * s->n_channels);
+    s->blocks = realloc(s->blocks, len * s->n_channels * sizeof(storage_t));
 }
 
 void sound_load_samples(sound_t *s, const short *samples, size_t len) {
