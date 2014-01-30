@@ -35,7 +35,7 @@ typedef struct {   /* structure to hold raw LPC analysis data */
 } pole_t;
 
 typedef struct sound_t {
-    size_t samprate;
+    size_t sample_rate;
     size_t nchannels;
     size_t length;
     storage_t *blocks;
@@ -43,7 +43,7 @@ typedef struct sound_t {
     pole_t **pole;
 } sound_t;
 
-void sound_init(sound_t *s, size_t samprate, size_t nchannels);
+void sound_init(sound_t *s, size_t sample_rate, size_t nchannels);
 void sound_destroy(sound_t *s);
 void sound_load_samples(sound_t *s, const short *samples, size_t len);
 void sound_calc_formants(sound_t *s);

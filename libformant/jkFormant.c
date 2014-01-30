@@ -36,9 +36,9 @@ static inline storage_t Snack_GetSample(const sound_t *s, size_t chan, size_t i)
     return s->blocks[i * s->nchannels + chan];
 }
 
-void sound_init(sound_t *s, size_t samprate, size_t nchannels) {
+void sound_init(sound_t *s, size_t sample_rate, size_t nchannels) {
     *s = (sound_t) {
-        .samprate = samprate,
+        .sample_rate = sample_rate,
         .nchannels = nchannels,
         .length = 0,
         .blocks = 0,
@@ -198,11 +198,11 @@ static void dpform(sound_t *ps, size_t nform, double nom_f1) {
     }
     pole = ps->pole;
     rmsmax = get_stat_max(pole, ps->length);
-    FBIAS = F_BIAS /(.01 * ps->samprate);
+    FBIAS = F_BIAS /(.01 * ps->sample_rate);
     /* Setup working values of the cost weights. */
-    dffact = (DF_FACT * .01) * ps->samprate; /* keep dffact scaled to frame rate */
-    bfact = BAND_FACT /(.01 * ps->samprate);
-    ffact = DFN_FACT /(.01 * ps->samprate);
+    dffact = (DF_FACT * .01) * ps->sample_rate; /* keep dffact scaled to frame rate */
+    bfact = BAND_FACT /(.01 * ps->sample_rate);
+    ffact = DFN_FACT /(.01 * ps->sample_rate);
     merge_cost = F_MERGE;
     if(merge_cost > 1000.0) domerge = false;
 
@@ -475,20 +475,20 @@ static void lpc_poles(sound_t *sp, double wdur, double frame_int, size_t lpc_ord
 
     if(lpc_type == 1) { /* force "standard" stabilized covariance (ala bsa) */
         wdur = 0.025;
-        preemp = exp(-62.831853 * 90. / sp->samprate); /* exp(-1800*pi*T) */
+        preemp = exp(-62.831853 * 90. / sp->sample_rate); /* exp(-1800*pi*T) */
     }
     if((lpc_ord > MAXORDER) || (lpc_ord < 2)/* || (! ((short**)sp->data)[0])*/)
         return;
     /*  np = (char*)new_ext(sp->name,"pole");*/
-    wdur = integerize(wdur,(double)sp->samprate);
-    frame_int = integerize(frame_int,(double)sp->samprate);
-    nfrm= 1 + (int) (((((double)sp->length)/sp->samprate) - wdur)/(frame_int));
+    wdur = integerize(wdur,(double)sp->sample_rate);
+    frame_int = integerize(frame_int,(double)sp->sample_rate);
+    nfrm= 1 + (int) (((((double)sp->length)/sp->sample_rate) - wdur)/(frame_int));
 
     if (nfrm < 1)
         return;
 
-    size = (int) (.5 + (wdur * sp->samprate));
-    step = (int) (.5 + (frame_int * sp->samprate));
+    size = (int) (.5 + (wdur * sp->sample_rate));
+    step = (int) (.5 + (frame_int * sp->sample_rate));
     pole = malloc(nfrm * sizeof(pole_t*));
     datap = dporg = malloc(sizeof(short) * sp->length);
     for (size_t i = 0; i < sp->length; i++) {
@@ -525,7 +525,7 @@ static void lpc_poles(sound_t *sp, double wdur, double frame_int, size_t lpc_ord
         pole[j]->change = 0.0;
         /* don't waste time on low energy frames */
         if((pole[j]->rms = energy) > 1.0){
-            formant(lpc_ord,(double)sp->samprate, lpca, &nform, frp, bap, init);
+            formant(lpc_ord,(double)sp->sample_rate, lpca, &nform, frp, bap, init);
             pole[j]->npoles = nform;
             init=false;		/* use old poles to start next search */
         } else {			/* write out no pole frequencies */
@@ -536,7 +536,7 @@ static void lpc_poles(sound_t *sp, double wdur, double frame_int, size_t lpc_ord
 
     free(dporg);
 
-    sp->samprate = (int)(1.0/frame_int);
+    sp->sample_rate = (int)(1.0/frame_int);
     sp->nchannels = lpc_ord;
     sp->length = nfrm;
 
@@ -798,7 +798,7 @@ static void Fdownsample(sound_t *s, double freq2) {
     size_t j;
     size_t ncoefft;
 
-    freq1 = s->samprate;
+    freq1 = s->sample_rate;
     ratio = freq2/freq1;
     ratprx(ratio,&insert,&decimate,10);
     ratio_t = ((double)insert)/((double)decimate);
@@ -837,7 +837,7 @@ static void Fdownsample(sound_t *s, double freq2) {
     }
 
     s->length = out_samps;
-    s->samprate = (int)freq2;
+    s->sample_rate = (int)freq2;
 
     free(*bufout);
     free(bufout);
@@ -901,7 +901,7 @@ void sound_calc_formants(sound_t *s) {
 
     w_type = 0;
 
-    if(ds_freq < s->samprate) {
+    if(ds_freq < s->sample_rate) {
         Fdownsample(s, ds_freq);
     }
 
