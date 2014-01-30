@@ -93,7 +93,7 @@ void LoadSound(sound_t *s, short *samples, size_t len) {
 
 /* Here are the major fudge factors for tweaking the formant tracker. */
 #define MAXCAN	300  /* maximum number of candidate mappings allowed */
-static double MISSING = 1, /* equivalent delta-Hz cost for missing formant */
+static const double MISSING = 1, /* equivalent delta-Hz cost for missing formant */
               NOBAND = 1000, /* equivalent bandwidth cost of a missing formant */
               DF_FACT =  20.0, /* cost for proportional frequency changes */
               /* with good "stationarity" function:*/
