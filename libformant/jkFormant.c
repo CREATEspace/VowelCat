@@ -266,11 +266,6 @@ static void dpform(sound_t *ps, size_t nform, double nom_f1) {
                         if((ic >= 0)	&& (ip >= 0)){
                             ftemp = 2.0 * fabs(pole[i]->freq[ic] - pole[i-1]->freq[ip])/
                                 (pole[i]->freq[ic] + pole[i-1]->freq[ip]);
-                            /*		  ftemp = pole[i]->freq[ic] - pole[i-1]->freq[ip];
-                                          if(ftemp >= 0.0)
-                                          ftemp = ftemp/pole[i-1]->freq[ip];
-                                          else
-                                          ftemp = ftemp/pole[i]->freq[ic]; */
                             /* cost prop. to SQUARE of deviation to discourage large jumps */
                             pferr += ftemp * ftemp;
                         }
