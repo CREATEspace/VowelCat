@@ -50,10 +50,8 @@ sound_t *Snack_NewSound(int rate, int nchannels) {
 }
 
 void Snack_ResizeSoundStorage(sound_t *s, int len) {
-    free(s->blocks);
-
     s->length = len;
-    s->blocks = malloc(len * sizeof(storage_t) * s->nchannels);
+    s->blocks = realloc(s->blocks, len * sizeof(storage_t) * s->nchannels);
 }
 
 void Snack_DeleteSound(sound_t *s) {
