@@ -719,7 +719,7 @@ static int ratprx(double a, int *k, int *l, int qlim) {
 
 /* ----------------------------------------------------------------------- */
 
-static void Fdownsample(sound_t *s, double freq2, int start, int end) {
+static void Fdownsample(sound_t *s, double freq2) {
     short	*bufin, **bufout;
     static double	beta = 0.0, b[256];
     double	ratio_t, maxi, ratio, beta_new, freq1;
@@ -731,10 +731,10 @@ static void Fdownsample(sound_t *s, double freq2, int start, int end) {
 
     freq1 = s->samprate;
     bufout = malloc(sizeof(short*));
-    bufin = malloc(sizeof(short) * (end - start + 1));
+    bufin = malloc(sizeof(short) * s->length);
 
-    for (i = start; i <= end; i++) {
-        bufin[i-start] = (short) Snack_GetSample(s, 0, i);
+    for (i = 0; i < s->length; i++) {
+        bufin[i] = (short) Snack_GetSample(s, 0, i);
     }
 
     ratio = freq2/freq1;
@@ -758,7 +758,7 @@ static void Fdownsample(sound_t *s, double freq2, int start, int end) {
         }
     }				/*  endif new coefficients need to be computed */
 
-    dwnsamp(bufin, end-start+1, bufout, &out_samps, insert, decimate, ncoefft, ic,
+    dwnsamp(bufin, s->length, bufout, &out_samps, insert, decimate, ncoefft, ic,
             &smin, &smax);
 
     for (i = 0; i < out_samps; i++) {
@@ -814,7 +814,6 @@ void sound_calc_formants(sound_t *s) {
     int nform, i,j, lpc_ord, lpc_type, w_type;
     double frame_int, wdur,
            ds_freq, nom_f1 = -10.0, preemp;
-    int startpos = 0, endpos = -1;
 
     lpc_ord = 12;
     lpc_type = 0;			/* use bsa's stabilized covariance if != 0 */
@@ -825,20 +824,13 @@ void sound_calc_formants(sound_t *s) {
     preemp = .7;
     nform = 4;
 
-    if (startpos < 0) startpos = 0;
-    if (endpos >= (s->length - 1) || endpos == -1)
-        endpos = s->length - 1;
-
-    if (startpos > endpos)
-        return;
-
     assert(!(nform > (lpc_ord-4)/2));
     assert(!(nform > MAXFORMANTS));
 
     w_type = 0;
 
     if(ds_freq < s->samprate) {
-        Fdownsample(s, ds_freq, startpos, endpos);
+        Fdownsample(s, ds_freq);
     }
 
     if (preemp < 1.0) { /* be sure DC and rumble are gone! */
