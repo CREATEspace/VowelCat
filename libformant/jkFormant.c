@@ -582,7 +582,7 @@ static sound_t *lpc_poles(sound_t *sp, double wdur, double frame_int, int lpc_or
 /*      ----------------------------------------------------------      */
 /* create the coefficients for a symmetric FIR lowpass filter using the
    window technique with a Hanning window. */
-static int lc_lin_fir(double fc, int *nf, double *coef) {
+static void lc_lin_fir(double fc, int *nf, double *coef) {
     int	i, n;
     double	twopi, fn, c;
 
@@ -603,8 +603,6 @@ static int lc_lin_fir(double fc, int *nf, double *coef) {
     fn = twopi/((double)(*nf - 1));
     for(i=0;i<n;i++)
         coef[i] *= (.5 + (.5 * cos(fn * ((double)i))));
-
-    return(true);
 }
 
 /*      ----------------------------------------------------------      */
@@ -783,10 +781,7 @@ static sound_t *Fdownsample(sound_t *s, double freq2, int start, int end) {
 
         if(beta != beta_new){
             beta = beta_new;
-            if( !lc_lin_fir(beta,&ncoeff,b)) {
-                printf("\nProblems computing interpolation filter\n");
-                return(false);
-            }
+            lc_lin_fir(beta,&ncoeff,b);
             maxi = (1 << nbits) - 1;
             j = (ncoeff/2) + 1;
             for(ncoefft = 0, i=0; i < j; i++){
