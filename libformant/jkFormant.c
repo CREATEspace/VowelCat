@@ -49,7 +49,7 @@ sound_t *Snack_NewSound(int rate, int nchannels) {
     return s;
 }
 
-void Snack_ResizeSoundStorage(sound_t *s, int len) {
+static void Snack_ResizeSoundStorage(sound_t *s, int len) {
     s->length = len;
     s->blocks = realloc(s->blocks, len * sizeof(storage_t) * s->nchannels);
 }
