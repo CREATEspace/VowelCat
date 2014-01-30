@@ -32,7 +32,7 @@ static inline void sound_set_sample(sound_t *s, size_t chan, size_t i,
     s->blocks[i * s->n_channels + chan] = val;
 }
 
-static inline storage_t Snack_GetSample(const sound_t *s, size_t chan, size_t i) {
+static inline storage_t sound_get_sample(const sound_t *s, size_t chan, size_t i) {
     return s->blocks[i * s->n_channels + chan];
 }
 
@@ -492,7 +492,7 @@ static void lpc_poles(sound_t *sp, double wdur, double frame_int, size_t lpc_ord
     pole = malloc(nfrm * sizeof(pole_t*));
     datap = dporg = malloc(sizeof(short) * sp->n_samples);
     for (size_t i = 0; i < sp->n_samples; i++) {
-        datap[i] = (short) Snack_GetSample(sp, 0, i);
+        datap[i] = (short) sound_get_sample(sp, 0, i);
     }
     init = true;
     for(size_t j = 0; j < nfrm;j++, datap += step){
@@ -812,7 +812,7 @@ static void Fdownsample(sound_t *s, double freq2) {
     bufin = malloc(sizeof(short) * s->n_samples);
 
     for (size_t i = 0; i < s->n_samples; i++) {
-        bufin[i] = (short) Snack_GetSample(s, 0, i);
+        bufin[i] = (short) sound_get_sample(s, 0, i);
     }
 
     freq2 = ratio_t * freq1;
@@ -859,7 +859,7 @@ static void highpass(sound_t *s) {
     datain = malloc(sizeof(short) * s->n_samples);
     dataout = malloc(sizeof(short) * s->n_samples);
     for (size_t i = 0; i < s->n_samples; i++) {
-        datain[i] = (short) Snack_GetSample(s, 0, i);
+        datain[i] = (short) sound_get_sample(s, 0, i);
     }
 
     lcf = malloc(sizeof(short) * LCSIZ);
@@ -913,7 +913,7 @@ void sound_calc_formants(sound_t *s) {
 
     for (size_t i = 0; i < s->n_samples; i += 1) {
         for (size_t j = 0; j < nform * 2; j += 1)
-            printf("%f\n", (double)(Snack_GetSample(s, j, i)));
+            printf("%f\n", (double)(sound_get_sample(s, j, i)));
 
         putchar('\n');
     }
