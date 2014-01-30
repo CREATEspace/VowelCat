@@ -119,7 +119,6 @@ static int candy(short **pc, double *fre, int maxp, int maxf, bool domerge,
 
     if(fnumb < maxf) pc[cand][fnumb] = -1;
     if((pnumb < maxp)&&(fnumb < maxf)){
-        /*   printf("\ncan:%3d  pnumb:%3d  fnumb:%3d",cand,pnumb,fnumb); */
         if(canbe(fmins, fmaxs, fre, pnumb,fnumb)){
             pc[cand][fnumb] = pnumb;
             if(domerge && fnumb == 0 && canbe(fmins, fmaxs, fre, pnumb, fnumb+1)){ /* allow for f1,f2 merger */
@@ -133,7 +132,6 @@ static int candy(short **pc, double *fre, int maxp, int maxf, bool domerge,
             if(((pnumb+1) < maxp) && canbe(fmins, fmaxs, fre, pnumb+1,fnumb)){
                 /* try other frequencies for this formant */
                 ncan++;			/* add one to the candidate index/tally */
-                /*		printf("\n%4d  %4d  %4d",ncan,pnumb+1,fnumb); */
                 for(i=0; i<fnumb; i++)	/* clone the lower formants */
                     pc[ncan][i] = pc[cand][i];
                 ncan = candy(pc, fre, maxp, maxf, domerge, ncan, ncan,pnumb+1,fnumb,
@@ -198,10 +196,8 @@ static sound_t *dpform(sound_t *ps, int nform, double nom_f1) {
                 fmins[] = {   50,  400, 1000, 2000, 2000, 3000, 3000}, /* frequency bounds */
                 fmaxs[] = { 1500, 3500, 4500, 5000, 6000, 6000, 8000}; /* for 1st 5 formants */
 
-    if (!ps) {
-        printf("Bad data pointers passed into dpform()\n");
+    if (!ps)
         return(NULL);
-    }
 
     if(nom_f1 > 0.0) {
         for(int i=0; i < MAXFORMANTS; i++) {
@@ -465,10 +461,9 @@ static int lpcbsa(int np, int wind, short *data, double *lpc, double *energy,
 
     for(psp3=sig,pspl=sig+wind1;psp3<pspl;psp3++)
         *psp3 *= amax;
-    if((mm=dlpcwtd(sig,&wind1,lpc,&np,rc,phi,shi,&xl,w))!=np) {
-        printf("LPCWTD error mm<np %d %d\n",mm,np);
+    if((mm=dlpcwtd(sig,&wind1,lpc,&np,rc,phi,shi,&xl,w))!=np)
         return(false);
-    }
+
     return(true);
 }
 
@@ -494,10 +489,8 @@ static sound_t *lpc_poles(sound_t *sp, double wdur, double frame_int, int lpc_or
     frame_int = integerize(frame_int,(double)sp->samprate);
     nfrm= 1 + (int) (((((double)sp->length)/sp->samprate) - wdur)/(frame_int));
 
-    if (nfrm < 1) {
-        printf("Bad buffer size in lpc_poles()\n");
+    if (nfrm < 1)
         return NULL;
-    }
 
     size = (int) (.5 + (wdur * sp->samprate));
     step = (int) (.5 + (frame_int * sp->samprate));
@@ -515,13 +508,11 @@ static sound_t *lpc_poles(sound_t *sp, double wdur, double frame_int, int lpc_or
             case 0:
                 if(! lpc(lpc_ord,lpc_stabl,size,datap,lpca,rhp,NULL,&normerr,
                             &energy, preemp, w_type)){
-                    printf("Problems with lpc in lpc_poles()");
                     break;
                 }
                 break;
             case 1:
                 if(! lpcbsa(lpc_ord,size,datap,lpca, &energy, preemp)){
-                    printf("Problems with lpc in lpc_poles()");
                     break;
                 }
                 break;
@@ -531,8 +522,6 @@ static sound_t *lpc_poles(sound_t *sp, double wdur, double frame_int, int lpc_or
                     double alpha, r0;
 
                     w_covar(datap, &Ord, size, 0, lpca, &alpha, &r0, preemp, 0);
-                    if((Ord != lpc_ord) || (alpha <= 0.0))
-                        printf("Problems with covar(); alpha:%f  Ord:%d\n",alpha,Ord);
                     energy = sqrt(r0/(size-Ord));
                 }
                 break;
@@ -626,7 +615,6 @@ static void do_fir(short *buf, int in_samps, short *bufo, int ncoef,
         integral += *bufp;
         *buft-- = integral - *bufp;
     }
-    /*         for(i=(ncoef*2)-2; i >= 0; i--) printf("\n%4d%7d",i,co[i]);  */
     for(i=ncoef-1, buft=mem; i-- > 0; ) *buft++ = 0;
     for(i=ncoef; i-- > 0; ) *buft++ = *buf++;
     l = 16384;
