@@ -22,5 +22,5 @@ int main() {
 
     formantCmd(&sound);
 
-    Snack_DeleteSound(&sound);
+    sound_destroy(&sound);
 }

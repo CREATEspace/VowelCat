@@ -51,7 +51,7 @@ static void Snack_ResizeSoundStorage(sound_t *s, int len) {
     s->blocks = realloc(s->blocks, len * sizeof(storage_t) * s->nchannels);
 }
 
-void Snack_DeleteSound(sound_t *s) {
+void sound_destroy(sound_t *s) {
     free(s->blocks);
 }
 
