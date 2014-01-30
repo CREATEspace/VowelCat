@@ -22,7 +22,7 @@
 #include <string.h>
 
 #include "formant.h"
-#include "sigproc2.h"
+#include "processing.h"
 
 #define MAXFORMANTS 7
 
