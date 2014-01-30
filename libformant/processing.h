@@ -1,3 +1,6 @@
+#ifndef PROCESSING_H
+#define PROCESSING_H
+
 int formant(int lpc_order, double s_freq, double *lpca, int *n_form,
             double *freq, double *band, int init);
 
@@ -10,3 +13,5 @@ int lpc(int lpc_ord, double lpc_stabl, int wsize, short *data, double *lpca,
 
 int dlpcwtd(double *s, int *ls, double *p, int *np, double *c, double *phi,
             double *shi, double *xl, double *w);
+
+#endif

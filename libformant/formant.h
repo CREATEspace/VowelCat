@@ -9,9 +9,8 @@
  *                   All rights reserved"
  */
 
- /* this is an older version of the waves tracks.h needed for this version
-    of formant
- */
+#ifndef FORMANT_H
+#define FORMANT_H
 
 typedef short sample_t;
 typedef float storage_t;
@@ -48,3 +47,5 @@ void sound_init(sound_t *s, size_t sample_rate, size_t n_channels);
 void sound_destroy(sound_t *s);
 void sound_load_samples(sound_t *s, const short *samples, size_t n_samples);
 void sound_calc_formants(sound_t *s);
+
+#endif
