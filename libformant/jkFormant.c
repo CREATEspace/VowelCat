@@ -605,36 +605,92 @@ static void do_fir(short *buf, int in_samps, short *bufo, int ncoef,
     short co[256], mem[256];
     int i, j, k, l, m, sum, integral;
 
-    for(i=ncoef-1, bufp=ic+ncoef-1, bufp2=co, buft = co+((ncoef-1)*2),
-            integral = 0; i-- > 0; )
-        if(!invert) *buft-- = *bufp2++ = *bufp--;
-        else {
-            integral += (stem = *bufp--);
-            *buft-- = *bufp2++ = -stem;
+    bufp = ic + ncoef - 1;
+    bufp2 = co;
+    buft = co + ((ncoef - 1) * 2);
+    integral = 0;
+
+    for (i = ncoef - 1; i > 0; i -= 1) {
+        if (!invert) {
+            *buft = *bufp2 = *bufp;
+
+            buft -= 1;
+            bufp2 += 1;
+            bufp -= 1;
+        } else {
+            integral += (stem = *bufp);
+            *buft = *bufp2 = -stem;
+
+            bufp -= 1;
+            buft -= 1;
+            bufp2 += 1;
         }
-    if(!invert)  *buft-- = *bufp2++ = *bufp--; /* point of symmetry */
-    else {
+    }
+
+    if (!invert) {
+        *buft = *bufp2 = *bufp; /* point of symmetry */
+
+        buft -= 1;
+        bufp2 += 1;
+        bufp -= 1;
+    } else {
         integral *= 2;
         integral += *bufp;
-        *buft-- = integral - *bufp;
+        *buft = integral - *bufp;
+
+        buft -= 1;
     }
-    for(i=ncoef-1, buft=mem; i-- > 0; ) *buft++ = 0;
-    for(i=ncoef; i-- > 0; ) *buft++ = *buf++;
+
+    buft = mem;
+
+    for (i = ncoef - 1; i > 0; i -= 1)
+        *buft++ = 0;
+
+    for (i = ncoef; i > 0; i -= 1)
+        *buft++ = *buf++;
+
     l = 16384;
     m = 15;
-    k = (ncoef << 1) -1;
-    for(i=in_samps-ncoef; i-- > 0; ) {
-        for(j=k, buft=mem, bufp=co, bufp2=mem+1, sum = 0; j-- > 0;
-                *buft++ = *bufp2++ )
-            sum += (((*bufp++ * *buft) + l) >> m);
+    k = (ncoef << 1) - 1;
 
-        *--buft = *buf++;		/* new data to memory */
-        *bufo++ = sum;
+    for (i = in_samps - ncoef; i > 0; i -= 1) {
+        buft = mem;
+        bufp = co;
+        bufp2 = mem + 1;
+        sum = 0;
+
+        for (j = k; j > 0; j -= 1) {
+            sum += (*bufp * *buft + l) >> m;
+            *buft = *bufp2;
+
+            bufp += 1;
+            buft += 1;
+            bufp2 += 1;
+        }
+
+        buft -= 1;
+
+        *buft = *buf;		/* new data to memory */
+        *bufo = sum;
+
+        buf += 1;
+        bufo += 1;
     }
-    for(i=ncoef; i-- > 0; ) {	/* pad data end with zeros */
-        for(j=k, buft=mem, bufp=co, bufp2=mem+1, sum = 0; j-- > 0;
-                *buft++ = *bufp2++ )
-            sum += (((*bufp++ * *buft) + l) >> m);
+
+    for (i = ncoef; i > 0; i -= 1) {	/* pad data end with zeros */
+        buft = mem;
+        bufp = co;
+        bufp2 = mem + 1;
+        sum = 0;
+
+        for (j = k; j > 0; j -= 1) {
+            sum += (*bufp * *buft + l) >> m;
+            *buft = *bufp2;
+
+            bufp += 1;
+            buft += 1;
+            bufp2 += 1;
+        }
         *--buft = 0;
         *bufo++ = sum;
     }
