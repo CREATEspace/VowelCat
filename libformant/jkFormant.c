@@ -781,17 +781,15 @@ static void Fdownsample(sound_t *s, double freq2, int start, int end) {
 /*      ----------------------------------------------------------      */
 
 static void highpass(sound_t *s) {
+    /* This assumes the sampling frequency is 10kHz and that the FIR
+       is a Hanning function of (LCSIZ/10)ms duration. */
+    enum { LCSIZ = 101 };
+
     short *datain, *dataout;
     static short *lcf;
     static int len = 0;
     double scale, fn;
     int i;
-
-    /*  Header *h, *dup_header();*/
-
-#define LCSIZ 101
-    /* This assumes the sampling frequency is 10kHz and that the FIR
-       is a Hanning function of (LCSIZ/10)ms duration. */
 
     datain = malloc(sizeof(short) * s->length);
     dataout = malloc(sizeof(short) * s->length);
