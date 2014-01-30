@@ -103,12 +103,11 @@ static double MISSING = 1, /* equivalent delta-Hz cost for missing formant */
               /*	F_BIAS	  = 0.0004,   bias toward selecting low-freq. poles */
               F_BIAS	  = 0.000, /*  bias toward selecting low-freq. poles */
               F_MERGE = 2000.0; /* cost of mapping f1 and f2 to same frequency */
-static double	fnom[]  = {  500, 1500, 2500, 3500, 4500, 5500, 6500},/*  "nominal" freqs.*/
-                fmins[] = {   50,  400, 1000, 2000, 2000, 3000, 3000}, /* frequency bounds */
-                fmaxs[] = { 1500, 3500, 4500, 5000, 6000, 6000, 8000}; /* for 1st 5 formants */
 
 /* can this pole be this freq.? */
-static int canbe(double *fre, int pnumb, int fnumb) {
+static int canbe(const double *fmins, const double *fmaxs, const double *fre,
+                 int pnumb, int fnumb)
+{
     return((fre[pnumb] >= fmins[fnumb])&&(fre[pnumb] <= fmaxs[fnumb]));
 }
 
@@ -119,31 +118,36 @@ static int canbe(double *fre, int pnumb, int fnumb) {
 /* maxp: number of poles to consider */
 /* maxf: number of formants to find */
 static int candy(short **pc, double *fre, int maxp, int maxf, bool domerge,
-                 int ncan, int cand, int pnumb, int fnumb)
+                 int ncan, int cand, int pnumb, int fnumb,
+                 const double *fmins, const double *fmaxs)
 {
     int i,j;
 
     if(fnumb < maxf) pc[cand][fnumb] = -1;
     if((pnumb < maxp)&&(fnumb < maxf)){
         /*   printf("\ncan:%3d  pnumb:%3d  fnumb:%3d",cand,pnumb,fnumb); */
-        if(canbe(fre, pnumb,fnumb)){
+        if(canbe(fmins, fmaxs, fre, pnumb,fnumb)){
             pc[cand][fnumb] = pnumb;
-            if(domerge && fnumb == 0 && canbe(fre, pnumb, fnumb+1)){ /* allow for f1,f2 merger */
+            if(domerge && fnumb == 0 && canbe(fmins, fmaxs, fre, pnumb, fnumb+1)){ /* allow for f1,f2 merger */
                 ncan++;
                 pc[ncan][0] = pc[cand][0];
-                ncan = candy(pc, fre, maxp, maxf, domerge, ncan, ncan,pnumb,fnumb+1); /* same pole, next formant */
+                ncan = candy(pc, fre, maxp, maxf, domerge, ncan, ncan,pnumb,fnumb+1,
+                             fmins, fmaxs); /* same pole, next formant */
             }
-            ncan = candy(pc, fre, maxp, maxf, domerge, ncan, cand,pnumb+1,fnumb+1); /* next formant; next pole */
-            if(((pnumb+1) < maxp) && canbe(fre, pnumb+1,fnumb)){
+            ncan = candy(pc, fre, maxp, maxf, domerge, ncan, cand,pnumb+1,fnumb+1,
+                         fmins, fmaxs); /* next formant; next pole */
+            if(((pnumb+1) < maxp) && canbe(fmins, fmaxs, fre, pnumb+1,fnumb)){
                 /* try other frequencies for this formant */
                 ncan++;			/* add one to the candidate index/tally */
                 /*		printf("\n%4d  %4d  %4d",ncan,pnumb+1,fnumb); */
                 for(i=0; i<fnumb; i++)	/* clone the lower formants */
                     pc[ncan][i] = pc[cand][i];
-                ncan = candy(pc, fre, maxp, maxf, domerge, ncan, ncan,pnumb+1,fnumb);
+                ncan = candy(pc, fre, maxp, maxf, domerge, ncan, ncan,pnumb+1,fnumb,
+                             fmins, fmaxs);
             }
         } else {
-            ncan = candy(pc, fre, maxp, maxf, domerge, ncan, cand,pnumb+1,fnumb);
+            ncan = candy(pc, fre, maxp, maxf, domerge, ncan, cand,pnumb+1,fnumb,
+                         fmins, fmaxs);
         }
     }
     /* If all pole frequencies have been examined without finding one which
@@ -155,7 +159,8 @@ static int candy(short **pc, double *fre, int maxp, int maxf, bool domerge,
             while((j>0) && pc[cand][j] < 0) j--;
             i = ((j=pc[cand][j]) >= 0)? j : 0;
         } else i = 0;
-        ncan = candy(pc, fre, maxp, maxf, domerge, ncan, cand,i,fnumb+1);
+        ncan = candy(pc, fre, maxp, maxf, domerge, ncan, cand,i,fnumb+1,
+                     fmins, fmaxs);
     }
 
     return ncan;
@@ -166,18 +171,9 @@ static int candy(short **pc, double *fre, int maxp, int maxf, bool domerge,
    to formants, including, possibly, mappings with missing formants. */
 /* freq: poles ordered by increasing FREQUENCY */
 static int get_fcand(int npole, double *freq, int nform, short **pcan,
-                      bool domerge)
+                      bool domerge, const double *fmins, const double *fmaxs)
 {
-    return candy(pcan, freq, npole, nform, domerge, 0, 0, 0, 0) + 1;
-}
-
-static void set_nominal_freqs(double f1) {
-    int i;
-    for(i=0; i < MAXFORMANTS; i++) {
-        fnom[i] = ((i * 2) + 1) * f1;
-        fmins[i] = fnom[i] - ((i+1) * f1) + 50.0;
-        fmaxs[i] = fnom[i] + (i * f1) + 1000.0;
-    }
+    return candy(pcan, freq, npole, nform, domerge, 0, 0, 0, 0, fmins, fmaxs) + 1;
 }
 
 /*      ----------------------------------------------------------      */
@@ -204,9 +200,18 @@ static sound_t *dpform(sound_t *ps, int nform, double nom_f1) {
     int dmaxc,dminc,dcountc,dcountf;
     bool domerge;
 
+    double	fnom[]  = {  500, 1500, 2500, 3500, 4500, 5500, 6500},/*  "nominal" freqs.*/
+                fmins[] = {   50,  400, 1000, 2000, 2000, 3000, 3000}, /* frequency bounds */
+                fmaxs[] = { 1500, 3500, 4500, 5000, 6000, 6000, 8000}; /* for 1st 5 formants */
+
     if(ps) {
-        if(nom_f1 > 0.0)
-            set_nominal_freqs(nom_f1);
+        if(nom_f1 > 0.0) {
+            for(int i=0; i < MAXFORMANTS; i++) {
+                fnom[i] = ((i * 2) + 1) * nom_f1;
+                fmins[i] = fnom[i] - ((i+1) * nom_f1) + 50.0;
+                fmaxs[i] = fnom[i] + (i * nom_f1) + 1000.0;
+            }
+        }
         pole = ps->pole;
         rmsmax = get_stat_max(pole, ps->length);
         FBIAS = F_BIAS /(.01 * ps->samprate);
@@ -249,7 +254,8 @@ static sound_t *dpform(sound_t *ps, int nform, double nom_f1) {
 
                 /* Get all likely mappings of the poles onto formants for this frame. */
                 if(pole[i]->npoles){	/* if there ARE pole frequencies available... */
-                    ncan = get_fcand(pole[i]->npoles,pole[i]->freq,nform,pcan, domerge);
+                    ncan = get_fcand(pole[i]->npoles,pole[i]->freq,nform,pcan, domerge,
+                                     fmins, fmaxs);
 
                     /* Allocate space for this frame's candidates in the dp lattice. */
                     fl[i]->prept =  malloc(sizeof(short) * ncan);
