@@ -422,8 +422,8 @@ static double frand() {
 static int lpcbsa(int np, int wind, short *data, double *lpc, double *energy,
                   double preemp)
 {
-    static int i, mm, owind=0, wind1;
-    static double w[1000];
+    int i, mm, owind=0, wind1;
+    double w[1000];
     double rc[NPM],phi[NPM*NPM],shi[NPM],sig[1000];
     double xl = .09, fham, amax;
     double *psp1, *psp3, *pspl;
@@ -720,11 +720,13 @@ static int ratprx(double a, int *k, int *l, int qlim) {
 /* ----------------------------------------------------------------------- */
 
 static void Fdownsample(sound_t *s, double freq2) {
+    enum { N_BITS = 15 };
+
     short	*bufin, **bufout;
-    static double	beta = 0.0, b[256];
+    double	beta = 0.0, b[256];
     double	ratio_t, maxi, ratio, beta_new, freq1;
-    static int	ncoeff = 127, ncoefft = 0, nbits = 15;
-    static short	ic[256];
+    int	ncoeff = 127, ncoefft = 0;
+    short	ic[256];
     int	insert, decimate, out_samps, smin, smax;
 
     int i, j;
@@ -750,7 +752,7 @@ static void Fdownsample(sound_t *s, double freq2) {
     if(beta != beta_new){
         beta = beta_new;
         lc_lin_fir(beta,&ncoeff,b);
-        maxi = (1 << nbits) - 1;
+        maxi = (1 << N_BITS) - 1;
         j = (ncoeff/2) + 1;
         for(ncoefft = 0, i=0; i < j; i++){
             ic[i] = (int) (0.5 + (maxi * b[i]));
@@ -781,8 +783,8 @@ static void highpass(sound_t *s) {
     enum { LCSIZ = 101 };
 
     short *datain, *dataout;
-    static short *lcf;
-    static int len = 0;
+    short *lcf;
+    int len = 0;
     double scale, fn;
     int i;
 
