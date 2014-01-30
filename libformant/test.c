@@ -4,7 +4,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-#include "jkFormant.h"
+#include "formant.h"
 
 int main() {
     struct stat st;

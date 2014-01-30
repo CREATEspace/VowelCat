@@ -21,7 +21,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "jkFormant.h"
+#include "formant.h"
 #include "sigproc2.h"
 
 #define MAXFORMANTS 7
