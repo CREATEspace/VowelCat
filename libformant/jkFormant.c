@@ -782,24 +782,23 @@ static sound_t *Fdownsample(sound_t *s, double freq2, int start, int end) {
         }
     }				/*  endif new coefficients need to be computed */
 
-    if(dwnsamp(bufin,end-start+1,bufout,&out_samps,insert,decimate,ncoefft,ic,
-                &smin,&smax)){
-        /*      so->buff_size = so->file_size = out_samps;*/
-        so = Snack_NewSound(0, s->nchannels);
-        Snack_ResizeSoundStorage(so, out_samps);
-        for (i = 0; i < out_samps; i++) {
-            Snack_SetSample(so, 0, i, (*bufout)[i]);
-        }
-        so->length = out_samps;
-        so->samprate = (int)freq2;
-        free(*bufout);
-        free(bufout);
-        free(bufin);
-        return(so);
-    } else
-        printf("Problems in dwnsamp() in downsample()\n");
+    if (!dwnsamp(bufin,end-start+1,bufout,&out_samps,insert,decimate,ncoefft,ic,
+                 &smin,&smax))
+    {
+        return NULL;
+    }
 
-    return(NULL);
+    so = Snack_NewSound(0, s->nchannels);
+    Snack_ResizeSoundStorage(so, out_samps);
+    for (i = 0; i < out_samps; i++) {
+        Snack_SetSample(so, 0, i, (*bufout)[i]);
+    }
+    so->length = out_samps;
+    so->samprate = (int)freq2;
+    free(*bufout);
+    free(bufout);
+    free(bufin);
+    return(so);
 }
 
 /*      ----------------------------------------------------------      */
