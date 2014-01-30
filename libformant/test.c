@@ -20,7 +20,7 @@ int main() {
     /* 1720 */
     sound_load_samples(&sound, mem, 44100);
 
-    formantCmd(&sound);
+    sound_calc_formants(&sound);
 
     sound_destroy(&sound);
 }

@@ -810,7 +810,7 @@ static void highpass(sound_t *s) {
     free(datain);
 }
 
-void formantCmd(sound_t *s) {
+void sound_calc_formants(sound_t *s) {
     int nform, i,j, lpc_ord, lpc_type, w_type;
     double frame_int, wdur,
            ds_freq, nom_f1 = -10.0, preemp;
