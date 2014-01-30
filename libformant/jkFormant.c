@@ -179,8 +179,6 @@ static void dpform(sound_t *ps, size_t nform, double nom_f1) {
            rmsmax, fbias, **fr, **ba, rmsdffact, merger=0.0, merge_cost,
            FBIAS;
     int	ic, ip, mincan=0;
-    size_t i;
-    int k;
     short	**pcan;
     form_t	**fl;
     pole_t	**pole; /* raw LPC pole data structure array */
@@ -260,7 +258,7 @@ static void dpform(sound_t *ps, size_t nform, double nom_f1) {
                 minerr = 0;
                 if(fl[i-1]->ncand) minerr = 2.0e30;
                 mincan = -1;
-                for(k=0; k < fl[i-1]->ncand; k++){ /* for each PREVIOUS map... */
+                for(size_t k = 0; k < fl[i-1]->ncand; k++){ /* for each PREVIOUS map... */
                     pferr = 0.0;
                     for(size_t l = 0; l < nform; l++){
                         ic = fl[i]->cand[j][l];
@@ -328,12 +326,12 @@ static void dpform(sound_t *ps, size_t nform, double nom_f1) {
     dcountc = dcountf = 0;
     mincan = -1;
     for (size_t m = 1; m <= ps->length; m += 1) {
-        i = ps->length - m;
+        size_t i = ps->length - m;
         if(mincan < 0)		/* need to find best starting candidate? */
             if(fl[i]->ncand){	/* have candidates at this frame? */
                 minerr = fl[i]->cumerr[0];
                 mincan = 0;
-                for(int j=1; j<fl[i]->ncand; j++)
+                for(size_t j=1; j<fl[i]->ncand; j++)
                     if( fl[i]->cumerr[j] < minerr ){
                         minerr = fl[i]->cumerr[j];
                         mincan = j;
@@ -347,7 +345,7 @@ static void dpform(sound_t *ps, size_t nform, double nom_f1) {
             dcountc += j;
             dcountf++;
             for(size_t j=0; j<nform; j++){
-                k = fl[i]->cand[mincan][j];
+                int k = fl[i]->cand[mincan][j];
                 if(k >= 0){
                     fr[j][i] = pole[i]->freq[k];
                     ba[j][i] = pole[i]->band[k];
@@ -371,10 +369,10 @@ static void dpform(sound_t *ps, size_t nform, double nom_f1) {
     }				/* end unpacking formant tracks from the dp lattice */
     /* Deallocate all the DP lattice work space. */
     for (size_t m = 1; m <= ps->length; m += 1) {
-        i = ps->length - m;
+        size_t i = ps->length - m;
         if(fl[i]->ncand){
             if(fl[i]->cand) {
-                for(int j = 0; j < fl[i]->ncand; j++)
+                for(size_t j = 0; j < fl[i]->ncand; j++)
                     free(fl[i]->cand[j]);
                 free(fl[i]->cand);
                 free(fl[i]->cumerr);

@@ -17,7 +17,7 @@ typedef short sample_t;
 typedef float storage_t;
 
 typedef struct { /* structure of a DP lattice node for formant tracking */
-    short ncand; /* # of candidate mappings for this frame */
+    size_t ncand; /* # of candidate mappings for this frame */
     short **cand;      /* pole-to-formant map-candidate array */
     short *prept;	 /* backpointer array for each frame */
     double *cumerr; 	 /* cum. errors associated with each cand. */
