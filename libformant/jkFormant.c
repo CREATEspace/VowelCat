@@ -29,17 +29,17 @@
 static inline void Snack_SetSample(sound_t *s, size_t chan, size_t i,
                                    storage_t val)
 {
-    s->blocks[i * s->nchannels + chan] = val;
+    s->blocks[i * s->n_channels + chan] = val;
 }
 
 static inline storage_t Snack_GetSample(const sound_t *s, size_t chan, size_t i) {
-    return s->blocks[i * s->nchannels + chan];
+    return s->blocks[i * s->n_channels + chan];
 }
 
-void sound_init(sound_t *s, size_t sample_rate, size_t nchannels) {
+void sound_init(sound_t *s, size_t sample_rate, size_t n_channels) {
     *s = (sound_t) {
         .sample_rate = sample_rate,
-        .nchannels = nchannels,
+        .n_channels = n_channels,
         .length = 0,
         .blocks = 0,
         .pole = 0,
@@ -50,15 +50,15 @@ void sound_destroy(sound_t *s) {
     free(s->blocks);
 }
 
-static void sound_resize(sound_t *s, int len) {
+static void sound_resize(sound_t *s, size_t len) {
     s->length = len;
-    s->blocks = realloc(s->blocks, len * sizeof(storage_t) * s->nchannels);
+    s->blocks = realloc(s->blocks, len * sizeof(storage_t) * s->n_channels);
 }
 
 void sound_load_samples(sound_t *s, const short *samples, size_t len) {
     sound_resize(s, len);
 
-    for (size_t i = 0; i < s->length * s->nchannels; i += 1)
+    for (size_t i = 0; i < s->length * s->n_channels; i += 1)
         s->blocks[i] = (storage_t) samples[i];
 }
 
@@ -391,7 +391,7 @@ static void dpform(sound_t *ps, size_t nform, double nom_f1) {
     for(size_t i=0;i<MAXCAN;i++) free(pcan[i]);
     free(pcan);
 
-    ps->nchannels = nform * 2;
+    ps->n_channels = nform * 2;
 
     for (size_t i = 0; i < ps->length; i++) {
         for (size_t j = 0; j < nform * 2; j++) {
@@ -537,7 +537,7 @@ static void lpc_poles(sound_t *sp, double wdur, double frame_int, size_t lpc_ord
     free(dporg);
 
     sp->sample_rate = (int)(1.0/frame_int);
-    sp->nchannels = lpc_ord;
+    sp->n_channels = lpc_ord;
     sp->length = nfrm;
 
     for (size_t i = 0; i < nfrm; i++) {
