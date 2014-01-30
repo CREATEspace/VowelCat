@@ -43,7 +43,7 @@ typedef struct sound_t {
     pole_t **pole;
 } sound_t;
 
-sound_t *Snack_NewSound(int rate, int nchannels);
+void sound_init(sound_t *s, size_t samprate, size_t nchannels);
 void Snack_DeleteSound(sound_t *s);
 void LoadSound(sound_t *s, const short *samples, size_t len);
 void formantCmd(sound_t *s);

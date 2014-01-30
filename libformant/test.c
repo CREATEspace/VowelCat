@@ -15,11 +15,12 @@ int main() {
     fstat(fd, &st);
     mem = mmap(NULL, st.st_size, PROT_READ, MAP_SHARED, fd, 0);
 
-    sound_t *s = Snack_NewSound(44100, 2);
+    sound_t sound;
+    sound_init(&sound, 44100, 2);
     /* 1720 */
-    LoadSound(s, mem, 44100);
+    LoadSound(&sound, mem, 44100);
 
-    formantCmd(s);
+    formantCmd(&sound);
 
-    Snack_DeleteSound(s);
+    Snack_DeleteSound(&sound);
 }

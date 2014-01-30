@@ -36,17 +36,14 @@ static inline storage_t Snack_GetSample(const sound_t *s, size_t chan, size_t i)
     return s->blocks[i * s->nchannels + chan];
 }
 
-sound_t *Snack_NewSound(int rate, int nchannels) {
-    sound_t *s = malloc(sizeof(sound_t));
-
-    /* Default sound specifications */
-    s->samprate = rate;
-    s->nchannels = nchannels;
-    s->length = 0;
-    s->blocks = NULL;
-    s->pole = NULL;
-
-    return s;
+void sound_init(sound_t *s, size_t samprate, size_t nchannels) {
+    *s = (sound_t) {
+        .samprate = samprate,
+        .nchannels = nchannels,
+        .length = 0,
+        .blocks = 0,
+        .pole = 0,
+    };
 }
 
 static void Snack_ResizeSoundStorage(sound_t *s, int len) {
@@ -56,7 +53,6 @@ static void Snack_ResizeSoundStorage(sound_t *s, int len) {
 
 void Snack_DeleteSound(sound_t *s) {
     free(s->blocks);
-    free(s);
 }
 
 void LoadSound(sound_t *s, const short *samples, size_t len) {
