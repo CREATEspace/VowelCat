@@ -55,7 +55,7 @@ void sound_destroy(sound_t *s) {
     free(s->blocks);
 }
 
-void LoadSound(sound_t *s, const short *samples, size_t len) {
+void sound_load_samples(sound_t *s, const short *samples, size_t len) {
     Snack_ResizeSoundStorage(s, len);
 
     for (size_t i = 0; i < s->length * s->nchannels; i += 1)

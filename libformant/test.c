@@ -18,7 +18,7 @@ int main() {
     sound_t sound;
     sound_init(&sound, 44100, 2);
     /* 1720 */
-    LoadSound(&sound, mem, 44100);
+    sound_load_samples(&sound, mem, 44100);
 
     formantCmd(&sound);
 

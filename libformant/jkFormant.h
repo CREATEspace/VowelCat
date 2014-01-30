@@ -45,5 +45,5 @@ typedef struct sound_t {
 
 void sound_init(sound_t *s, size_t samprate, size_t nchannels);
 void sound_destroy(sound_t *s);
-void LoadSound(sound_t *s, const short *samples, size_t len);
+void sound_load_samples(sound_t *s, const short *samples, size_t len);
 void formantCmd(sound_t *s);
