@@ -26,7 +26,7 @@
 
 #define MAXFORMANTS 7
 
-static inline void Snack_SetSample(sound_t *s, size_t chan, size_t i,
+static inline void sound_set_sample(sound_t *s, size_t chan, size_t i,
                                    storage_t val)
 {
     s->blocks[i * s->n_channels + chan] = val;
@@ -395,7 +395,7 @@ static void dpform(sound_t *ps, size_t nform, double nom_f1) {
 
     for (size_t i = 0; i < ps->n_samples; i++) {
         for (size_t j = 0; j < nform * 2; j++) {
-            Snack_SetSample(ps, j, i, fr[j][i]);
+            sound_set_sample(ps, j, i, fr[j][i]);
         }
     }
 
@@ -542,7 +542,7 @@ static void lpc_poles(sound_t *sp, double wdur, double frame_int, size_t lpc_ord
 
     for (size_t i = 0; i < nfrm; i++) {
         for (size_t j = 0; j < lpc_ord; j++) {
-            Snack_SetSample(sp, j, i, pole[i]->freq[j]);
+            sound_set_sample(sp, j, i, pole[i]->freq[j]);
         }
     }
 
@@ -833,7 +833,7 @@ static void Fdownsample(sound_t *s, double freq2) {
             &smin, &smax);
 
     for (size_t i = 0; i < out_samps; i++) {
-        Snack_SetSample(s, 0, i, (*bufout)[i]);
+        sound_set_sample(s, 0, i, (*bufout)[i]);
     }
 
     s->n_samples = out_samps;
@@ -872,7 +872,7 @@ static void highpass(sound_t *s) {
     do_fir(datain,s->n_samples,dataout,len,lcf,1); /* in downsample.c */
 
     for (size_t i = 0; i < s->n_samples; i++) {
-        Snack_SetSample(s, 0, i, dataout[i]);
+        sound_set_sample(s, 0, i, dataout[i]);
     }
 
     free(dataout);
