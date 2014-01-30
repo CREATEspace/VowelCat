@@ -39,12 +39,7 @@ static inline storage_t Snack_GetSample(sound_t *s, size_t chan, size_t i) {
 sound_t *Snack_NewSound(int rate, int nchannels) {
     sound_t *s = malloc(sizeof(sound_t));
 
-    if (s == NULL) {
-        return NULL;
-    }
-
     /* Default sound specifications */
-
     s->samprate = rate;
     s->nchannels = nchannels;
     s->length = 0;
@@ -683,10 +678,7 @@ static int dwnsamp(short *buf, int in_samps, short **buf2, int *out_samps,
     int i, j, k, l, m;
     int imax, imin;
 
-    if(!(*buf2 = buft = malloc(sizeof(short)*insert*in_samps))) {
-        perror("ckalloc() in dwnsamp()");
-        return(false);
-    }
+    *buf2 = buft = malloc(sizeof(short)*insert*in_samps);
 
     k = imax = get_abs_maximum(buf,in_samps);
     if (k == 0) k = 1;
@@ -763,51 +755,49 @@ static sound_t *Fdownsample(sound_t *s, double freq2, int start, int end) {
     int i, j;
 
     freq1 = s->samprate;
+    bufout = malloc(sizeof(short*));
+    bufin = malloc(sizeof(short) * (end - start + 1));
 
-    if((bufout = malloc(sizeof(short*)))) {
-        bufin = malloc(sizeof(short) * (end - start + 1));
-        for (i = start; i <= end; i++) {
-            bufin[i-start] = (short) Snack_GetSample(s, 0, i);
+    for (i = start; i <= end; i++) {
+        bufin[i-start] = (short) Snack_GetSample(s, 0, i);
+    }
+
+    ratio = freq2/freq1;
+    ratprx(ratio,&insert,&decimate,10);
+    ratio_t = ((double)insert)/((double)decimate);
+
+    if(ratio_t > .99) return(s);
+
+    freq2 = ratio_t * freq1;
+    beta_new = (.5 * freq2)/(insert * freq1);
+
+    if(beta != beta_new){
+        beta = beta_new;
+        lc_lin_fir(beta,&ncoeff,b);
+        maxi = (1 << nbits) - 1;
+        j = (ncoeff/2) + 1;
+        for(ncoefft = 0, i=0; i < j; i++){
+            ic[i] = (int) (0.5 + (maxi * b[i]));
+            if(ic[i]) ncoefft = i+1;
         }
+    }				/*  endif new coefficients need to be computed */
 
-        ratio = freq2/freq1;
-        ratprx(ratio,&insert,&decimate,10);
-        ratio_t = ((double)insert)/((double)decimate);
-
-        if(ratio_t > .99) return(s);
-
-        freq2 = ratio_t * freq1;
-        beta_new = (.5 * freq2)/(insert * freq1);
-
-        if(beta != beta_new){
-            beta = beta_new;
-            lc_lin_fir(beta,&ncoeff,b);
-            maxi = (1 << nbits) - 1;
-            j = (ncoeff/2) + 1;
-            for(ncoefft = 0, i=0; i < j; i++){
-                ic[i] = (int) (0.5 + (maxi * b[i]));
-                if(ic[i]) ncoefft = i+1;
-            }
-        }				/*  endif new coefficients need to be computed */
-
-        if(dwnsamp(bufin,end-start+1,bufout,&out_samps,insert,decimate,ncoefft,ic,
-                    &smin,&smax)){
-            /*      so->buff_size = so->file_size = out_samps;*/
-            so = Snack_NewSound(0, s->nchannels);
-            Snack_ResizeSoundStorage(so, out_samps);
-            for (i = 0; i < out_samps; i++) {
-                Snack_SetSample(so, 0, i, (*bufout)[i]);
-            }
-            so->length = out_samps;
-            so->samprate = (int)freq2;
-            free(*bufout);
-            free(bufout);
-            free(bufin);
-            return(so);
-        } else
-            printf("Problems in dwnsamp() in downsample()\n");
+    if(dwnsamp(bufin,end-start+1,bufout,&out_samps,insert,decimate,ncoefft,ic,
+                &smin,&smax)){
+        /*      so->buff_size = so->file_size = out_samps;*/
+        so = Snack_NewSound(0, s->nchannels);
+        Snack_ResizeSoundStorage(so, out_samps);
+        for (i = 0; i < out_samps; i++) {
+            Snack_SetSample(so, 0, i, (*bufout)[i]);
+        }
+        so->length = out_samps;
+        so->samprate = (int)freq2;
+        free(*bufout);
+        free(bufout);
+        free(bufin);
+        return(so);
     } else
-        printf("Can't create a new Signal in downsample()\n");
+        printf("Problems in dwnsamp() in downsample()\n");
 
     return(NULL);
 }

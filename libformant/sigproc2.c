@@ -470,10 +470,6 @@ int lpc(int lpc_ord, double lpc_stabl, int wsize, short *data, double *lpca,
     if(nwind != wsize) {
         if(dwind) dwind = realloc((void *)dwind,wsize*sizeof(double));
         else dwind = malloc(wsize*sizeof(double));
-        if(!dwind) {
-            printf("Can't allocate scratch memory in lpc()\n");
-            return(false);
-        }
         nwind = wsize;
     }
 
@@ -516,10 +512,7 @@ int w_covar(short *xx, int *m, int n, int istrt, double *y, double *alpha,
     if((n+1) > nold) {
         if(x) free((void *)x);
         x = NULL;
-        if(!(x = malloc((n+1)*sizeof(double)))) {
-            printf("Allocation failure in w_covar()\n");
-            return(false);
-        }
+        x = malloc((n+1)*sizeof(double));
         memset(x, 0, (n+1) * sizeof(double));
         nold = n+1;
     }
@@ -529,13 +522,11 @@ int w_covar(short *xx, int *m, int n, int istrt, double *y, double *alpha,
         b = beta = grc = cc = NULL;
         mnew = *m;
 
-        if(!((b = malloc(sizeof(double)*((mnew+1)*(mnew+1)/2))) &&
-                    (beta = malloc(sizeof(double)*(mnew+3)))  &&
-                    (grc = malloc(sizeof(double)*(mnew+3)))  &&
-                    (cc = malloc(sizeof(double)*(mnew+3)))))   {
-            printf("Allocation failure in w_covar()\n");
-            return(false);
-        }
+        b = malloc(sizeof(double)*((mnew+1)*(mnew+1)/2));
+        beta = malloc(sizeof(double)*(mnew+3));
+        grc = malloc(sizeof(double)*(mnew+3));
+        cc = malloc(sizeof(double)*(mnew+3));
+
         mold = mnew;
     }
 
