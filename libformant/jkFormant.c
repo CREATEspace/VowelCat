@@ -174,11 +174,13 @@ static double get_stat_max(pole_t **pole, int nframes) {
     return(amax);
 }
 
-static void dpform(sound_t *ps, int nform, double nom_f1) {
+static void dpform(sound_t *ps, size_t nform, double nom_f1) {
     double pferr, conerr, minerr, dffact, ftemp, berr, ferr, bfact, ffact,
            rmsmax, fbias, **fr, **ba, rmsdffact, merger=0.0, merge_cost,
            FBIAS;
-    int	i, j, k, l, ic, ip, mincan=0;
+    int	ic, ip, mincan=0;
+    size_t i;
+    int k;
     short	**pcan;
     form_t	**fl;
     pole_t	**pole; /* raw LPC pole data structure array */
@@ -190,7 +192,7 @@ static void dpform(sound_t *ps, int nform, double nom_f1) {
                 fmaxs[] = { 1500, 3500, 4500, 5000, 6000, 6000, 8000}; /* for 1st 5 formants */
 
     if(nom_f1 > 0.0) {
-        for(int i=0; i < MAXFORMANTS; i++) {
+        for(size_t i=0; i < MAXFORMANTS; i++) {
             fnom[i] = ((i * 2) + 1) * nom_f1;
             fmins[i] = fnom[i] - ((i+1) * nom_f1) + 50.0;
             fmaxs[i] = fnom[i] + (i * nom_f1) + 1000.0;
@@ -209,25 +211,25 @@ static void dpform(sound_t *ps, int nform, double nom_f1) {
     /* Allocate space for the formant and bandwidth arrays to be passed back. */
     fr = malloc(sizeof(double*) * nform * 2);
     ba = fr + nform;
-    for(i=0;i < nform*2; i++){
+    for(size_t i=0;i < nform*2; i++){
         fr[i] = malloc(sizeof(double) * ps->length);
     }
 
     /* Allocate space for the raw candidate array. */
     pcan = malloc(sizeof(short*) * MAXCAN);
-    for(i=0;i<MAXCAN;i++) pcan[i] = malloc(sizeof(short) * nform);
+    for(size_t i=0;i<MAXCAN;i++)
+        pcan[i] = malloc(sizeof(short) * nform);
 
     /* Allocate space for the dp lattice */
     fl = malloc(sizeof(form_t*) * ps->length);
-    for(i=0;i < ps->length; i++)
+    for(size_t i=0;i < ps->length; i++)
         fl[i] = malloc(sizeof(form_t));
 
     /*******************************************************************/
     /* main formant tracking loop */
     /*******************************************************************/
-    for(i=0; i < ps->length; i++){	/* for all analysis frames... */
-
-        int ncan = 0;		/* initialize candidate mapping count to 0 */
+    for(size_t i = 0; i < ps->length; i++) {	/* for all analysis frames... */
+        size_t ncan = 0;		/* initialize candidate mapping count to 0 */
 
         /* moderate the cost of frequency jumps by the relative amplitude */
         rmsdffact = pole[i]->rms;
@@ -243,21 +245,24 @@ static void dpform(sound_t *ps, int nform, double nom_f1) {
             fl[i]->prept =  malloc(sizeof(short) * ncan);
             fl[i]->cumerr = malloc(sizeof(double) * ncan);
             fl[i]->cand =   malloc(sizeof(short*) * ncan);
-            for(j=0;j<ncan;j++){	/* allocate cand. slots and install candidates */
+
+            for(size_t j = 0; j < ncan; j++){	/* allocate cand. slots and install candidates */
                 fl[i]->cand[j] = malloc(sizeof(short) * nform);
-                for(k=0; k<nform; k++)
+
+                for(size_t k = 0; k < nform; k++)
                     fl[i]->cand[j][k] = pcan[j][k];
             }
         }
         fl[i]->ncand = ncan;
         /* compute the distance between the current and previous mappings */
-        for(j=0;j<ncan;j++){	/* for each CURRENT mapping... */
+        for(size_t j = 0; j < ncan; j++) {	/* for each CURRENT mapping... */
             if( i ){		/* past the first frame? */
                 minerr = 0;
                 if(fl[i-1]->ncand) minerr = 2.0e30;
                 mincan = -1;
                 for(k=0; k < fl[i-1]->ncand; k++){ /* for each PREVIOUS map... */
-                    for(pferr=0.0, l=0; l<nform; l++){
+                    pferr = 0.0;
+                    for(size_t l = 0; l < nform; l++){
                         ic = fl[i]->cand[j][l];
                         ip = fl[i-1]->cand[k][l];
                         if((ic >= 0)	&& (ip >= 0)){
@@ -287,7 +292,10 @@ static void dpform(sound_t *ps, int nform, double nom_f1) {
             fl[i]->prept[j] = mincan; /* point to best previous mapping */
             /* (Note that mincan=-1 if there were no candidates in prev. fr.) */
             /* Compute the local costs for this current mapping. */
-            for(k=0, berr=0, ferr=0, fbias=0; k<nform; k++){
+            berr = 0;
+            ferr = 0;
+            fbias = 0;
+            for(size_t k = 0; k < nform; k++){
                 ic = fl[i]->cand[j][k];
                 if(ic >= 0){
                     if( !k ){		/* F1 candidate? */
@@ -318,24 +326,27 @@ static void dpform(sound_t *ps, int nform, double nom_f1) {
     dmaxc = 0;
     dminc = 100;
     dcountc = dcountf = 0;
-    for(mincan = -1, i=ps->length - 1; i>=0; i--){
+    mincan = -1;
+    for (size_t m = 1; m <= ps->length; m += 1) {
+        i = ps->length - m;
         if(mincan < 0)		/* need to find best starting candidate? */
             if(fl[i]->ncand){	/* have candidates at this frame? */
                 minerr = fl[i]->cumerr[0];
                 mincan = 0;
-                for(j=1; j<fl[i]->ncand; j++)
+                for(int j=1; j<fl[i]->ncand; j++)
                     if( fl[i]->cumerr[j] < minerr ){
                         minerr = fl[i]->cumerr[j];
                         mincan = j;
                     }
             }
         if(mincan >= 0){	/* if there is a "best" candidate at this frame */
+            int j;
             if((j = fl[i]->ncand) > dmaxc) dmaxc = j;
             else
                 if( j < dminc) dminc = j;
             dcountc += j;
             dcountf++;
-            for(j=0; j<nform; j++){
+            for(size_t j=0; j<nform; j++){
                 k = fl[i]->cand[mincan][j];
                 if(k >= 0){
                     fr[j][i] = pole[i]->freq[k];
@@ -352,28 +363,31 @@ static void dpform(sound_t *ps, int nform, double nom_f1) {
             }
             mincan = fl[i]->prept[mincan];
         } else {		/* if no candidates, fake with "nominal" frequencies. */
-            for(j=0; j < nform; j++){
+            for(size_t j = 0; j < nform; j++){
                 fr[j][i] = fnom[j];
                 ba[j][i] = NOBAND;
             }
         }			/* note that mincan will remain =-1 if no candidates */
     }				/* end unpacking formant tracks from the dp lattice */
     /* Deallocate all the DP lattice work space. */
-    for(i=ps->length - 1; i>=0; i--){
+    for (size_t m = 1; m <= ps->length; m += 1) {
+        i = ps->length - m;
         if(fl[i]->ncand){
             if(fl[i]->cand) {
-                for(j=0; j<fl[i]->ncand; j++) free(fl[i]->cand[j]);
+                for(int j = 0; j < fl[i]->ncand; j++)
+                    free(fl[i]->cand[j]);
                 free(fl[i]->cand);
                 free(fl[i]->cumerr);
                 free(fl[i]->prept);
             }
         }
     }
-    for(i=0; i<ps->length; i++)	free(fl[i]);
+    for(size_t i=0; i<ps->length; i++)
+        free(fl[i]);
     free(fl);
     fl = 0;
 
-    for(i=0; i<ps->length; i++) {
+    for(size_t i=0; i<ps->length; i++) {
         free(pole[i]->freq);
         free(pole[i]->band);
         free(pole[i]);
@@ -381,18 +395,18 @@ static void dpform(sound_t *ps, int nform, double nom_f1) {
     free(pole);
 
     /* Deallocate space for the raw candidate aray. */
-    for(i=0;i<MAXCAN;i++) free(pcan[i]);
+    for(size_t i=0;i<MAXCAN;i++) free(pcan[i]);
     free(pcan);
 
     ps->nchannels = nform * 2;
 
-    for (i = 0; i < ps->length; i++) {
-        for (j = 0; j < nform * 2; j++) {
+    for (size_t i = 0; i < ps->length; i++) {
+        for (size_t j = 0; j < nform * 2; j++) {
             Snack_SetSample(ps, j, i, fr[j][i]);
         }
     }
 
-    for(i = 0; i < nform*2; i++) free(fr[i]);
+    for(size_t i = 0; i < nform*2; i++) free(fr[i]);
     free(fr);
 }
 
@@ -455,12 +469,13 @@ static int lpcbsa(int np, int wind, short *data, double *lpc, double *energy,
 }
 
 /*************************************************************************/
-static void lpc_poles(sound_t *sp, double wdur, double frame_int, int lpc_ord,
+static void lpc_poles(sound_t *sp, double wdur, double frame_int, size_t lpc_ord,
                         double preemp, int lpc_type, int w_type)
 {
     enum { LPC_STABLE = 70 };
 
-    int i, j, size, step, nform, init, nfrm;
+    int size, step, nform, init;
+    size_t nfrm;
     pole_t **pole;
     double energy, lpca[MAXORDER], normerr, *bap=NULL, *frp=NULL, *rhp=NULL;
     short *datap, *dporg;
@@ -483,10 +498,11 @@ static void lpc_poles(sound_t *sp, double wdur, double frame_int, int lpc_ord,
     step = (int) (.5 + (frame_int * sp->samprate));
     pole = malloc(nfrm * sizeof(pole_t*));
     datap = dporg = malloc(sizeof(short) * sp->length);
-    for (i = 0; i < sp->length; i++) {
+    for (size_t i = 0; i < sp->length; i++) {
         datap[i] = (short) Snack_GetSample(sp, 0, i);
     }
-    for(j=0, init=true/*, datap=((short**)sp->data)[0]*/; j < nfrm;j++, datap += step){
+    init = true;
+    for(size_t j = 0; j < nfrm;j++, datap += step){
         pole[j] = malloc(sizeof(pole_t));
         pole[j]->freq = frp = malloc(sizeof(double)*lpc_ord);
         pole[j]->band = bap = malloc(sizeof(double)*lpc_ord);
@@ -531,8 +547,8 @@ static void lpc_poles(sound_t *sp, double wdur, double frame_int, int lpc_ord,
     sp->nchannels = lpc_ord;
     sp->length = nfrm;
 
-    for (i = 0; i < nfrm; i++) {
-        for (j = 0; j < lpc_ord; j++) {
+    for (size_t i = 0; i < nfrm; i++) {
+        for (size_t j = 0; j < lpc_ord; j++) {
             Snack_SetSample(sp, j, i, pole[i]->freq[j]);
         }
     }
@@ -646,7 +662,7 @@ static int get_abs_maximum(short *d, int n) {
 
 /* ******************************************************************** */
 
-static void dwnsamp(short *buf, int in_samps, short **buf2, int *out_samps,
+static void dwnsamp(short *buf, int in_samps, short **buf2, size_t *out_samps,
                     int insert, int decimate, int ncoef, short *ic, int *smin,
                     int *smax)
 {
@@ -725,26 +741,30 @@ static void Fdownsample(sound_t *s, double freq2) {
     short	*bufin, **bufout;
     double	beta = 0.0, b[256];
     double	ratio_t, maxi, ratio, beta_new, freq1;
-    int	ncoeff = 127, ncoefft = 0;
+    int	ncoeff = 127;
     short	ic[256];
-    int	insert, decimate, out_samps, smin, smax;
+    int	insert, decimate, smin, smax;
 
-    int i, j;
+    size_t out_samps;
+    size_t j;
+    size_t ncoefft;
 
     freq1 = s->samprate;
-    bufout = malloc(sizeof(short*));
-    bufin = malloc(sizeof(short) * s->length);
-
-    for (i = 0; i < s->length; i++) {
-        bufin[i] = (short) Snack_GetSample(s, 0, i);
-    }
-
     ratio = freq2/freq1;
     ratprx(ratio,&insert,&decimate,10);
     ratio_t = ((double)insert)/((double)decimate);
 
     if(ratio_t > .99)
         return;
+
+    ncoefft = 0;
+
+    bufout = malloc(sizeof(short*));
+    bufin = malloc(sizeof(short) * s->length);
+
+    for (size_t i = 0; i < s->length; i++) {
+        bufin[i] = (short) Snack_GetSample(s, 0, i);
+    }
 
     freq2 = ratio_t * freq1;
     beta_new = (.5 * freq2)/(insert * freq1);
@@ -754,7 +774,7 @@ static void Fdownsample(sound_t *s, double freq2) {
         lc_lin_fir(beta,&ncoeff,b);
         maxi = (1 << N_BITS) - 1;
         j = (ncoeff/2) + 1;
-        for(ncoefft = 0, i=0; i < j; i++){
+        for(size_t i = 0; i < j; i++){
             ic[i] = (int) (0.5 + (maxi * b[i]));
             if(ic[i]) ncoefft = i+1;
         }
@@ -763,7 +783,7 @@ static void Fdownsample(sound_t *s, double freq2) {
     dwnsamp(bufin, s->length, bufout, &out_samps, insert, decimate, ncoefft, ic,
             &smin, &smax);
 
-    for (i = 0; i < out_samps; i++) {
+    for (size_t i = 0; i < out_samps; i++) {
         Snack_SetSample(s, 0, i, (*bufout)[i]);
     }
 
@@ -784,13 +804,12 @@ static void highpass(sound_t *s) {
 
     short *datain, *dataout;
     short *lcf;
-    int len = 0;
+    size_t len = 0;
     double scale, fn;
-    int i;
 
     datain = malloc(sizeof(short) * s->length);
     dataout = malloc(sizeof(short) * s->length);
-    for (i = 0; i < s->length; i++) {
+    for (size_t i = 0; i < s->length; i++) {
         datain[i] = (short) Snack_GetSample(s, 0, i);
     }
 
@@ -799,12 +818,12 @@ static void highpass(sound_t *s) {
         len = 1 + (LCSIZ/2);
         fn = PI * 2.0 / (LCSIZ - 1);
         scale = 32767.0/(.5 * LCSIZ);
-        for(i=0; i < len; i++)
+        for(size_t i=0; i < len; i++)
             lcf[i] = (short) (scale * (.5 + (.4 * cos(fn * ((double)i)))));
     }
     do_fir(datain,s->length,dataout,len,lcf,1); /* in downsample.c */
 
-    for (i = 0; i < s->length; i++) {
+    for (size_t i = 0; i < s->length; i++) {
         Snack_SetSample(s, 0, i, dataout[i]);
     }
 
@@ -813,7 +832,9 @@ static void highpass(sound_t *s) {
 }
 
 void sound_calc_formants(sound_t *s) {
-    int nform, i,j, lpc_ord, lpc_type, w_type;
+    size_t nform;
+    size_t lpc_ord;
+    int lpc_type, w_type;
     double frame_int, wdur,
            ds_freq, nom_f1 = -10.0, preemp;
 
@@ -842,8 +863,8 @@ void sound_calc_formants(sound_t *s) {
     lpc_poles(s, wdur, frame_int, lpc_ord, preemp, lpc_type, w_type);
     dpform(s, nform, nom_f1);
 
-    for (i = 0; i < s->length; i += 1) {
-        for (j = 0; j < nform * 2; j += 1)
+    for (size_t i = 0; i < s->length; i += 1) {
+        for (size_t j = 0; j < nform * 2; j += 1)
             printf("%f\n", (double)(Snack_GetSample(s, j, i)));
 
         putchar('\n');

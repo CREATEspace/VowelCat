@@ -37,7 +37,7 @@ typedef struct {   /* structure to hold raw LPC analysis data */
 typedef struct sound_t {
     size_t samprate;
     size_t nchannels;
-    int length;
+    size_t length;
     storage_t *blocks;
 
     pole_t **pole;
