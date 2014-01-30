@@ -180,7 +180,7 @@ static double get_stat_max(pole_t **pole, int nframes) {
     return(amax);
 }
 
-static sound_t *dpform(sound_t *ps, int nform, double nom_f1) {
+static void dpform(sound_t *ps, int nform, double nom_f1) {
     double pferr, conerr, minerr, dffact, ftemp, berr, ferr, bfact, ffact,
            rmsmax, fbias, **fr, **ba, rmsdffact, merger=0.0, merge_cost,
            FBIAS;
@@ -188,16 +188,12 @@ static sound_t *dpform(sound_t *ps, int nform, double nom_f1) {
     short	**pcan;
     form_t	**fl;
     pole_t	**pole; /* raw LPC pole data structure array */
-    sound_t *fbs;
     int dmaxc,dminc,dcountc,dcountf;
     bool domerge;
 
     double	fnom[]  = {  500, 1500, 2500, 3500, 4500, 5500, 6500},/*  "nominal" freqs.*/
                 fmins[] = {   50,  400, 1000, 2000, 2000, 3000, 3000}, /* frequency bounds */
                 fmaxs[] = { 1500, 3500, 4500, 5000, 6000, 6000, 8000}; /* for 1st 5 formants */
-
-    if (!ps)
-        return(NULL);
 
     if(nom_f1 > 0.0) {
         for(int i=0; i < MAXFORMANTS; i++) {
@@ -394,19 +390,16 @@ static sound_t *dpform(sound_t *ps, int nform, double nom_f1) {
     for(i=0;i<MAXCAN;i++) free(pcan[i]);
     free(pcan);
 
-    fbs = Snack_NewSound(ps->samprate, nform * 2);
-    Snack_ResizeSoundStorage(fbs, ps->length);
+    ps->nchannels = nform * 2;
+
     for (i = 0; i < ps->length; i++) {
         for (j = 0; j < nform * 2; j++) {
-            Snack_SetSample(fbs, j, i, fr[j][i]);
+            Snack_SetSample(ps, j, i, fr[j][i]);
         }
     }
-    fbs->length = ps->length;
 
     for(i = 0; i < nform*2; i++) free(fr[i]);
     free(fr);
-
-    return(fbs);
 }
 
     /* lpc_poles.c */
@@ -468,7 +461,7 @@ static int lpcbsa(int np, int wind, short *data, double *lpc, double *energy,
 }
 
 /*************************************************************************/
-static sound_t *lpc_poles(sound_t *sp, double wdur, double frame_int, int lpc_ord,
+static void lpc_poles(sound_t *sp, double wdur, double frame_int, int lpc_ord,
                         double preemp, int lpc_type, int w_type)
 {
     int i, j, size, step, nform, init, nfrm;
@@ -476,30 +469,29 @@ static sound_t *lpc_poles(sound_t *sp, double wdur, double frame_int, int lpc_or
     double lpc_stabl = 70.0, energy, lpca[MAXORDER], normerr,
            *bap=NULL, *frp=NULL, *rhp=NULL;
     short *datap, *dporg;
-    sound_t *lp;
 
     if(lpc_type == 1) { /* force "standard" stabilized covariance (ala bsa) */
         wdur = 0.025;
         preemp = exp(-62.831853 * 90. / sp->samprate); /* exp(-1800*pi*T) */
     }
     if((lpc_ord > MAXORDER) || (lpc_ord < 2)/* || (! ((short**)sp->data)[0])*/)
-        return(NULL);
+        return;
     /*  np = (char*)new_ext(sp->name,"pole");*/
     wdur = integerize(wdur,(double)sp->samprate);
     frame_int = integerize(frame_int,(double)sp->samprate);
     nfrm= 1 + (int) (((((double)sp->length)/sp->samprate) - wdur)/(frame_int));
 
     if (nfrm < 1)
-        return NULL;
+        return;
 
     size = (int) (.5 + (wdur * sp->samprate));
     step = (int) (.5 + (frame_int * sp->samprate));
-    pole = malloc(nfrm/*lp->buff_size*/ * sizeof(pole_t*));
+    pole = malloc(nfrm * sizeof(pole_t*));
     datap = dporg = malloc(sizeof(short) * sp->length);
     for (i = 0; i < sp->length; i++) {
         datap[i] = (short) Snack_GetSample(sp, 0, i);
     }
-    for(j=0, init=true/*, datap=((short**)sp->data)[0]*/; j < nfrm/*lp->buff_size*/;j++, datap += step){
+    for(j=0, init=true/*, datap=((short**)sp->data)[0]*/; j < nfrm;j++, datap += step){
         pole[j] = malloc(sizeof(pole_t));
         pole[j]->freq = frp = malloc(sizeof(double)*lpc_ord);
         pole[j]->band = bap = malloc(sizeof(double)*lpc_ord);
@@ -536,19 +528,21 @@ static sound_t *lpc_poles(sound_t *sp, double wdur, double frame_int, int lpc_or
             pole[j]->npoles = 0;
             init = true;		/* restart root search in a neutral zone */
         }
-    } /* end LPC pole computation for all lp->buff_size frames */
-    /*     lp->data = (caddr_t)pole;*/
+    }
+
     free(dporg);
-    lp = Snack_NewSound((int)(1.0/frame_int), lpc_ord);
-    Snack_ResizeSoundStorage(lp, nfrm);
+
+    sp->samprate = (int)(1.0/frame_int);
+    sp->nchannels = lpc_ord;
+    sp->length = nfrm;
+
     for (i = 0; i < nfrm; i++) {
         for (j = 0; j < lpc_ord; j++) {
-            Snack_SetSample(lp, j, i, pole[i]->freq[j]);
+            Snack_SetSample(sp, j, i, pole[i]->freq[j]);
         }
     }
-    lp->length = nfrm;
-    lp->pole = pole;
-    return(lp);
+
+    sp->pole = pole;
 }
 
 /*	Copyright (c) 1987, 1988, 1989 AT&T	*/
@@ -731,14 +725,13 @@ static int ratprx(double a, int *k, int *l, int qlim) {
 
 /* ----------------------------------------------------------------------- */
 
-static sound_t *Fdownsample(sound_t *s, double freq2, int start, int end) {
+static void Fdownsample(sound_t *s, double freq2, int start, int end) {
     short	*bufin, **bufout;
     static double	beta = 0.0, b[256];
     double	ratio_t, maxi, ratio, beta_new, freq1;
     static int	ncoeff = 127, ncoefft = 0, nbits = 15;
     static short	ic[256];
     int	insert, decimate, out_samps, smin, smax;
-    sound_t *so;
 
     int i, j;
 
@@ -754,7 +747,8 @@ static sound_t *Fdownsample(sound_t *s, double freq2, int start, int end) {
     ratprx(ratio,&insert,&decimate,10);
     ratio_t = ((double)insert)/((double)decimate);
 
-    if(ratio_t > .99) return(s);
+    if(ratio_t > .99)
+        return;
 
     freq2 = ratio_t * freq1;
     beta_new = (.5 * freq2)/(insert * freq1);
@@ -773,31 +767,29 @@ static sound_t *Fdownsample(sound_t *s, double freq2, int start, int end) {
     if (!dwnsamp(bufin,end-start+1,bufout,&out_samps,insert,decimate,ncoefft,ic,
                  &smin,&smax))
     {
-        return NULL;
+        return;
     }
 
-    so = Snack_NewSound(0, s->nchannels);
-    Snack_ResizeSoundStorage(so, out_samps);
     for (i = 0; i < out_samps; i++) {
-        Snack_SetSample(so, 0, i, (*bufout)[i]);
+        Snack_SetSample(s, 0, i, (*bufout)[i]);
     }
-    so->length = out_samps;
-    so->samprate = (int)freq2;
+
+    s->length = out_samps;
+    s->samprate = (int)freq2;
+
     free(*bufout);
     free(bufout);
     free(bufin);
-    return(so);
 }
 
 /*      ----------------------------------------------------------      */
 
-static sound_t *highpass(sound_t *s) {
+static void highpass(sound_t *s) {
     short *datain, *dataout;
     static short *lcf;
     static int len = 0;
     double scale, fn;
     int i;
-    sound_t *so;
 
     /*  Header *h, *dup_header();*/
 
@@ -820,24 +812,19 @@ static sound_t *highpass(sound_t *s) {
             lcf[i] = (short) (scale * (.5 + (.4 * cos(fn * ((double)i)))));
     }
     do_fir(datain,s->length,dataout,len,lcf,1); /* in downsample.c */
-    so = Snack_NewSound(s->samprate, s->nchannels);
-    if (so == NULL) return(NULL);
-    Snack_ResizeSoundStorage(so, s->length);
+
     for (i = 0; i < s->length; i++) {
-        Snack_SetSample(so, 0, i, dataout[i]);
+        Snack_SetSample(s, 0, i, dataout[i]);
     }
-    so->length = s->length;
+
     free(dataout);
     free(datain);
-    return(so);
 }
 
 void formantCmd(sound_t *s) {
     int nform, i,j, lpc_ord, lpc_type, w_type;
     double frame_int, wdur,
            ds_freq, nom_f1 = -10.0, preemp;
-    sound_t *dssnd = NULL, *hpsnd = NULL, *polesnd = NULL;
-    sound_t *formantsnd = NULL, *hpsrcsnd, *polesrcsnd;
     int startpos = 0, endpos = -1;
 
     lpc_ord = 12;
@@ -862,32 +849,20 @@ void formantCmd(sound_t *s) {
     w_type = 0;
 
     if(ds_freq < s->samprate) {
-        dssnd = Fdownsample(s,ds_freq, startpos, endpos);
+        Fdownsample(s, ds_freq, startpos, endpos);
     }
-
-    hpsrcsnd = (dssnd ? dssnd : s);
 
     if (preemp < 1.0) { /* be sure DC and rumble are gone! */
-        hpsnd = highpass(hpsrcsnd);
+        highpass(s);
     }
 
-    polesrcsnd = (hpsnd ? hpsnd : s);
+    lpc_poles(s, wdur, frame_int, lpc_ord, preemp, lpc_type, w_type);
+    dpform(s, nform, nom_f1);
 
-    polesnd = lpc_poles(polesrcsnd, wdur, frame_int, lpc_ord,
-            preemp, lpc_type, w_type);
-
-    formantsnd = dpform(polesnd, nform, nom_f1);
-
-    if (dssnd) Snack_DeleteSound(dssnd);
-    if (hpsnd) Snack_DeleteSound(hpsnd);
-    Snack_DeleteSound(polesnd);
-
-    for (i = 0; i < formantsnd->length; i += 1) {
+    for (i = 0; i < s->length; i += 1) {
         for (j = 0; j < nform * 2; j += 1)
-            printf("%f\n", (double)(Snack_GetSample(formantsnd, j, i)));
+            printf("%f\n", (double)(Snack_GetSample(s, j, i)));
 
         putchar('\n');
     }
-
-    Snack_DeleteSound(formantsnd);
 }
