@@ -853,7 +853,7 @@ static void highpass(sound_t *s) {
 
     short *datain, *dataout;
     short *lcf;
-    size_t len = 0;
+    size_t len;
     double scale, fn;
 
     datain = malloc(sizeof(short) * s->n_samples);
@@ -862,14 +862,13 @@ static void highpass(sound_t *s) {
         datain[i] = (short) Snack_GetSample(s, 0, i);
     }
 
-    if(!len) {		/* need to create a Hanning FIR? */
-        lcf = malloc(sizeof(short) * LCSIZ);
-        len = 1 + (LCSIZ/2);
-        fn = PI * 2.0 / (LCSIZ - 1);
-        scale = 32767.0/(.5 * LCSIZ);
-        for(size_t i=0; i < len; i++)
-            lcf[i] = (short) (scale * (.5 + (.4 * cos(fn * ((double)i)))));
-    }
+    lcf = malloc(sizeof(short) * LCSIZ);
+    len = 1 + (LCSIZ/2);
+    fn = PI * 2.0 / (LCSIZ - 1);
+    scale = 32767.0/(.5 * LCSIZ);
+    for(size_t i=0; i < len; i++)
+        lcf[i] = (short) (scale * (.5 + (.4 * cos(fn * ((double)i)))));
+
     do_fir(datain,s->n_samples,dataout,len,lcf,1); /* in downsample.c */
 
     for (size_t i = 0; i < s->n_samples; i++) {
