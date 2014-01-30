@@ -46,7 +46,7 @@ void sound_init(sound_t *s, size_t samprate, size_t nchannels) {
     };
 }
 
-static void Snack_ResizeSoundStorage(sound_t *s, int len) {
+static void sound_resize(sound_t *s, int len) {
     s->length = len;
     s->blocks = realloc(s->blocks, len * sizeof(storage_t) * s->nchannels);
 }
@@ -56,7 +56,7 @@ void sound_destroy(sound_t *s) {
 }
 
 void sound_load_samples(sound_t *s, const short *samples, size_t len) {
-    Snack_ResizeSoundStorage(s, len);
+    sound_resize(s, len);
 
     for (size_t i = 0; i < s->length * s->nchannels; i += 1)
         s->blocks[i] = (storage_t) samples[i];
