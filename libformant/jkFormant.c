@@ -651,9 +651,9 @@ static int get_abs_maximum(short *d, int n) {
 
 /* ******************************************************************** */
 
-static int dwnsamp(short *buf, int in_samps, short **buf2, int *out_samps,
-                   int insert, int decimate, int ncoef, short *ic, int *smin,
-                   int *smax)
+static void dwnsamp(short *buf, int in_samps, short **buf2, int *out_samps,
+                    int insert, int decimate, int ncoef, short *ic, int *smin,
+                    int *smax)
 {
     short  *bufp, *bufp2;
     short	*buft;
@@ -691,7 +691,6 @@ static int dwnsamp(short *buf, int in_samps, short **buf2, int *out_samps,
     *smin = imin;
     *smax = imax;
     *buf2 = realloc(*buf2,sizeof(short) * (*out_samps));
-    return(true);
 }
 
 /*      ----------------------------------------------------------      */
@@ -764,11 +763,8 @@ static void Fdownsample(sound_t *s, double freq2, int start, int end) {
         }
     }				/*  endif new coefficients need to be computed */
 
-    if (!dwnsamp(bufin,end-start+1,bufout,&out_samps,insert,decimate,ncoefft,ic,
-                 &smin,&smax))
-    {
-        return;
-    }
+    dwnsamp(bufin, end-start+1, bufout, &out_samps, insert, decimate, ncoefft, ic,
+            &smin, &smax);
 
     for (i = 0; i < out_samps; i++) {
         Snack_SetSample(s, 0, i, (*bufout)[i]);
