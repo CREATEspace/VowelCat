@@ -11,12 +11,12 @@
 #include <stdio.h>
 #include <string.h>
 
-static double *pxl,*pa,*py,*pyl,*pa1,*px;
 /*	routine to solve ax=y with cholesky
     a - nxn matrix
     x,y -vectors
     */
 static void dlwrtrn(double *a, int *n, double *x, double *y) {
+    double *pxl,*pa,*py,*pyl,*pa1,*px;
     double sm;
     *x = *y / *a;
     pxl = x + 1;
@@ -32,13 +32,13 @@ static void dlwrtrn(double *a, int *n, double *x, double *y) {
     }
 }
 
-static double *pa1,*pa2,*pa3,*pa4,*pa5,*pc;
 /*	convert ref to lpc
     c - ref
     a - polyn
     n - no of coef
     */
 static void dreflpc(double *c, double *a, int *n) {
+    double *pa1,*pa2,*pa3,*pa4,*pa5,*pc;
     double ta1;
     *a = 1.;
     *(a+1) = *c;
@@ -58,7 +58,6 @@ static void dreflpc(double *c, double *a, int *n) {
     }
 }
 
-static double *pa_1,*pa_2,*pa_3,*pa_4,*pa_5,*pal,*pt;
 /*	performs cholesky decomposition
     a - l * l(transpose)
     l - lower triangle
@@ -69,6 +68,7 @@ static double *pa_1,*pa_2,*pa_3,*pa_4,*pa_5,*pal,*pt;
     upper half undisturbed.
     */
 static int dchlsky(double *a, int *n, double *t, double *det) {
+    double *pa_1,*pa_2,*pa_3,*pa_4,*pa_5,*pal,*pt;
     double sm;
     double sqrt();
     int m;
@@ -99,8 +99,6 @@ static int dchlsky(double *a, int *n, double *t, double *det) {
     return(m);
 }
 
-
-static double *pp,*ppl,*pa;
 /*	solve p*a=s using stabilized covariance method
     p - cov nxn matrix
     s - corrvec
@@ -108,6 +106,7 @@ static double *pp,*ppl,*pa;
     c - ref coefs
     */
 static int dcovlpc(double *p, double *s, double *a, int *n, double *c) {
+    double *pp,*ppl,*pa;
     double ee;
     double sqrt(),ps,ps1,thres,d;
     int m,n1;
@@ -143,10 +142,10 @@ static int dcovlpc(double *p, double *s, double *a, int *n, double *c) {
 }
 
 /* cov mat for wtd lpc	*/
-static double *pdl1,*pdl2,*pdl3,*pdl4,*pdl5,*pdl6,*pdll;
 static void dcwmtrx(double *s, int *ni, int *nl, int *np, double *phi,
                     double *shi, double *ps, double *w)
 {
+    double *pdl1,*pdl2,*pdl3,*pdl4,*pdl5,*pdl6,*pdll;
     double sm;
     int i,j;
     *ps = 0;
@@ -173,7 +172,6 @@ static void dcwmtrx(double *s, int *ni, int *nl, int *np, double *phi,
         }
 }
 
-static double *pp2,*ppl2,*pc2,*pcl,*pph1,*pph2,*pph3,*pphl;
 /*	pred anal subroutine with ridge reg
     s - speech
     ls - length of s
@@ -186,6 +184,7 @@ static double *pp2,*ppl2,*pc2,*pcl,*pph1,*pph2,*pph3,*pphl;
 int dlpcwtd(double *s, int *ls, double *p, int *np, double *c, double *phi,
             double *shi, double *xl, double *w)
 {
+    double *pp2,*ppl2,*pc2,*pcl,*pph1,*pph2,*pph3,*pphl;
     int m,np1,mm;
     double d,pre,pre3,pre2,pre0,pss,pss7,thres;
     double ee;
