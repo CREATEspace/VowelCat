@@ -48,7 +48,7 @@ typedef struct {   /* structure to hold raw LPC analysis data */
 static inline void sound_set_sample(sound_t *s, size_t chan, size_t i,
                                    storage_t val)
 {
-    s->blocks[i * s->n_channels + chan] = val;
+    s->samples[i * s->n_channels + chan] = val;
 }
 
 void sound_init(sound_t *s, size_t sample_rate, size_t n_channels) {
@@ -56,24 +56,24 @@ void sound_init(sound_t *s, size_t sample_rate, size_t n_channels) {
         .sample_rate = sample_rate,
         .n_channels = n_channels,
         .n_samples = 0,
-        .blocks = 0,
+        .samples = 0,
     };
 }
 
 void sound_destroy(sound_t *s) {
-    free(s->blocks);
+    free(s->samples);
 }
 
 static void sound_resize(sound_t *s, size_t n_samples) {
     s->n_samples = n_samples;
-    s->blocks = realloc(s->blocks, n_samples * s->n_channels * sizeof(storage_t));
+    s->samples = realloc(s->samples, n_samples * s->n_channels * sizeof(storage_t));
 }
 
 void sound_load_samples(sound_t *s, const short *samples, size_t n_samples) {
     sound_resize(s, n_samples);
 
     for (size_t i = 0; i < s->n_samples * s->n_channels; i += 1)
-        s->blocks[i] = (storage_t) samples[i];
+        s->samples[i] = (storage_t) samples[i];
 }
 
 

@@ -27,7 +27,7 @@ typedef struct sound_t {
     // The number of samples per channel in the audio data.
     size_t n_samples;
     // The audio data itself.
-    storage_t *blocks;
+    storage_t *samples;
 } sound_t;
 
 // Initialize the given sound and fill in its sample rate and number of
@@ -46,7 +46,7 @@ bool sound_calc_formants(sound_t *s);
 
 // Get the i'th sample in the given channel.
 static inline storage_t sound_get_sample(const sound_t *s, size_t chan, size_t i) {
-    return s->blocks[i * s->n_channels + chan];
+    return s->samples[i * s->n_channels + chan];
 }
 
 #endif
