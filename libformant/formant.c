@@ -17,9 +17,7 @@
 #include <assert.h>
 #include <math.h>
 #include <stdbool.h>
-#include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
 #include "formant.h"
 #include "processing.h"
@@ -938,13 +936,6 @@ bool sound_calc_formants(sound_t *s) {
         return false;
 
     dpform(s, poles, nform, nom_f1);
-
-    for (size_t i = 0; i < s->n_samples; i += 1) {
-        for (size_t j = 0; j < nform * 2; j += 1)
-            printf("%f\n", (double)(sound_get_sample(s, j, i)));
-
-        putchar('\n');
-    }
 
     return true;
 }

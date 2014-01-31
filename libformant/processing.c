@@ -8,7 +8,6 @@
 
 #include <math.h>
 #include <stdbool.h>
-#include <stdio.h>
 #include <string.h>
 
 /*	routine to solve ax=y with cholesky
@@ -108,14 +107,13 @@ static int dchlsky(double *a, int *n, double *t, double *det) {
 static int dcovlpc(double *p, double *s, double *a, int *n, double *c) {
     double *pp,*ppl,*pa;
     double ee;
-    double sqrt(),ps,ps1,thres,d;
+    double ps,thres,d;
     int m,n1;
     m = dchlsky(p,n,c,&d);
     dlwrtrn(p,n,c,s);
     thres = 1.0e-31;
     n1 = *n + 1;
     ps = *(a + *n);
-    ps1 = 1.e-8*ps;
     ppl = p + *n * m;
     m = 0;
     for(pp=p;pp<ppl;pp+=n1){
@@ -127,7 +125,6 @@ static int dcovlpc(double *p, double *s, double *a, int *n, double *c) {
     for(pp=c;pp<ppl;pp++){
         ee = ee - *pp * *pp;
         if(ee<thres)break;
-        if(ee<ps1)fprintf(stderr,"*w* covlpc is losing accuracy\n");
         *(pa++) = sqrt(ee);
     }
     m = pa - a;
@@ -186,7 +183,7 @@ int dlpcwtd(double *s, int *ls, double *p, int *np, double *c, double *phi,
 {
     double *pp2,*ppl2,*pc2,*pcl,*pph1,*pph2,*pph3,*pphl;
     int m,np1,mm;
-    double d,pre,pre3,pre2,pre0,pss,pss7,thres;
+    double d,pre,pre3,pre2,pre0,pss,thres;
     double ee;
     np1  =  *np  +  1;
     dcwmtrx(s,np,ls,np,phi,shi,&pss,w);
@@ -198,9 +195,7 @@ int dlpcwtd(double *s, int *ls, double *p, int *np, double *c, double *phi,
             pph1 += np1;
         }
         *ppl2 = pss;
-        pss7 = .0000001 * pss;
         mm = dchlsky(phi,np,c,&d);
-        if(mm< *np)fprintf(stderr,"LPCHFA error covariance matric rank %d \n",mm);
         dlwrtrn(phi,np,c,shi);
         ee = pss;
         thres = 0.;
@@ -210,12 +205,8 @@ int dlpcwtd(double *s, int *ls, double *p, int *np, double *c, double *phi,
             if(*pph1<thres)break;
             ee = ee - *pc2 * *pc2;
             if(ee<thres)break;
-            if(ee<pss7)
-                fprintf(stderr,"LPCHFA is losing accuracy\n");
         }
         m = pc2 - c;
-        if(m != mm)
-            fprintf(stderr,"*W* LPCHFA error - inconsistent value of m %d \n",m);
         pre = ee * *xl;
         pphl = phi + *np * *np;
         for(pph1=phi+1;pph1<pphl;pph1+=np1)
@@ -388,7 +379,7 @@ static void w_window(short *din, double *dout, int n, double preemp, int type) {
             hnwindow(din, dout, n, preemp);
             return;
         default:
-            printf("Unknown window type (%d) requested in w_window()\n",type);
+        break;
     }
 }
 
@@ -420,7 +411,6 @@ static void autoc(int windowsize, double *s, int p, double *r, double *e) {
         }
         *(++r) = sum/sum0;
     }
-    if(sum0 < 0.0) printf("lpcfloat:autoc(): sum0 = %f\n",sum0);
     *e = sqrt(sum0/windowsize);
 }
 
@@ -636,7 +626,6 @@ static int qquad(double a, double b, double c, double *r1r, double *r1i,
 
     if(a == 0.0){
         if(b == 0){
-            printf("Bad coefficients to _quad().\n");
             return(false);
         }
         *r1r = -c/b;
@@ -739,9 +728,6 @@ static int lbpoly(double *a, int order, double *rootr, double *rooti) {
                 delp = ((c[2] * b[1]) - (c[3] * b[0]))/den;
                 delq = ((c[2] * b[0]) - (b[1] * (c[1] - b[1])))/den;
 
-                /* printf("\nerr=%f  delp=%f  delq=%f  p=%f  q=%f",
-                   err,delp,delq,p,q); */
-
                 p += delp;
                 q += delq;
 
@@ -752,12 +738,10 @@ static int lbpoly(double *a, int order, double *rootr, double *rooti) {
             else { /* try some new starting values */
                 p = ((double)rand() - 0.5*RAND_MAX)/(double)RAND_MAX;
                 q = ((double)rand() - 0.5*RAND_MAX)/(double)RAND_MAX;
-                /* fprintf(stderr, "\nTried new values: p=%f  q=%f\n",p,q); */
             }
 
         } /* for(ntrys... */
         if((itcnt >= MAX_ITS) && (ntrys >= MAX_TRYS)){
-            /*	    printf("Exceeded maximum trial count in _lbpoly.\n");*/
             return(false);
         }
 
@@ -777,14 +761,12 @@ static int lbpoly(double *a, int order, double *rootr, double *rooti) {
         return(true);
     }
     if(ord < 1) {
-        printf("Bad ORDER parameter in _lbpoly()\n");
         return(false);
     }
 
     if( a[1] != 0.0) rootr[0] = -a[0]/a[1];
     else {
         rootr[0] = 100.0;	/* arbitrary recovery value */
-        printf("Numerical problems in lbpoly()\n");
     }
     rooti[0] = 0.0;
 
