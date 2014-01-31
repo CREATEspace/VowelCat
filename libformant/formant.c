@@ -53,7 +53,7 @@ void formant_opts_process(formant_opts_t *opts) {
     if (opts->lpc_type == LPC_TYPE_BSA) {
         opts->window_len = 0.025;
         /* exp(-1800*pi*T) */
-        opts->pre_emph_factor = exp(-62.831853 * 90 / opts->ds_freq);
+        opts->pre_emph_factor = exp(-62.831853 * 90 / opts->downsample_rate);
     }
 }
 
@@ -888,8 +888,8 @@ static void highpass(sound_t *s) {
 bool sound_calc_formants(sound_t *s, const formant_opts_t *opts) {
     pole_t **poles;
 
-    if (opts->ds_freq < s->sample_rate)
-        Fdownsample(s, opts->ds_freq);
+    if (opts->downsample_rate < s->sample_rate)
+        Fdownsample(s, opts->downsample_rate);
 
     /* be sure DC and rumble are gone! */
     if (opts->pre_emph_factor < 1.0)

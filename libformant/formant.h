@@ -44,7 +44,7 @@ typedef struct {
         LPC_TYPE_INVALID,
     } lpc_type;
 
-    double ds_freq;
+    double downsample_rate;
     double nom_freq;
 } formant_opts_t;
 
@@ -57,7 +57,7 @@ static const formant_opts_t FORMANT_OPTS_DEFAULT = {
     .window_len = 0.049,
     .window_type = WINDOW_TYPE_RECTANGULAR,
     .lpc_type = LPC_TYPE_NORMAL,
-    .ds_freq = 10000,
+    .downsample_rate = 10000,
     .nom_freq = -10,
 };
 
