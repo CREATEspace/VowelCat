@@ -78,7 +78,6 @@ void sound_load_samples(sound_t *s, const short *samples, size_t n_samples) {
 /*	dpform.c       */
 
 /* a formant tracker based on LPC polynomial roots and dynamic programming */
-/***/
 /* At each frame, the LPC poles are ordered by increasing frequency.  All
    "reasonable" mappings of the poles to F1, F2, ... are performed.
    The cost of "connecting" each of these mappings with each of the mappings
@@ -174,7 +173,6 @@ static int get_fcand(int npole, double *freq, int nform, short **pcan,
     return candy(pcan, freq, npole, nform, domerge, 0, 0, 0, 0, fmins, fmaxs) + 1;
 }
 
-/*      ----------------------------------------------------------      */
 /* find the maximum in the "stationarity" function (stored in rms) */
 static double get_stat_max(pole_t **poles, int nframes) {
     int i;
@@ -233,9 +231,7 @@ static void dpform(sound_t *ps, pole_t **poles, size_t nform, double nom_f1) {
     for(size_t i=0;i < ps->n_samples; i++)
         fl[i] = malloc(sizeof(form_t));
 
-    /*******************************************************************/
     /* main formant tracking loop */
-    /*******************************************************************/
     for(size_t i = 0; i < ps->n_samples; i++) {	/* for all analysis frames... */
         size_t ncan = 0;		/* initialize candidate mapping count to 0 */
 
@@ -322,7 +318,6 @@ static void dpform(sound_t *ps, pole_t **poles, size_t nform, double nom_f1) {
                 (ffact * ferr) + minerr;
         }			/* end for each CURRENT mapping... */
     }				/* end for all analysis frames... */
-    /**************************************************************************/
 
     /* Pick the candidate in the final frame with the lowest cost. */
     /* Starting with that min.-cost cand., work back thru the lattice. */
@@ -419,17 +414,14 @@ static void dpform(sound_t *ps, pole_t **poles, size_t nform, double nom_f1) {
 
 #define MAXORDER 30
 
-/*************************************************************************/
 static double integerize(double dur, double freq) {
     return (int)(.5 + freq * dur) / freq;
 }
 
-/**********************************************************************/
 static double frand() {
     return (((double)rand())/(double)RAND_MAX);
 }
 
-/**********************************************************************/
 /* a quick and dirty interface to bsa's stabilized covariance LPC */
 #define NPM	30	/* max lpc order		*/
 
@@ -468,7 +460,6 @@ static int lpcbsa(int np, int wind, short *data, double *lpc, double *energy,
     return(true);
 }
 
-/*************************************************************************/
 static pole_t **lpc_poles(sound_t *sp, const formant_opts_t *opts) {
     enum { LPC_STABLE = 70 };
 
@@ -586,7 +577,6 @@ static pole_t **lpc_poles(sound_t *sp, const formant_opts_t *opts) {
 /* downsample.c */
 /* a quick and dirty downsampler */
 
-/*      ----------------------------------------------------------      */
 /* create the coefficients for a symmetric FIR lowpass filter using the
    window technique with a Hanning window. */
 static void lc_lin_fir(double fc, int *nf, double *coef) {
@@ -611,8 +601,6 @@ static void lc_lin_fir(double fc, int *nf, double *coef) {
     for(i=0;i<n;i++)
         coef[i] *= (.5 + (.5 * cos(fn * ((double)i))));
 }
-
-/*      ----------------------------------------------------------      */
 
 /* ic contains 1/2 the coefficients of a symmetric FIR filter with unity
    passband gain.  This filter is convolved with the signal in buf.
@@ -716,8 +704,6 @@ static void do_fir(short *buf, int in_samps, short *bufo, int ncoef,
     }
 }
 
-/* ******************************************************************** */
-
 static int get_abs_maximum(short *d, int n) {
     int i;
     short amax, t;
@@ -733,8 +719,6 @@ static int get_abs_maximum(short *d, int n) {
     }
     return((int)amax);
 }
-
-/* ******************************************************************** */
 
 static void dwnsamp(short *buf, int in_samps, short **buf2, size_t *out_samps,
                     int insert, int decimate, int ncoef, short *ic, int *smin,
@@ -778,8 +762,6 @@ static void dwnsamp(short *buf, int in_samps, short **buf2, size_t *out_samps,
     *buf2 = realloc(*buf2,sizeof(short) * (*out_samps));
 }
 
-/*      ----------------------------------------------------------      */
-
 static int ratprx(double a, int *k, int *l, int qlim) {
     double aa, af, q, em, qq = 0, pp = 0, ps, e;
     int	ai, ip, i;
@@ -806,8 +788,6 @@ static int ratprx(double a, int *k, int *l, int qlim) {
     *l = (int) qq;
     return(true);
 }
-
-/* ----------------------------------------------------------------------- */
 
 static void Fdownsample(sound_t *s, double freq2) {
     enum { N_BITS = 15 };
@@ -868,8 +848,6 @@ static void Fdownsample(sound_t *s, double freq2) {
     free(bufout);
     free(bufin);
 }
-
-/*      ----------------------------------------------------------      */
 
 static void highpass(sound_t *s) {
     /* This assumes the sampling frequency is 10kHz and that the FIR

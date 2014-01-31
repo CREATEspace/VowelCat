@@ -250,8 +250,6 @@ int dlpcwtd(double *s, int *ls, double *p, int *np, double *c, double *phi,
 #ifndef DBL_MAX
 #define DBL_MAX 1.7976931348623157E+308
 #endif
-/*#include <esps/limits.h>*/
-/* for definition of DBL_MAX */
 
 #define MAXORDER	60	/* maximum permissible LPC order */
 
@@ -259,7 +257,6 @@ int dlpcwtd(double *s, int *ls, double *p, int *np, double *c, double *phi,
 #define M_PI    3.14159265358979323846
 #endif
 
-/*+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 static void rwindow(short *din, double *dout, int n, double preemp) {
     short *p;
 
@@ -275,7 +272,6 @@ static void rwindow(short *din, double *dout, int n, double preemp) {
 }
 
 
-/*+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 static void cwindow(short *din, double *dout, int n, double preemp) {
     int i;
     short *p;
@@ -306,7 +302,6 @@ static void cwindow(short *din, double *dout, int n, double preemp) {
 }
 
 
-/*+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 static void hwindow(short *din, double *dout, int n, double preemp) {
     int i;
     short *p;
@@ -335,7 +330,6 @@ static void hwindow(short *din, double *dout, int n, double preemp) {
 }
 
 
-/*+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 static void hnwindow(short *din, double *dout, int n, double preemp) {
     int i;
     short *p;
@@ -363,7 +357,6 @@ static void hnwindow(short *din, double *dout, int n, double preemp) {
     }
 }
 
-/*+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 static void w_window(short *din, double *dout, int n, double preemp, int type) {
     switch(type) {
         case 0:
@@ -383,7 +376,6 @@ static void w_window(short *din, double *dout, int n, double preemp, int type) {
     }
 }
 
-/*+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
 /*
  * Compute the pp+1 autocorrelation lags of the windowsize samples in s.
  * Return the normalized autocorrelation coefficients in r.
@@ -773,7 +765,6 @@ static int lbpoly(double *a, int order, double *rootr, double *rooti) {
     return(true);
 }
 
-/*      ----------------------------------------------------------      */
 /* Find the roots of the LPC denominator polynomial and convert the z-plane
    zeros to equivalent resonant frequencies and bandwidths.	*/
 /* The complex poles are then ordered by frequency.  */
