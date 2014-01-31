@@ -806,7 +806,7 @@ int formant(int lpc_order, double s_freq, double *lpca, int *n_form,
             double *freq, double *band, int init)
 {
     double  x, flo, pi2t, theta;
-    double  rr[MAXORDER], ri[MAXORDER];
+    static double  rr[MAXORDER], ri[MAXORDER];
     int	i,ii,iscomp1,iscomp2,fc,swit;
 
     if(init){ /* set up starting points for the root search near unit circle */
