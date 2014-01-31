@@ -12,26 +12,10 @@
 #ifndef FORMANT_H
 #define FORMANT_H
 
+#include <stdbool.h>
+
 typedef short sample_t;
 typedef float storage_t;
-
-typedef struct { /* structure of a DP lattice node for formant tracking */
-    size_t ncand; /* # of candidate mappings for this frame */
-    short **cand;      /* pole-to-formant map-candidate array */
-    short *prept;	 /* backpointer array for each frame */
-    double *cumerr; 	 /* cum. errors associated with each cand. */
-} form_t;
-
-typedef struct {   /* structure to hold raw LPC analysis data */
-    double rms;    /* rms for current LPC analysis frame */
-    double rms2;    /* rms for current F0 analysis frame */
-    double f0;     /* fundamental frequency estimate for this frame */
-    double pv;		/* probability that frame is voiced */
-    double change; /* spec. distance between current and prev. frames */
-    size_t npoles; /* # of complex poles from roots of LPC polynomial */
-    double *freq;  /* array of complex pole frequencies (Hz) */
-    double *band;  /* array of complex pole bandwidths (Hz) */
-} pole_t;
 
 typedef struct sound_t {
     // Sample rate of the audio data in Hz.
@@ -42,8 +26,6 @@ typedef struct sound_t {
     size_t n_samples;
     // The audio data itself.
     storage_t *blocks;
-
-    pole_t **pole;
 } sound_t;
 
 // Initialize the given sound and fill in its sample rate and number of
@@ -58,7 +40,7 @@ void sound_load_samples(sound_t *s, const short *samples, size_t n_samples);
 
 // Calculate the formants for the samples in the given sound. The sound is
 // modified in place.
-void sound_calc_formants(sound_t *s);
+bool sound_calc_formants(sound_t *s);
 
 // Get the i'th sample in the given channel.
 static inline storage_t sound_get_sample(const sound_t *s, size_t chan, size_t i) {
