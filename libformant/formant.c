@@ -25,6 +25,7 @@
 #include "processing.h"
 
 #define MAXFORMANTS 7
+#define PI 3.1415927
 
 typedef struct { /* structure of a DP lattice node for formant tracking */
     size_t ncand; /* # of candidate mappings for this frame */
@@ -482,6 +483,7 @@ static pole_t **lpc_poles(sound_t *sp, double wdur, double frame_int, size_t lpc
     size_t nfrm;
     pole_t **poles;
     double energy, lpca[MAXORDER], normerr, *bap=NULL, *frp=NULL, *rhp=NULL;
+    double  rr[MAXORDER], ri[MAXORDER];
     short *datap, *dporg;
 
     if(lpc_type == 1) { /* force "standard" stabilized covariance (ala bsa) */
@@ -534,9 +536,22 @@ static pole_t **lpc_poles(sound_t *sp, double wdur, double frame_int, size_t lpc
                 break;
         }
         poles[j]->change = 0.0;
+
+        /* set up starting points for the root search near unit circle */
+        if (init) {
+            double x = PI/(lpc_ord + 1);
+            double flo;
+            for(size_t i=0;i<=lpc_ord;i++){
+                flo = lpc_ord - i;
+                rr[i] = 2.0 * cos((flo + 0.5) * x);
+                ri[i] = 2.0 * sin((flo + 0.5) * x);
+            }
+        }
+
         /* don't waste time on low energy frames */
         if((poles[j]->rms = energy) > 1.0){
-            formant(lpc_ord,(double)sp->sample_rate, lpca, &nform, frp, bap, init);
+            formant(lpc_ord,(double)sp->sample_rate, lpca, &nform, frp, bap, rr,
+                    ri);
             poles[j]->npoles = nform;
             init=false;		/* use old poles to start next search */
         } else {			/* write out no pole frequencies */
@@ -569,8 +584,6 @@ static pole_t **lpc_poles(sound_t *sp, double wdur, double frame_int, size_t lpc
 
 /* downsample.c */
 /* a quick and dirty downsampler */
-
-#define PI 3.1415927
 
 /*      ----------------------------------------------------------      */
 /* create the coefficients for a symmetric FIR lowpass filter using the

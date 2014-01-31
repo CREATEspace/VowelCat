@@ -2,7 +2,7 @@
 #define PROCESSING_H
 
 int formant(int lpc_order, double s_freq, double *lpca, int *n_form,
-            double *freq, double *band, int init);
+            double *freq, double *band, double *rr, double *ri);
 
 int w_covar(short *xx, int *m, int n, int istrt, double *y, double *alpha,
             double *r0, double preemp, int w_type);

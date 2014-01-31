@@ -803,20 +803,11 @@ static int lbpoly(double *a, int order, double *rootr, double *rooti) {
 /* freq: returned array of candidate formant frequencies */
 /* band: returned array of candidate formant bandwidths */
 int formant(int lpc_order, double s_freq, double *lpca, int *n_form,
-            double *freq, double *band, int init)
+            double *freq, double *band, double *rr, double *ri)
 {
-    double  x, flo, pi2t, theta;
-    static double  rr[MAXORDER], ri[MAXORDER];
+    double  flo, pi2t, theta;
     int	i,ii,iscomp1,iscomp2,fc,swit;
 
-    if(init){ /* set up starting points for the root search near unit circle */
-        x = M_PI/(lpc_order + 1);
-        for(i=0;i<=lpc_order;i++){
-            flo = lpc_order - i;
-            rr[i] = 2.0 * cos((flo + 0.5) * x);
-            ri[i] = 2.0 * sin((flo + 0.5) * x);
-        }
-    }
     if(! lbpoly(lpca,lpc_order,rr,ri)){ /* find the roots of the LPC polynomial */
         *n_form = 0;		/* was there a problem in the root finder? */
         return(false);
