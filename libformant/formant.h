@@ -14,7 +14,9 @@
 
 #include <stdbool.h>
 
+// How input samples are represented.
 typedef short sample_t;
+// How samples are stored in the sound structure.
 typedef float storage_t;
 
 typedef struct sound_t {
