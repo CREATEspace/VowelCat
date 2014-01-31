@@ -23,6 +23,7 @@
 #include "processing.h"
 
 #define MAXFORMANTS 7
+#define MAXORDER 30
 #define PI 3.1415927
 
 typedef struct { /* structure of a DP lattice node for formant tracking */
@@ -42,6 +43,19 @@ typedef struct {   /* structure to hold raw LPC analysis data */
     double *freq;  /* array of complex pole frequencies (Hz) */
     double *band;  /* array of complex pole bandwidths (Hz) */
 } pole_t;
+
+void formant_opts_process(formant_opts_t *opts) {
+    assert(opts->n_formants <= (opts->lpc_order - 4) / 2);
+    assert(opts->n_formants <= MAXFORMANTS);
+    assert(opts->lpc_order <= MAXORDER && opts->lpc_order >= 2);
+
+    /* force "standard" stabilized covariance (ala bsa) */
+    if (opts->lpc_type == LPC_TYPE_BSA) {
+        opts->window_len = 0.025;
+        /* exp(-1800*pi*T) */
+        opts->pre_emph_factor = exp(-62.831853 * 90 / opts->ds_freq);
+    }
+}
 
 static inline void sound_set_sample(sound_t *s, size_t chan, size_t i,
                                    storage_t val)
@@ -412,8 +426,6 @@ static void dpform(sound_t *ps, pole_t **poles, size_t nform, double nom_f1) {
 
     /* computation and I/O routines for dealing with LPC poles */
 
-#define MAXORDER 30
-
 static double integerize(double dur, double freq) {
     return (int)(.5 + freq * dur) / freq;
 }
@@ -471,19 +483,8 @@ static pole_t **lpc_poles(sound_t *sp, const formant_opts_t *opts) {
     short *datap, *dporg;
     double frame_int;
     double wdur;
-    double preemp;
 
-    if(opts->lpc_type == LPC_TYPE_BSA) { /* force "standard" stabilized covariance (ala bsa) */
-        wdur = 0.025;
-        preemp = exp(-62.831853 * 90. / sp->sample_rate); /* exp(-1800*pi*T) */
-    } else {
-        wdur = opts->window_len;
-        preemp = opts->pre_emph_factor;
-    }
-    if((opts->lpc_order > MAXORDER) || (opts->lpc_order < 2))
-        return NULL;
-
-    wdur = integerize(wdur,(double)sp->sample_rate);
+    wdur = integerize(opts->window_len,(double)sp->sample_rate);
     frame_int = integerize(opts->frame_len,(double)sp->sample_rate);
     nfrm= 1 + (int) (((((double)sp->n_samples)/sp->sample_rate) - wdur)/(frame_int));
 
@@ -506,12 +507,13 @@ static pole_t **lpc_poles(sound_t *sp, const formant_opts_t *opts) {
         switch(opts->lpc_type) {
             case LPC_TYPE_NORMAL:
                 if(! lpc(opts->lpc_order,LPC_STABLE,size,datap,lpca,rhp,NULL,&normerr,
-                            &energy, preemp, opts->window_type)){
+                            &energy, opts->pre_emph_factor, opts->window_type)){
                     break;
                 }
                 break;
             case LPC_TYPE_BSA:
-                if(! lpcbsa(opts->lpc_order,size,datap,lpca, &energy, preemp)){
+                if(! lpcbsa(opts->lpc_order,size,datap,lpca, &energy,
+                            opts->pre_emph_factor)){
                     break;
                 }
                 break;
@@ -520,7 +522,8 @@ static pole_t **lpc_poles(sound_t *sp, const formant_opts_t *opts) {
                     int Ord = opts->lpc_order;
                     double alpha, r0;
 
-                    w_covar(datap, &Ord, size, 0, lpca, &alpha, &r0, preemp, 0);
+                    w_covar(datap, &Ord, size, 0, lpca, &alpha, &r0,
+                            opts->pre_emph_factor, 0);
                     energy = sqrt(r0/(size-Ord));
                 }
                 break;
@@ -884,9 +887,6 @@ static void highpass(sound_t *s) {
 
 bool sound_calc_formants(sound_t *s, const formant_opts_t *opts) {
     pole_t **poles;
-
-    assert(opts->n_formants <= (opts->lpc_order - 4) / 2);
-    assert(opts->n_formants <= MAXFORMANTS);
 
     if (opts->ds_freq < s->sample_rate)
         Fdownsample(s, opts->ds_freq);

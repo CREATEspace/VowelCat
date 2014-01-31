@@ -61,6 +61,10 @@ static const formant_opts_t FORMANT_OPTS_DEFAULT = {
     .nom_freq = -10,
 };
 
+// Process and validate the given options. The options must be ran through this
+// function before being passed into sound_calc_formants.
+void formant_opts_process(formant_opts_t *opts);
+
 // Represents a raw audio segment.
 typedef struct sound_t {
     // Sample rate of the audio data in Hz.
