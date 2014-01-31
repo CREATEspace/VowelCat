@@ -56,7 +56,7 @@ void sound_init(sound_t *s, size_t sample_rate, size_t n_channels) {
         .sample_rate = sample_rate,
         .n_channels = n_channels,
         .n_samples = 0,
-        .samples = 0,
+        .samples = NULL,
     };
 }
 
