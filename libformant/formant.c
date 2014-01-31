@@ -478,30 +478,41 @@ static pole_t **lpc_poles(sound_t *sp, const formant_opts_t *opts) {
     int size, step, nform, init;
     size_t nfrm;
     pole_t **poles;
-    double energy, lpca[MAXORDER], normerr, *bap=NULL, *frp=NULL, *rhp=NULL;
-    double  rr[MAXORDER], ri[MAXORDER];
+    double energy, lpca[MAXORDER], normerr, *bap, *frp, *rhp;
+    double rr[MAXORDER], ri[MAXORDER];
     short *datap, *dporg;
     double frame_int;
     double wdur;
     int ord;
     double alpha, r0;
+    double flo;
+    double x;
 
-    wdur = integerize(opts->window_len,(double)sp->sample_rate);
-    frame_int = integerize(opts->frame_len,(double)sp->sample_rate);
-    nfrm= 1 + (int) (((((double)sp->n_samples)/sp->sample_rate) - wdur)/(frame_int));
+    bap = NULL;
+    frp = NULL;
+    rhp = NULL;
+
+    x = PI / (opts->lpc_order + 1);
+
+    wdur = integerize(opts->window_len, sp->sample_rate);
+    frame_int = integerize(opts->frame_len, sp->sample_rate);
+    nfrm = 1 + (int)(((double)(sp->n_samples) / sp->sample_rate - wdur) / frame_int);
 
     if (nfrm < 1)
         return NULL;
 
-    size = (int) (.5 + (wdur * sp->sample_rate));
-    step = (int) (.5 + (frame_int * sp->sample_rate));
-    poles = malloc(nfrm * sizeof(pole_t*));
-    datap = dporg = malloc(sizeof(short) * sp->n_samples);
-    for (size_t i = 0; i < sp->n_samples; i++) {
+    size = (int)(.5 + wdur * sp->sample_rate);
+    step = (int)(.5 + frame_int * sp->sample_rate);
+    poles = malloc(nfrm * sizeof(pole_t *));
+    dporg = malloc(sizeof(short) * sp->n_samples);
+    datap = dporg;
+
+    for (size_t i = 0; i < sp->n_samples; i++)
         datap[i] = (short) sound_get_sample(sp, 0, i);
-    }
+
     init = true;
-    for(size_t j = 0; j < nfrm;j++, datap += step){
+
+    for (size_t j = 0; j < nfrm; j += 1) {
         poles[j] = malloc(sizeof(pole_t));
         poles[j]->freq = frp = malloc(sizeof(double)*opts->lpc_order);
         poles[j]->band = bap = malloc(sizeof(double)*opts->lpc_order);
@@ -529,38 +540,37 @@ static pole_t **lpc_poles(sound_t *sp, const formant_opts_t *opts) {
 
         /* set up starting points for the root search near unit circle */
         if (init) {
-            double x = PI/(opts->lpc_order + 1);
-            double flo;
-            for(size_t i=0;i<=opts->lpc_order;i++){
+            for (size_t i = 0; i <= opts->lpc_order; i += 1) {
                 flo = opts->lpc_order - i;
                 rr[i] = 2.0 * cos((flo + 0.5) * x);
                 ri[i] = 2.0 * sin((flo + 0.5) * x);
             }
         }
 
+        poles[j]->rms = energy;
+
         /* don't waste time on low energy frames */
-        if((poles[j]->rms = energy) > 1.0){
-            formant(opts->lpc_order,(double)sp->sample_rate, lpca, &nform, frp, bap, rr,
-                    ri);
+        if (energy > 1.0) {
+            formant(opts->lpc_order, sp->sample_rate, lpca, &nform, frp, bap, rr, ri);
             poles[j]->npoles = nform;
             init=false;		/* use old poles to start next search */
         } else {			/* write out no pole frequencies */
             poles[j]->npoles = 0;
             init = true;		/* restart root search in a neutral zone */
         }
+
+        datap += step;
     }
 
     free(dporg);
 
-    sp->sample_rate = (int)(1.0/frame_int);
+    sp->sample_rate = (int)(1.0 / frame_int);
     sp->n_channels = opts->lpc_order;
     sp->n_samples = nfrm;
 
-    for (size_t i = 0; i < nfrm; i++) {
-        for (size_t j = 0; j < opts->lpc_order; j++) {
+    for (size_t i = 0; i < nfrm; i++)
+        for (size_t j = 0; j < opts->lpc_order; j++)
             sound_set_sample(sp, j, i, poles[i]->freq[j]);
-        }
-    }
 
     return poles;
 }
