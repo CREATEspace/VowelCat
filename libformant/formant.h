@@ -48,4 +48,8 @@ void sound_destroy(sound_t *s);
 void sound_load_samples(sound_t *s, const short *samples, size_t n_samples);
 void sound_calc_formants(sound_t *s);
 
+static inline storage_t sound_get_sample(const sound_t *s, size_t chan, size_t i) {
+    return s->blocks[i * s->n_channels + chan];
+}
+
 #endif

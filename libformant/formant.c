@@ -32,10 +32,6 @@ static inline void sound_set_sample(sound_t *s, size_t chan, size_t i,
     s->blocks[i * s->n_channels + chan] = val;
 }
 
-static inline storage_t sound_get_sample(const sound_t *s, size_t chan, size_t i) {
-    return s->blocks[i * s->n_channels + chan];
-}
-
 void sound_init(sound_t *s, size_t sample_rate, size_t n_channels) {
     *s = (sound_t) {
         .sample_rate = sample_rate,
