@@ -469,9 +469,7 @@ static int lpcbsa(int np, int wind, short *data, double *lpc, double *energy,
 }
 
 /*************************************************************************/
-static pole_t **lpc_poles(sound_t *sp, double wdur, double frame_int, size_t lpc_ord,
-                          double preemp, int lpc_type, int w_type)
-{
+static pole_t **lpc_poles(sound_t *sp, const formant_opts_t *opts) {
     enum { LPC_STABLE = 70 };
 
     int size, step, nform, init;
@@ -480,16 +478,22 @@ static pole_t **lpc_poles(sound_t *sp, double wdur, double frame_int, size_t lpc
     double energy, lpca[MAXORDER], normerr, *bap=NULL, *frp=NULL, *rhp=NULL;
     double  rr[MAXORDER], ri[MAXORDER];
     short *datap, *dporg;
+    double frame_int;
+    double wdur;
+    double preemp;
 
-    if(lpc_type == 1) { /* force "standard" stabilized covariance (ala bsa) */
+    if(opts->lpc_type == LPC_TYPE_BSA) { /* force "standard" stabilized covariance (ala bsa) */
         wdur = 0.025;
         preemp = exp(-62.831853 * 90. / sp->sample_rate); /* exp(-1800*pi*T) */
+    } else {
+        wdur = opts->window_len;
+        preemp = opts->pre_emph_factor;
     }
-    if((lpc_ord > MAXORDER) || (lpc_ord < 2))
+    if((opts->lpc_order > MAXORDER) || (opts->lpc_order < 2))
         return NULL;
 
     wdur = integerize(wdur,(double)sp->sample_rate);
-    frame_int = integerize(frame_int,(double)sp->sample_rate);
+    frame_int = integerize(opts->frame_len,(double)sp->sample_rate);
     nfrm= 1 + (int) (((((double)sp->n_samples)/sp->sample_rate) - wdur)/(frame_int));
 
     if (nfrm < 1)
@@ -505,39 +509,41 @@ static pole_t **lpc_poles(sound_t *sp, double wdur, double frame_int, size_t lpc
     init = true;
     for(size_t j = 0; j < nfrm;j++, datap += step){
         poles[j] = malloc(sizeof(pole_t));
-        poles[j]->freq = frp = malloc(sizeof(double)*lpc_ord);
-        poles[j]->band = bap = malloc(sizeof(double)*lpc_ord);
+        poles[j]->freq = frp = malloc(sizeof(double)*opts->lpc_order);
+        poles[j]->band = bap = malloc(sizeof(double)*opts->lpc_order);
 
-        switch(lpc_type) {
-            case 0:
-                if(! lpc(lpc_ord,LPC_STABLE,size,datap,lpca,rhp,NULL,&normerr,
-                            &energy, preemp, w_type)){
+        switch(opts->lpc_type) {
+            case LPC_TYPE_NORMAL:
+                if(! lpc(opts->lpc_order,LPC_STABLE,size,datap,lpca,rhp,NULL,&normerr,
+                            &energy, preemp, opts->window_type)){
                     break;
                 }
                 break;
-            case 1:
-                if(! lpcbsa(lpc_ord,size,datap,lpca, &energy, preemp)){
+            case LPC_TYPE_BSA:
+                if(! lpcbsa(opts->lpc_order,size,datap,lpca, &energy, preemp)){
                     break;
                 }
                 break;
-            case 2:
+            case LPC_TYPE_COVAR:
                 {
-                    int Ord = lpc_ord;
+                    int Ord = opts->lpc_order;
                     double alpha, r0;
 
                     w_covar(datap, &Ord, size, 0, lpca, &alpha, &r0, preemp, 0);
                     energy = sqrt(r0/(size-Ord));
                 }
                 break;
+            case LPC_TYPE_INVALID:
+            break;
         }
         poles[j]->change = 0.0;
 
         /* set up starting points for the root search near unit circle */
         if (init) {
-            double x = PI/(lpc_ord + 1);
+            double x = PI/(opts->lpc_order + 1);
             double flo;
-            for(size_t i=0;i<=lpc_ord;i++){
-                flo = lpc_ord - i;
+            for(size_t i=0;i<=opts->lpc_order;i++){
+                flo = opts->lpc_order - i;
                 rr[i] = 2.0 * cos((flo + 0.5) * x);
                 ri[i] = 2.0 * sin((flo + 0.5) * x);
             }
@@ -545,7 +551,7 @@ static pole_t **lpc_poles(sound_t *sp, double wdur, double frame_int, size_t lpc
 
         /* don't waste time on low energy frames */
         if((poles[j]->rms = energy) > 1.0){
-            formant(lpc_ord,(double)sp->sample_rate, lpca, &nform, frp, bap, rr,
+            formant(opts->lpc_order,(double)sp->sample_rate, lpca, &nform, frp, bap, rr,
                     ri);
             poles[j]->npoles = nform;
             init=false;		/* use old poles to start next search */
@@ -558,11 +564,11 @@ static pole_t **lpc_poles(sound_t *sp, double wdur, double frame_int, size_t lpc
     free(dporg);
 
     sp->sample_rate = (int)(1.0/frame_int);
-    sp->n_channels = lpc_ord;
+    sp->n_channels = opts->lpc_order;
     sp->n_samples = nfrm;
 
     for (size_t i = 0; i < nfrm; i++) {
-        for (size_t j = 0; j < lpc_ord; j++) {
+        for (size_t j = 0; j < opts->lpc_order; j++) {
             sound_set_sample(sp, j, i, poles[i]->freq[j]);
         }
     }
@@ -898,41 +904,25 @@ static void highpass(sound_t *s) {
     free(datain);
 }
 
-bool sound_calc_formants(sound_t *s) {
-    size_t nform;
-    size_t lpc_ord;
-    int lpc_type, w_type;
-    double frame_int, wdur,
-           ds_freq, nom_f1 = -10.0, preemp;
+bool sound_calc_formants(sound_t *s, const formant_opts_t *opts) {
+    pole_t **poles;
 
-    lpc_ord = 12;
-    lpc_type = 0;			/* use bsa's stabilized covariance if != 0 */
-    w_type = 2;			/* window type: 0=rectangular; 1=Hamming; 2=cos**4 */
-    ds_freq = 10000.0;
-    wdur = .049;			/* for LPC analysis */
-    frame_int = .01;
-    preemp = .7;
-    nform = 4;
+    assert(opts->n_formants <= (opts->lpc_order - 4) / 2);
+    assert(opts->n_formants <= MAXFORMANTS);
 
-    assert(!(nform > (lpc_ord-4)/2));
-    assert(!(nform > MAXFORMANTS));
+    if (opts->ds_freq < s->sample_rate)
+        Fdownsample(s, opts->ds_freq);
 
-    w_type = 0;
-
-    if(ds_freq < s->sample_rate) {
-        Fdownsample(s, ds_freq);
-    }
-
-    if (preemp < 1.0) { /* be sure DC and rumble are gone! */
+    /* be sure DC and rumble are gone! */
+    if (opts->pre_emph_factor < 1.0)
         highpass(s);
-    }
 
-    pole_t **poles = lpc_poles(s, wdur, frame_int, lpc_ord, preemp, lpc_type, w_type);
+    poles = lpc_poles(s, opts);
 
     if (!poles)
         return false;
 
-    dpform(s, poles, nform, nom_f1);
+    dpform(s, poles, opts->n_formants, opts->nom_freq);
 
     return true;
 }

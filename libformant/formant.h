@@ -19,6 +19,49 @@ typedef short sample_t;
 // How samples are stored in the sound structure.
 typedef float storage_t;
 
+// Represents parameters for the formant processor.
+typedef struct {
+    double frame_len;
+    double pre_emph_factor;
+    size_t n_formants;
+    size_t lpc_order;
+    double window_len;
+
+    enum {
+        WINDOW_TYPE_RECTANGULAR,
+        WINDOW_TYPE_HAMMING,
+        WINDOW_TYPE_COS,
+        WINDOW_TYPE_HANNING,
+
+        WINDOW_TYPE_INVALID,
+    } window_type;
+
+    enum {
+        LPC_TYPE_NORMAL,
+        LPC_TYPE_BSA,
+        LPC_TYPE_COVAR,
+
+        LPC_TYPE_INVALID,
+    } lpc_type;
+
+    double ds_freq;
+    double nom_freq;
+} formant_opts_t;
+
+// These match the default values passed in by wavesurfer.
+static const formant_opts_t FORMANT_OPTS_DEFAULT = {
+    .frame_len = 0.01,
+    .pre_emph_factor = 0.7,
+    .n_formants = 4,
+    .lpc_order = 12,
+    .window_len = 0.049,
+    .window_type = WINDOW_TYPE_RECTANGULAR,
+    .lpc_type = LPC_TYPE_NORMAL,
+    .ds_freq = 10000,
+    .nom_freq = -10,
+};
+
+// Represents a raw audio segment.
 typedef struct sound_t {
     // Sample rate of the audio data in Hz.
     size_t sample_rate;
@@ -42,7 +85,7 @@ void sound_load_samples(sound_t *s, const short *samples, size_t n_samples);
 
 // Calculate the formants for the samples in the given sound. The sound is
 // modified in place.
-bool sound_calc_formants(sound_t *s);
+bool sound_calc_formants(sound_t *s, const formant_opts_t *opts);
 
 // Get the i'th sample in the given channel.
 static inline storage_t sound_get_sample(const sound_t *s, size_t chan, size_t i) {
