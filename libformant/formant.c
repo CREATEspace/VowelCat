@@ -420,11 +420,8 @@ static void dpform(sound_t *ps, pole_t **poles, size_t nform, double nom_f1) {
 #define MAXORDER 30
 
 /*************************************************************************/
-static double integerize(double time, double freq) {
-    int i;
-
-    i = (int) (.5 + (freq * time));
-    return(((double)i)/freq);
+static double integerize(double dur, double freq) {
+    return (int)(.5 + freq * dur) / freq;
 }
 
 /**********************************************************************/
