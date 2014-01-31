@@ -483,6 +483,8 @@ static pole_t **lpc_poles(sound_t *sp, const formant_opts_t *opts) {
     short *datap, *dporg;
     double frame_int;
     double wdur;
+    int ord;
+    double alpha, r0;
 
     wdur = integerize(opts->window_len,(double)sp->sample_rate);
     frame_int = integerize(opts->frame_len,(double)sp->sample_rate);
@@ -505,30 +507,23 @@ static pole_t **lpc_poles(sound_t *sp, const formant_opts_t *opts) {
         poles[j]->band = bap = malloc(sizeof(double)*opts->lpc_order);
 
         switch(opts->lpc_type) {
-            case LPC_TYPE_NORMAL:
-                if(! lpc(opts->lpc_order,LPC_STABLE,size,datap,lpca,rhp,NULL,&normerr,
-                            &energy, opts->pre_emph_factor, opts->window_type)){
-                    break;
-                }
-                break;
-            case LPC_TYPE_BSA:
-                if(! lpcbsa(opts->lpc_order,size,datap,lpca, &energy,
-                            opts->pre_emph_factor)){
-                    break;
-                }
-                break;
-            case LPC_TYPE_COVAR:
-                {
-                    int Ord = opts->lpc_order;
-                    double alpha, r0;
+        case LPC_TYPE_NORMAL:
+            lpc(opts->lpc_order, LPC_STABLE, size, datap, lpca, rhp, NULL, &normerr,
+                &energy, opts->pre_emph_factor, opts->window_type);
+        break;
 
-                    w_covar(datap, &Ord, size, 0, lpca, &alpha, &r0,
-                            opts->pre_emph_factor, 0);
-                    energy = sqrt(r0/(size-Ord));
-                }
-                break;
-            case LPC_TYPE_INVALID:
-            break;
+        case LPC_TYPE_BSA:
+            lpcbsa(opts->lpc_order, size, datap, lpca, &energy, opts->pre_emph_factor);
+        break;
+
+        case LPC_TYPE_COVAR:
+            ord = opts->lpc_order;
+            w_covar(datap, &ord, size, 0, lpca, &alpha, &r0, opts->pre_emph_factor, 0);
+            energy = sqrt(r0 / (size - ord));
+        break;
+
+        case LPC_TYPE_INVALID:
+        break;
         }
         poles[j]->change = 0.0;
 
