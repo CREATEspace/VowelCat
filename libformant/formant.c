@@ -19,9 +19,31 @@
 #include "formant.h"
 #include "processing.h"
 
-#define MAXFORMANTS 7
-#define MAXORDER 30
+enum { MAX_FORMANTS = 7 };
+
+enum { MIN_LPC_ORDER = 2 };
+enum { MAX_LPC_ORDER = 30 };
+
 #define PI 3.1415927
+
+/* Here are the major fudge factors for tweaking the formant tracker. */
+/* maximum number of candidate mappings allowed */
+enum { MAX_CANDIDATES = 300 };
+/* equivalent delta-Hz cost for missing formant */
+static const double MISSING = 1;
+/* equivalent bandwidth cost of a missing formant */
+static const double NOBAND = 1000;
+/* cost for proportional frequency changes */
+/* with good "stationarity" function:*/
+static const double DF_FACT = 20.0;
+/* cost for proportional dev. from nominal freqs. */
+static const double DFN_FACT = 0.3;
+/* cost per Hz of bandwidth in the poles */
+static const double BAND_FACT = 0.002;
+/* bias toward selecting low-freq. poles */
+static const double F_BIAS = 0.000;
+/* cost of mapping f1 and f2 to same frequency */
+static const double F_MERGE = 2000.0;
 
 typedef struct { /* structure of a DP lattice node for formant tracking */
     size_t ncand; /* # of candidate mappings for this frame */
@@ -43,8 +65,8 @@ typedef struct {   /* structure to hold raw LPC analysis data */
 
 void formant_opts_process(formant_opts_t *opts) {
     assert(opts->n_formants <= (opts->lpc_order - 4) / 2);
-    assert(opts->n_formants <= MAXFORMANTS);
-    assert(opts->lpc_order <= MAXORDER && opts->lpc_order >= 2);
+    assert(opts->n_formants <= MAX_FORMANTS);
+    assert(opts->lpc_order <= MAX_LPC_ORDER && opts->lpc_order >= MIN_LPC_ORDER);
 
     /* force "standard" stabilized covariance (ala bsa) */
     if (opts->lpc_type == LPC_TYPE_BSA) {
@@ -85,9 +107,7 @@ void sound_load_samples(sound_t *s, const short *samples, size_t n_samples) {
         s->samples[i] = (storage_t) samples[i];
 }
 
-/*	dpform.c       */
-
-/* a formant tracker based on LPC polynomial roots and dynamic programming */
+/* A formant tracker based on LPC polynomial roots and dynamic programming */
 /* At each frame, the LPC poles are ordered by increasing frequency.  All
    "reasonable" mappings of the poles to F1, F2, ... are performed.
    The cost of "connecting" each of these mappings with each of the mappings
@@ -99,19 +119,6 @@ void sound_load_samples(sound_t *s, const short *samples, size_t n_samples) {
    mappings for the entire utterance may be found by retracing back through
    best candidate mappings, starting at end of utterance (or current frame).
    */
-
-/* Here are the major fudge factors for tweaking the formant tracker. */
-#define MAXCAN	300  /* maximum number of candidate mappings allowed */
-static const double MISSING = 1, /* equivalent delta-Hz cost for missing formant */
-              NOBAND = 1000, /* equivalent bandwidth cost of a missing formant */
-              DF_FACT =  20.0, /* cost for proportional frequency changes */
-              /* with good "stationarity" function:*/
-              /*        DF_FACT =  80.0, *//*  cost for proportional frequency changes */
-              DFN_FACT = 0.3, /* cost for proportional dev. from nominal freqs. */
-              BAND_FACT = .002, /* cost per Hz of bandwidth in the poles */
-              /*	F_BIAS	  = 0.0004,   bias toward selecting low-freq. poles */
-              F_BIAS	  = 0.000, /*  bias toward selecting low-freq. poles */
-              F_MERGE = 2000.0; /* cost of mapping f1 and f2 to same frequency */
 
 /* can this pole be this freq.? */
 static int canbe(const double *fmins, const double *fmaxs, const double *fre,
@@ -209,7 +216,7 @@ static void dpform(sound_t *ps, pole_t **poles, size_t nform, double nom_f1) {
                 fmaxs[] = { 1500, 3500, 4500, 5000, 6000, 6000, 8000}; /* for 1st 5 formants */
 
     if(nom_f1 > 0.0) {
-        for(size_t i=0; i < MAXFORMANTS; i++) {
+        for(size_t i=0; i < MAX_FORMANTS; i++) {
             fnom[i] = ((i * 2) + 1) * nom_f1;
             fmins[i] = fnom[i] - ((i+1) * nom_f1) + 50.0;
             fmaxs[i] = fnom[i] + (i * nom_f1) + 1000.0;
@@ -232,8 +239,8 @@ static void dpform(sound_t *ps, pole_t **poles, size_t nform, double nom_f1) {
     }
 
     /* Allocate space for the raw candidate array. */
-    pcan = malloc(sizeof(short*) * MAXCAN);
-    for(size_t i=0;i<MAXCAN;i++)
+    pcan = malloc(sizeof(short*) * MAX_CANDIDATES);
+    for(size_t i=0;i<MAX_CANDIDATES;i++)
         pcan[i] = malloc(sizeof(short) * nform);
 
     /* Allocate space for the dp lattice */
@@ -403,7 +410,7 @@ static void dpform(sound_t *ps, pole_t **poles, size_t nform, double nom_f1) {
     free(poles);
 
     /* Deallocate space for the raw candidate aray. */
-    for(size_t i=0;i<MAXCAN;i++) free(pcan[i]);
+    for(size_t i=0;i<MAX_CANDIDATES;i++) free(pcan[i]);
     free(pcan);
 
     ps->n_channels = nform * 2;
@@ -418,10 +425,7 @@ static void dpform(sound_t *ps, pole_t **poles, size_t nform, double nom_f1) {
     free(fr);
 }
 
-    /* lpc_poles.c */
-
-    /* computation and I/O routines for dealing with LPC poles */
-
+/* computation and I/O routines for dealing with LPC poles */
 static double integerize(double dur, double freq) {
     return (int)(.5 + freq * dur) / freq;
 }
@@ -431,14 +435,12 @@ static double frand() {
 }
 
 /* a quick and dirty interface to bsa's stabilized covariance LPC */
-#define NPM	30	/* max lpc order		*/
-
 static int lpcbsa(int np, int wind, short *data, double *lpc, double *energy,
                   double preemp)
 {
     int i, mm, owind=0, wind1;
     double w[1000];
-    double rc[NPM],phi[NPM*NPM],shi[NPM],sig[1000];
+    double rc[MAX_LPC_ORDER],phi[MAX_LPC_ORDER*MAX_LPC_ORDER],shi[MAX_LPC_ORDER],sig[1000];
     double xl = .09, fham, amax;
     double *psp1, *psp3, *pspl;
 
@@ -474,8 +476,8 @@ static pole_t **lpc_poles(sound_t *sp, const formant_opts_t *opts) {
     int size, step, nform, init;
     size_t nfrm;
     pole_t **poles;
-    double energy, lpca[MAXORDER], normerr, *bap, *frp, *rhp;
-    double rr[MAXORDER], ri[MAXORDER];
+    double energy, lpca[MAX_LPC_ORDER], normerr, *bap, *frp, *rhp;
+    double rr[MAX_LPC_ORDER], ri[MAX_LPC_ORDER];
     short *datap, *dporg;
     double frame_int;
     double wdur;
@@ -577,9 +579,6 @@ static pole_t **lpc_poles(sound_t *sp, const formant_opts_t *opts) {
 /*	THIS IS UNPUBLISHED PROPRIETARY SOURCE CODE OF AT&T	*/
 /*	The copyright notice above does not evidence any	*/
 /*	actual or intended publication of such source code.	*/
-
-/* downsample.c */
-/* a quick and dirty downsampler */
 
 /* create the coefficients for a symmetric FIR lowpass filter using the
    window technique with a Hanning window. */
