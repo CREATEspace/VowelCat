@@ -2,6 +2,7 @@
 // by AT&T Corp. and Microsoft Corp. with the terms in the accompanying
 // file BSD.txt, which is a BSD style license.
 //
+//     Copyright (c) 2014  Formant Industries, Inc.
 //     Copyright (c) 1990-1991  Entropic Research Laboratory, Inc.
 //         All rights reserved
 //     Copyright (c) 1987-1990  AT&T, Inc.
