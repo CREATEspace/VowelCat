@@ -1,3 +1,10 @@
+// This software has been licensed to the Centre of Speech Technology, KTH
+// by AT&T Corp. and Microsoft Corp. with the terms in the accompanying
+// file BSD.txt, which is a BSD style license.
+//
+//     Copyright (c) 1995 Entropic Research Laboratory, Inc.
+//     Copyright (c) 1987 AT&T All Rights Reserved
+
 #ifndef PROCESSING_H
 #define PROCESSING_H
 

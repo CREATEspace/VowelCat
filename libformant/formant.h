@@ -1,13 +1,11 @@
-/*
- * This software has been licensed to the Centre of Speech Technology, KTH
- * by AT&T Corp. and Microsoft Corp. with the terms in the accompanying
- * file BSD.txt, which is a BSD style license.
- *
- *    "Copyright (c) 1987-1990  AT&T, Inc.
- *    "Copyright (c) 1986-1990  Entropic Speech, Inc.
- *    "Copyright (c) 1990-1991  Entropic Research Laboratory, Inc.
- *                   All rights reserved"
- */
+// This software has been licensed to the Centre of Speech Technology, KTH
+// by AT&T Corp. and Microsoft Corp. with the terms in the accompanying
+// file BSD.txt, which is a BSD style license.
+//
+//     Copyright (c) 1990-1991  Entropic Research Laboratory, Inc.
+//         All rights reserved
+//     Copyright (c) 1987-1990  AT&T, Inc.
+//     Copyright (c) 1986-1990  Entropic Speech, Inc.
 
 #ifndef FORMANT_H
 #define FORMANT_H

@@ -1,18 +1,14 @@
-/* formant.c */
-/*
- * This software has been licensed to the Centre of Speech Technology, KTH
- * by AT&T Corp. and Microsoft Corp. with the terms in the accompanying
- * file BSD.txt, which is a BSD style license.
- *
- *    "Copyright (c) 1987-1990  AT&T, Inc.
- *    "Copyright (c) 1986-1990  Entropic Speech, Inc.
- *    "Copyright (c) 1990-1994  Entropic Research Laboratory, Inc.
- *                   All rights reserved"
- *
- * Written by:  David Talkin
- * Revised by: John Shore
- *
- */
+// This software has been licensed to the Centre of Speech Technology, KTH
+// by AT&T Corp. and Microsoft Corp. with the terms in the accompanying
+// file BSD.txt, which is a BSD style license.
+//
+//     Copyright (c) 1990-1994  Entropic Research Laboratory, Inc.
+//         All rights reserved
+//     Copyright (c) 1987-1990  AT&T, Inc.
+//     Copyright (c) 1986-1990  Entropic Speech, Inc.
+//
+// Written by: David Talkin
+// Revised by: John Shore
 
 #include <assert.h>
 #include <math.h>
