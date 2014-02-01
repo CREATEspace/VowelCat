@@ -24,7 +24,7 @@ enum { MAX_FORMANTS = 7 };
 enum { MIN_LPC_ORDER = 2 };
 enum { MAX_LPC_ORDER = 30 };
 
-#define PI 3.1415927
+#define PI 3.14159265358979323846
 
 /* Here are the major fudge factors for tweaking the formant tracker. */
 /* maximum number of candidate mappings allowed */
