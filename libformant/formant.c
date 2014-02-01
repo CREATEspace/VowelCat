@@ -85,7 +85,6 @@ void sound_load_samples(sound_t *s, const short *samples, size_t n_samples) {
         s->samples[i] = (storage_t) samples[i];
 }
 
-
 /*	dpform.c       */
 
 /* a formant tracker based on LPC polynomial roots and dynamic programming */
@@ -742,7 +741,6 @@ static void dwnsamp(short *buf, int in_samps, short **buf2, size_t *out_samps,
     else k = (16384 * 32767)/k;
     l = 16384;
     m = 15;
-
 
     /* Insert zero samples to boost the sampling frequency and scale the
        signal to maintain maximum precision. */

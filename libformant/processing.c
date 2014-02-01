@@ -271,7 +271,6 @@ static void rwindow(short *din, double *dout, int n, double preemp) {
     }
 }
 
-
 static void cwindow(short *din, double *dout, int n, double preemp) {
     int i;
     short *p;
@@ -301,7 +300,6 @@ static void cwindow(short *din, double *dout, int n, double preemp) {
     }
 }
 
-
 static void hwindow(short *din, double *dout, int n, double preemp) {
     int i;
     short *p;
@@ -328,7 +326,6 @@ static void hwindow(short *din, double *dout, int n, double preemp) {
             *dout++ = *q++ * *din++;
     }
 }
-
 
 static void hnwindow(short *din, double *dout, int n, double preemp) {
     int i;
@@ -603,7 +600,6 @@ int w_covar(short *xx, int *m, int n, int istrt, double *y, double *alpha,
    in R.W. Hamming, "Numerical Methods for Scientists and
    Engineers," McGraw-Hill, 1962, pp 356-359.)		*/
 
-
 #define MAX_ITS	100	/* Max iterations before trying new starts */
 #define MAX_TRYS	100	/* Max number of times to try new starts */
 #define MAX_ERR		1.e-6	/* Max acceptable error in quad factor */
@@ -802,7 +798,6 @@ int formant(int lpc_order, double s_freq, double *lpca, int *n_form,
                     && (ri[ii] != 0.0)) ii++; /* if so, don't duplicate */
         }
     }
-
 
     /* Now order the complex poles by frequency.  Always place the (uninteresting)
        real poles at the end of the arrays. 	*/
