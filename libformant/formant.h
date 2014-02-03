@@ -20,14 +20,15 @@ typedef float storage_t;
 
 // Represents parameters for the formant processor.
 typedef struct {
-    double pre_emph_factor;
+    // Number of formants to calculate.
     size_t n_formants;
-    size_t lpc_order;
-    // Duration of the window function in seconds.
-    double window_dur;
-    // Duration of the window frame in seconds.
-    double frame_dur;
 
+    // Sample rate to downsample to.
+    double downsample_rate;
+    // Preemphasis to perform on sound.
+    double pre_emph_factor;
+
+    // The type of window function to use.
     enum {
         WINDOW_TYPE_RECTANGULAR,
         WINDOW_TYPE_HAMMING,
@@ -37,6 +38,12 @@ typedef struct {
         WINDOW_TYPE_INVALID,
     } window_type;
 
+    // Duration of the window function in seconds.
+    double window_dur;
+    // Duration of the window frame in seconds.
+    double frame_dur;
+
+    // The type of LPC function to use.
     enum {
         LPC_TYPE_NORMAL,
         LPC_TYPE_BSA,
@@ -45,20 +52,24 @@ typedef struct {
         LPC_TYPE_INVALID,
     } lpc_type;
 
-    double downsample_rate;
+    // XXX: not sure what these do.
+    size_t lpc_order;
     double nom_freq;
 } formant_opts_t;
 
 // These match the default values passed in by wavesurfer.
 static const formant_opts_t FORMANT_OPTS_DEFAULT = {
-    .pre_emph_factor = 0.7,
     .n_formants = 4,
-    .lpc_order = 12,
+
+    .downsample_rate = 10000,
+    .pre_emph_factor = 0.7,
+
+    .window_type = WINDOW_TYPE_RECTANGULAR,
     .window_dur = 0.049,
     .frame_dur = 0.01,
-    .window_type = WINDOW_TYPE_RECTANGULAR,
+
     .lpc_type = LPC_TYPE_NORMAL,
-    .downsample_rate = 10000,
+    .lpc_order = 12,
     .nom_freq = -10,
 };
 
