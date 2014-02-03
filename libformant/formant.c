@@ -504,7 +504,7 @@ static pole_t **lpc_poles(sound_t *sp, const formant_opts_t *opts) {
     x = PI / (opts->lpc_order + 1);
 
     window_dur = integerize(opts->window_dur, sp->sample_rate);
-    frame_dur = integerize(opts->frame_len, sp->sample_rate);
+    frame_dur = integerize(opts->frame_dur, sp->sample_rate);
     samples_dur = (double)(sp->n_samples) / sp->sample_rate;
 
     if (samples_dur < window_dur)
