@@ -1,12 +1,27 @@
+BUILD = build
 SUBDIRS = libformant libportaudio
 
-subdirs: $(SUBDIRS)
+STATICLIB_PORTAUDIO = $(BUILD)/libportaudio/lib/.libs/libportaudio.a
+STATICLIB_FORMANT = $(BUILD)/libformant/libformant.a
 
-libformant:
-	$(MAKE) -C $@
+setup:
+	-mkdir -p $(BUILD)
+	cp -r $(SUBDIRS) $(BUILD)
 
-libportaudio:
+$(BUILD)/libportaudio: setup
 	cd $@ && autoreconf -fi && ./configure
 	$(MAKE) -C $@
 
-.PHONY: subdirs $(SUBDIRS)
+$(STATICLIB_PORTAUDIO): $(BUILD)/libportaudio
+
+$(BUILD)/libformant: setup
+	$(MAKE) -C $@
+
+$(STATICLIB_FORMANT): $(BUILD)/libformant
+
+staticlibs: $(STATICLIB_FORMANT) $(STATICLIB_PORTAUDIO)
+
+clean:
+	-rm -r $(BUILD)
+
+.PHONY: setup staticlibs clean
