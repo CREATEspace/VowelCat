@@ -2,5 +2,6 @@
 *.o
 *.la
 *.lo
+*.gdb_history
 
 build/
