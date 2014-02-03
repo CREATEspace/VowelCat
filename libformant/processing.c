@@ -355,19 +355,23 @@ static void hnwindow(short *din, double *dout, int n, double preemp) {
 }
 
 static void w_window(short *din, double *dout, int n, double preemp, int type) {
-    switch(type) {
-        case 0:
+    switch (type) {
+        case WINDOW_TYPE_RECTANGULAR:
             rwindow(din, dout, n, preemp);
-            return;
-        case 1:
+        break;
+
+        case WINDOW_TYPE_HAMMING:
             hwindow(din, dout, n, preemp);
-            return;
-        case 2:
+        break;
+
+        case WINDOW_TYPE_COS:
             cwindow(din, dout, n, preemp);
-            return;
-        case 3:
+        break;
+
+        case WINDOW_TYPE_HANNING:
             hnwindow(din, dout, n, preemp);
-            return;
+        break;
+
         default:
         break;
     }
