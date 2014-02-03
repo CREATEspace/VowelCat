@@ -24,7 +24,8 @@ typedef struct {
     double pre_emph_factor;
     size_t n_formants;
     size_t lpc_order;
-    double window_len;
+    // Duration of the window function in seconds.
+    double window_dur;
 
     enum {
         WINDOW_TYPE_RECTANGULAR,
@@ -53,7 +54,7 @@ static const formant_opts_t FORMANT_OPTS_DEFAULT = {
     .pre_emph_factor = 0.7,
     .n_formants = 4,
     .lpc_order = 12,
-    .window_len = 0.049,
+    .window_dur = 0.049,
     .window_type = WINDOW_TYPE_RECTANGULAR,
     .lpc_type = LPC_TYPE_NORMAL,
     .downsample_rate = 10000,

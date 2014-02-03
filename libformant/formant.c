@@ -72,7 +72,7 @@ void formant_opts_process(formant_opts_t *opts) {
 
     /* force "standard" stabilized covariance (ala bsa) */
     if (opts->lpc_type == LPC_TYPE_BSA) {
-        opts->window_len = 0.025;
+        opts->window_dur = 0.025;
         /* exp(-1800*pi*T) */
         opts->pre_emph_factor = exp(-62.831853 * 90 / opts->downsample_rate);
     }
@@ -503,7 +503,7 @@ static pole_t **lpc_poles(sound_t *sp, const formant_opts_t *opts) {
 
     x = PI / (opts->lpc_order + 1);
 
-    window_dur = integerize(opts->window_len, sp->sample_rate);
+    window_dur = integerize(opts->window_dur, sp->sample_rate);
     frame_dur = integerize(opts->frame_len, sp->sample_rate);
     samples_dur = (double)(sp->n_samples) / sp->sample_rate;
 
