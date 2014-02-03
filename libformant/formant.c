@@ -64,9 +64,11 @@ typedef struct {   /* structure to hold raw LPC analysis data */
 } pole_t;
 
 void formant_opts_process(formant_opts_t *opts) {
+    assert(opts->lpc_order <= MAX_LPC_ORDER);
+    assert(opts->lpc_order >= MIN_LPC_ORDER);
+
     assert(opts->n_formants <= (opts->lpc_order - 4) / 2);
     assert(opts->n_formants <= MAX_FORMANTS);
-    assert(opts->lpc_order <= MAX_LPC_ORDER && opts->lpc_order >= MIN_LPC_ORDER);
 
     /* force "standard" stabilized covariance (ala bsa) */
     if (opts->lpc_type == LPC_TYPE_BSA) {
