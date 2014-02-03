@@ -83,7 +83,9 @@ void sound_init(sound_t *s, size_t sample_rate, size_t n_channels);
 // Release the memory held by the given sound.
 void sound_destroy(sound_t *s);
 
-// Load a buffer of samples into the given sound.
+// Load a buffer of samples into the given sound. Note that n_samples is the
+// number of samples *per channel*, so the sound buffer must hold n_samples *
+// s->n_channels samples.
 void sound_load_samples(sound_t *s, const short *samples, size_t n_samples);
 
 // Calculate the formants for the samples in the given sound. The sound is
