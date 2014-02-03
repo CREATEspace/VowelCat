@@ -96,8 +96,11 @@ void sound_destroy(sound_t *s) {
 }
 
 static void sound_resize(sound_t *s, size_t n_samples) {
+    if (n_samples > s->n_samples)
+        s->samples = realloc(s->samples,
+            n_samples * s->n_channels * sizeof(storage_t));
+
     s->n_samples = n_samples;
-    s->samples = realloc(s->samples, n_samples * s->n_channels * sizeof(storage_t));
 }
 
 void sound_load_samples(sound_t *s, const short *samples, size_t n_samples) {
