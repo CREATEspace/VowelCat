@@ -2,3 +2,5 @@
 *.o
 *.la
 *.lo
+
+build/
