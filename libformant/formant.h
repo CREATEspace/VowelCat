@@ -18,7 +18,7 @@ typedef short sample_t;
 // How samples are stored in the sound structure.
 typedef float storage_t;
 
-// Represents parameters for the formant processor.
+// Parameters for calculating formants.
 typedef struct {
     // Number of formants to calculate.
     size_t n_formants;
@@ -77,7 +77,7 @@ static const formant_opts_t FORMANT_OPTS_DEFAULT = {
 // function before being passed into sound_calc_formants.
 void formant_opts_process(formant_opts_t *opts);
 
-// Represents a raw audio segment.
+// A raw audio segment.
 typedef struct sound_t {
     // Sample rate of the audio data in Hz.
     size_t sample_rate;
