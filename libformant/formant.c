@@ -490,11 +490,11 @@ static pole_t **lpc_poles(sound_t *sp, const formant_opts_t *opts) {
     double flo;
     double x;
 
-    // Duration of the given samples.
+    // Duration of the given samples in seconds.
     double samples_dur;
-    // Duration of the working window.
+    // Duration of the window function in seconds.
     double window_dur;
-    // Duration of the working frame.
+    // Duration of the window frame in seconds.
     double frame_dur;
 
     bap = NULL;
