@@ -485,12 +485,17 @@ static pole_t **lpc_poles(sound_t *sp, const formant_opts_t *opts) {
     double energy, lpca[MAX_LPC_ORDER], normerr, *bap, *frp, *rhp;
     double rr[MAX_LPC_ORDER], ri[MAX_LPC_ORDER];
     short *datap, *dporg;
-    double frame_int;
-    double wdur;
     int ord;
     double alpha, r0;
     double flo;
     double x;
+
+    // Duration of the given samples.
+    double samples_dur;
+    // Duration of the working window.
+    double window_dur;
+    // Duration of the working frame.
+    double frame_dur;
 
     bap = NULL;
     frp = NULL;
@@ -498,15 +503,16 @@ static pole_t **lpc_poles(sound_t *sp, const formant_opts_t *opts) {
 
     x = PI / (opts->lpc_order + 1);
 
-    wdur = integerize(opts->window_len, sp->sample_rate);
-    frame_int = integerize(opts->frame_len, sp->sample_rate);
-    nfrm = 1 + (int)(((double)(sp->n_samples) / sp->sample_rate - wdur) / frame_int);
+    window_dur = integerize(opts->window_len, sp->sample_rate);
+    frame_dur = integerize(opts->frame_len, sp->sample_rate);
+    samples_dur = (double)(sp->n_samples) / sp->sample_rate;
 
-    if (nfrm < 1)
+    if (samples_dur < window_dur)
         return NULL;
 
-    size = (int)(.5 + wdur * sp->sample_rate);
-    step = (int)(.5 + frame_int * sp->sample_rate);
+    nfrm = 1 + (int)((samples_dur - window_dur) / frame_dur);
+    size = (int)(.5 + window_dur * sp->sample_rate);
+    step = (int)(.5 + frame_dur * sp->sample_rate);
     poles = malloc(nfrm * sizeof(pole_t *));
     dporg = malloc(sizeof(short) * sp->n_samples);
     datap = dporg;
@@ -568,7 +574,7 @@ static pole_t **lpc_poles(sound_t *sp, const formant_opts_t *opts) {
 
     free(dporg);
 
-    sp->sample_rate = (int)(1.0 / frame_int);
+    sp->sample_rate = (int)(1.0 / frame_dur);
     sp->n_channels = opts->lpc_order;
     sp->n_samples = nfrm;
 
