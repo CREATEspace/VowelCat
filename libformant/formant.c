@@ -95,18 +95,19 @@ void sound_destroy(sound_t *s) {
     free(s->samples);
 }
 
-static void sound_resize(sound_t *s, size_t n_samples) {
+void sound_load_samples(sound_t *s, const short *samples, size_t n_samples) {
+    // The total number of samples is the number of samples per channel
+    // multiplied by the number of channels.
+    size_t tot_samples = n_samples * s->n_channels;
+
     if (n_samples > s->n_samples)
-        s->samples = realloc(s->samples,
-            n_samples * s->n_channels * sizeof(storage_t));
+        s->samples = realloc(s->samples, tot_samples * sizeof(storage_t));
 
     s->n_samples = n_samples;
-}
 
-void sound_load_samples(sound_t *s, const short *samples, size_t n_samples) {
-    sound_resize(s, n_samples);
-
-    for (size_t i = 0; i < s->n_samples * s->n_channels; i += 1)
+    // XXX: once we decide whether or not samples need to be stored as floats,
+    // this can be replaced by a memcpy.
+    for (size_t i = 0; i < tot_samples; i += 1)
         s->samples[i] = (storage_t) samples[i];
 }
 
