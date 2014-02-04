@@ -79,7 +79,7 @@ void formant_opts_process(formant_opts_t *opts) {
 }
 
 static inline void sound_set_sample(sound_t *s, size_t chan, size_t i,
-                                   storage_t val)
+                                    storage_t val)
 {
     s->samples[i * s->n_channels + chan] = val;
 }
