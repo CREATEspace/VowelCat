@@ -214,7 +214,7 @@ static void dpform(sound_t *ps, pole_t **poles, size_t nform, double nom_f1) {
     int	ic, ip, mincan=0;
     short	**pcan;
     form_t	**fl;
-    int dmaxc,dminc,dcountc,dcountf;
+    int dmaxc,dminc,dcountf;
     bool domerge;
 
     double	fnom[]  = {  500, 1500, 2500, 3500, 4500, 5500, 6500},/*  "nominal" freqs.*/
@@ -346,7 +346,7 @@ static void dpform(sound_t *ps, pole_t **poles, size_t nform, double nom_f1) {
     /* Starting with that min.-cost cand., work back thru the lattice. */
     dmaxc = 0;
     dminc = 100;
-    dcountc = dcountf = 0;
+    dcountf = 0;
     mincan = -1;
     for (size_t m = 1; m <= ps->n_samples; m += 1) {
         size_t i = ps->n_samples - m;
@@ -365,7 +365,6 @@ static void dpform(sound_t *ps, pole_t **poles, size_t nform, double nom_f1) {
             if((j = fl[i]->ncand) > dmaxc) dmaxc = j;
             else
                 if( j < dminc) dminc = j;
-            dcountc += j;
             dcountf++;
             for(size_t j=0; j<nform; j++){
                 int k = fl[i]->cand[mincan][j];
@@ -444,7 +443,7 @@ static double frand() {
 static int lpcbsa(int np, int wind, short *data, double *lpc, double *energy,
                   double preemp)
 {
-    int i, mm, owind=0, wind1;
+    int i, owind=0, wind1;
     double w[1000];
     double rc[MAX_LPC_ORDER],phi[MAX_LPC_ORDER*MAX_LPC_ORDER],shi[MAX_LPC_ORDER],sig[1000];
     double xl = .09, fham, amax;
@@ -470,10 +469,8 @@ static int lpcbsa(int np, int wind, short *data, double *lpc, double *energy,
 
     for(psp3=sig,pspl=sig+wind1;psp3<pspl;psp3++)
         *psp3 *= amax;
-    if((mm=dlpcwtd(sig,&wind1,lpc,&np,rc,phi,shi,&xl,w))!=np)
-        return(false);
 
-    return(true);
+    return dlpcwtd(sig,&wind1,lpc,&np,rc,phi,shi,&xl,w) == np;
 }
 
 static pole_t **lpc_poles(sound_t *sp, const formant_opts_t *opts) {
@@ -652,16 +649,10 @@ static void do_fir(short *buf, int in_samps, short *bufo, int ncoef,
 
     if (!invert) {
         *buft = *bufp2 = *bufp; /* point of symmetry */
-
-        buft -= 1;
-        bufp2 += 1;
-        bufp -= 1;
     } else {
         integral *= 2;
         integral += *bufp;
         *buft = integral - *bufp;
-
-        buft -= 1;
     }
 
     buft = mem;

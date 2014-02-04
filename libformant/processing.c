@@ -208,7 +208,6 @@ int dlpcwtd(double *s, int *ls, double *p, int *np, double *c, double *phi,
             ee = ee - *pc2 * *pc2;
             if(ee<thres)break;
         }
-        m = pc2 - c;
         pre = ee * *xl;
         pphl = phi + *np * *np;
         for(pph1=phi+1;pph1<pphl;pph1+=np1)
@@ -504,7 +503,6 @@ int w_covar(short *xx, int *m, int n, int istrt, double *y, double *alpha,
 
     if(*m > mold) {
         if(b) free((void *)b); if(beta) free((void *)beta); if (grc) free((void *)grc); if (cc) free((void *)cc);
-        b = beta = grc = cc = NULL;
         mnew = *m;
 
         b = malloc(sizeof(double)*((mnew+1)*(mnew+1)/2));
