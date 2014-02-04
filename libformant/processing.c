@@ -10,6 +10,8 @@
 #include <stdbool.h>
 #include <string.h>
 
+#include "processing.h"
+
 /*	routine to solve ax=y with cholesky
     a - nxn matrix
     x,y -vectors
@@ -354,7 +356,9 @@ static void hnwindow(short *din, double *dout, int n, double preemp) {
     }
 }
 
-static void w_window(short *din, double *dout, int n, double preemp, int type) {
+static void w_window(short *din, double *dout, int n, double preemp,
+                     window_type_t type)
+{
     switch (type) {
         case WINDOW_TYPE_RECTANGULAR:
             rwindow(din, dout, n, preemp);
@@ -372,7 +376,7 @@ static void w_window(short *din, double *dout, int n, double preemp, int type) {
             hnwindow(din, dout, n, preemp);
         break;
 
-        default:
+        case WINDOW_TYPE_INVALID:
         break;
     }
 }
@@ -441,7 +445,7 @@ static void durbin (double *r, double *k, double *a, int p, double *ex) {
 
 int lpc(int lpc_ord, double lpc_stabl, int wsize, short *data, double *lpca,
         double *ar, double *lpck, double *normerr, double *rms, double preemp,
-        int type)
+        window_type_t type)
 {
     double *dwind=NULL;
     int nwind=0;
@@ -482,7 +486,7 @@ int lpc(int lpc_ord, double lpc_stabl, int wsize, short *data, double *lpca,
 /* covariance LPC analysis; originally from Markel and Gray */
 /* (a translation from the fortran) */
 int w_covar(short *xx, int *m, int n, int istrt, double *y, double *alpha,
-            double *r0, double preemp, int w_type)
+            double *r0, double preemp, window_type_t w_type)
 {
     double *x=NULL;
     int nold = 0;

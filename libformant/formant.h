@@ -12,6 +12,7 @@
 #define FORMANT_H
 
 #include <stdbool.h>
+#include "processing.h"
 
 // How input samples are represented.
 typedef short sample_t;
@@ -29,14 +30,7 @@ typedef struct {
     double pre_emph_factor;
 
     // The type of window function to use.
-    enum {
-        WINDOW_TYPE_RECTANGULAR,
-        WINDOW_TYPE_HAMMING,
-        WINDOW_TYPE_COS,
-        WINDOW_TYPE_HANNING,
-
-        WINDOW_TYPE_INVALID,
-    } window_type;
+    window_type_t window_type;
 
     // Duration of the window function in seconds.
     double window_dur;
