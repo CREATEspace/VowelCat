@@ -799,7 +799,7 @@ static void Fdownsample(sound_t *s, double freq2) {
 
     short	*bufin, **bufout;
     double	beta = 0.0, b[256];
-    double	ratio_t, maxi, ratio, beta_new, freq1;
+    double	tratio, maxi, ratio, beta_new, freq1;
     int	ncoeff = 127;
     short	ic[256];
     int	insert, decimate, smin, smax;
@@ -811,9 +811,9 @@ static void Fdownsample(sound_t *s, double freq2) {
     freq1 = s->sample_rate;
     ratio = freq2/freq1;
     ratprx(ratio,&insert,&decimate,10);
-    ratio_t = ((double)insert)/((double)decimate);
+    tratio = ((double)insert)/((double)decimate);
 
-    if(ratio_t > .99)
+    if(tratio > .99)
         return;
 
     ncoefft = 0;
@@ -825,7 +825,7 @@ static void Fdownsample(sound_t *s, double freq2) {
         bufin[i] = (short) sound_get_sample(s, 0, i);
     }
 
-    freq2 = ratio_t * freq1;
+    freq2 = tratio * freq1;
     beta_new = (.5 * freq2)/(insert * freq1);
 
     if(beta != beta_new){
