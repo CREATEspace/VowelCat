@@ -385,8 +385,8 @@ static void w_window(short *din, double *dout, int n, double preemp,
  * Return the normalized autocorrelation coefficients in r.
  * The rms is returned in e.
  */
-static void autoc(int windowsize, double *s, int p, double *r, double *e) {
-    int i, j;
+static void autoc(size_t windowsize, double *s, size_t p, double *r, double *e) {
+    size_t i, j;
     double *q, *t, sum, sum0;
 
     for ( i=0, q=s, sum0=0.; i< windowsize; q++, i++){
@@ -442,7 +442,7 @@ static void durbin (double *r, double *k, double *a, int p, double *ex) {
     *ex = e;
 }
 
-int lpc(int lpc_ord, double lpc_stabl, size_t wsize, short *data, double *lpca,
+int lpc(size_t lpc_ord, double lpc_stabl, size_t wsize, short *data, double *lpca,
         double *ar, double *lpck, double *normerr, double *rms, double preemp,
         window_type_t type)
 {
@@ -458,7 +458,7 @@ int lpc(int lpc_ord, double lpc_stabl, size_t wsize, short *data, double *lpca,
     if(!(ap = lpca)) ap = a;
     autoc( wsize, dwind, lpc_ord, r, &en );
     if(lpc_stabl > 1.0) { /* add a little to the diagonal for stability */
-        int i;
+        size_t i;
         double ffact;
         ffact =1.0/(1.0 + exp((-lpc_stabl/20.0) * log(10.0)));
         for(i=1; i <= lpc_ord; i++) rho[i] = ffact * r[i];

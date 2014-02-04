@@ -9,6 +9,8 @@
 #ifndef PROCESSING_H
 #define PROCESSING_H
 
+#include <stddef.h>
+
 typedef enum {
     WINDOW_TYPE_RECTANGULAR,
     WINDOW_TYPE_HAMMING,
@@ -24,7 +26,7 @@ int formant(int lpc_order, double s_freq, double *lpca, int *n_form,
 int w_covar(short *xx, int *m, int n, int istrt, double *y, double *alpha,
             double *r0, double preemp, window_type_t w_type);
 
-int lpc(int lpc_ord, double lpc_stabl, size_t wsize, short *data, double *lpca,
+int lpc(size_t lpc_ord, double lpc_stabl, size_t wsize, short *data, double *lpca,
         double *ar, double *lpck, double *normerr, double *rms, double preemp,
         window_type_t type);
 
