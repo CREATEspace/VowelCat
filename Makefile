@@ -1,8 +1,28 @@
+# Export all variables to subshells
+export
+
 BUILD = build
 SUBDIRS = libformant libportaudio
 
 STATICLIB_PORTAUDIO = $(BUILD)/libportaudio/lib/.libs/libportaudio.a
 STATICLIB_FORMANT = $(BUILD)/libformant/libformant.a
+
+# Turn on optimizations and LTO?
+ifdef OPTIMIZE
+    CFLAGS += -O2 -flto
+    LDFLAGS += -flto
+endif
+
+# Compile for the build computer?
+ifdef NATIVE
+    CFLAGS += -march=native
+    LDFLAGS += -march=native
+endif
+
+# Enable debug symbols?
+ifdef DEBUG
+    CFLAGS += -O0 -g
+endif
 
 all: staticlibs
 

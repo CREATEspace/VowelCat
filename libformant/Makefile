@@ -1,5 +1,4 @@
 ALL_CFLAGS += -std=c11 -Wall -Wextra -pipe
-ALL_CFLAGS += -O2 -flto
 ALL_CFLAGS += $(CFLAGS)
 
 all: libformant.a
