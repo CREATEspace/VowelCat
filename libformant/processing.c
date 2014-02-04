@@ -447,18 +447,13 @@ int lpc(int lpc_ord, double lpc_stabl, int wsize, short *data, double *lpca,
         double *ar, double *lpck, double *normerr, double *rms, double preemp,
         window_type_t type)
 {
-    double *dwind=NULL;
-    int nwind=0;
+    double *dwind;
     double rho[MAXORDER+1], k[MAXORDER], a[MAXORDER+1],*r,*kp,*ap,en,er;
     double wfact = 1.0;
 
     if((wsize <= 0) || (!data) || (lpc_ord > MAXORDER)) return(false);
 
-    if(nwind != wsize) {
-        if(dwind) dwind = realloc((void *)dwind,wsize*sizeof(double));
-        else dwind = malloc(wsize*sizeof(double));
-        nwind = wsize;
-    }
+    dwind = malloc(wsize*sizeof(double));
 
     w_window(data, dwind, wsize, preemp, type);
     if(!(r = ar)) r = rho;
@@ -480,6 +475,9 @@ int lpc(int lpc_ord, double lpc_stabl, int wsize, short *data, double *lpca,
     *ap = 1.0;
     if(rms) *rms = en/wfact;
     if(normerr) *normerr = er;
+
+    free(dwind);
+
     return(true);
 }
 
