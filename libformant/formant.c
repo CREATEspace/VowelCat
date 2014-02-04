@@ -892,6 +892,7 @@ static void highpass(sound_t *s) {
         sound_set_sample(s, 0, i, dataout[i]);
     }
 
+    free(lcf);
     free(dataout);
     free(datain);
 }
