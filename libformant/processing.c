@@ -442,15 +442,13 @@ static void durbin (double *r, double *k, double *a, int p, double *ex) {
     *ex = e;
 }
 
-int lpc(int lpc_ord, double lpc_stabl, int wsize, short *data, double *lpca,
+int lpc(int lpc_ord, double lpc_stabl, size_t wsize, short *data, double *lpca,
         double *ar, double *lpck, double *normerr, double *rms, double preemp,
         window_type_t type)
 {
     double *dwind;
     double rho[MAXORDER+1], k[MAXORDER], a[MAXORDER+1],*r,*kp,*ap,en,er;
     double wfact = 1.0;
-
-    if((wsize <= 0) || (!data) || (lpc_ord > MAXORDER)) return(false);
 
     dwind = malloc(wsize*sizeof(double));
 
