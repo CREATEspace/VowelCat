@@ -31,7 +31,7 @@ setup:
 	cp -ru $(SUBDIRS) $(BUILD)
 
 $(BUILD)/libportaudio: setup
-	cd $@ && autoreconf -fi && ./configure
+	cd $@ && autoreconf -fi && ./configure --enable-static
 	$(MAKE) -C $@
 
 $(STATICLIB_PORTAUDIO): $(BUILD)/libportaudio
