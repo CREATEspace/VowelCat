@@ -21,8 +21,8 @@
 
 enum { MAX_FORMANTS = 7 };
 
-enum { MIN_LPC_ORDER = 2 };
-enum { MAX_LPC_ORDER = 30 };
+enum { LPC_ORDER_MIN = 2 };
+enum { LPC_ORDER_MAX = 30 };
 
 #define PI 3.14159265358979323846
 
@@ -64,8 +64,8 @@ typedef struct {   /* structure to hold raw LPC analysis data */
 } pole_t;
 
 void formant_opts_process(formant_opts_t *opts) {
-    assert(opts->lpc_order <= MAX_LPC_ORDER);
-    assert(opts->lpc_order >= MIN_LPC_ORDER);
+    assert(opts->lpc_order <= LPC_ORDER_MAX);
+    assert(opts->lpc_order >= LPC_ORDER_MIN);
 
     assert(opts->n_formants <= (opts->lpc_order - 4) / 2);
     assert(opts->n_formants <= MAX_FORMANTS);
@@ -445,7 +445,7 @@ static int lpcbsa(int np, int wind, short *data, double *lpc, double *energy,
 {
     int i, owind=0, wind1;
     double w[1000];
-    double rc[MAX_LPC_ORDER],phi[MAX_LPC_ORDER*MAX_LPC_ORDER],shi[MAX_LPC_ORDER],sig[1000];
+    double rc[LPC_ORDER_MAX],phi[LPC_ORDER_MAX*LPC_ORDER_MAX],shi[LPC_ORDER_MAX],sig[1000];
     double xl = .09, fham, amax;
     double *psp1, *psp3, *pspl;
 
@@ -479,8 +479,8 @@ static pole_t **lpc_poles(sound_t *sp, const formant_opts_t *opts) {
     int size, step, nform, init;
     size_t nfrm;
     pole_t **poles;
-    double energy, lpca[MAX_LPC_ORDER], normerr, *bap, *frp, *rhp;
-    double rr[MAX_LPC_ORDER], ri[MAX_LPC_ORDER];
+    double energy, lpca[LPC_ORDER_MAX], normerr, *bap, *frp, *rhp;
+    double rr[LPC_ORDER_MAX], ri[LPC_ORDER_MAX];
     short *datap, *dporg;
     int ord;
     double alpha, r0;
