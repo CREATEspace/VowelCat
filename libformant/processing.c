@@ -442,9 +442,9 @@ static void durbin (double *r, double *k, double *a, int p, double *ex) {
     *ex = e;
 }
 
-int lpc(size_t lpc_ord, double lpc_stabl, size_t wsize, short *data, double *lpca,
-        double *ar, double *lpck, double *normerr, double *rms, double preemp,
-        window_type_t type)
+void lpc(size_t lpc_ord, double lpc_stabl, size_t wsize, short *data, double *lpca,
+         double *ar, double *lpck, double *normerr, double *rms, double preemp,
+         window_type_t type)
 {
     double *dwind;
     double rho[MAXORDER+1], k[MAXORDER], a[MAXORDER+1],*r,*kp,*ap,en,er;
@@ -474,8 +474,6 @@ int lpc(size_t lpc_ord, double lpc_stabl, size_t wsize, short *data, double *lpc
     if(normerr) *normerr = er;
 
     free(dwind);
-
-    return(true);
 }
 
 /* covariance LPC analysis; originally from Markel and Gray */
