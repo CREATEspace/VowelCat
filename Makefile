@@ -6,7 +6,7 @@ STATICLIB_FORMANT = $(BUILD)/libformant/libformant.a
 
 setup:
 	-mkdir -p $(BUILD)
-	cp -r $(SUBDIRS) $(BUILD)
+	cp -ru $(SUBDIRS) $(BUILD)
 
 $(BUILD)/libportaudio: setup
 	cd $@ && autoreconf -fi && ./configure
