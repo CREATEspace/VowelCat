@@ -4,6 +4,8 @@ SUBDIRS = libformant libportaudio
 STATICLIB_PORTAUDIO = $(BUILD)/libportaudio/lib/.libs/libportaudio.a
 STATICLIB_FORMANT = $(BUILD)/libformant/libformant.a
 
+all: staticlibs
+
 setup:
 	-mkdir -p $(BUILD)
 	cp -ru $(SUBDIRS) $(BUILD)
@@ -24,4 +26,4 @@ staticlibs: $(STATICLIB_FORMANT) $(STATICLIB_PORTAUDIO)
 clean:
 	-rm -r $(BUILD)
 
-.PHONY: setup staticlibs clean
+.PHONY: all setup staticlibs clean
