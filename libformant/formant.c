@@ -98,18 +98,16 @@ void sound_destroy(sound_t *s) {
 }
 
 void sound_load_samples(sound_t *s, const short *samples, size_t n_samples) {
-    // The total number of samples is the number of samples per channel
-    // multiplied by the number of channels.
-    size_t tot_samples = n_samples * s->n_channels;
+    if (n_samples > s->n_samples * s->n_channels)
+        s->samples = realloc(s->samples, n_samples * sizeof(storage_t));
 
-    if (n_samples > s->n_samples)
-        s->samples = realloc(s->samples, tot_samples * sizeof(storage_t));
-
-    s->n_samples = n_samples;
+    // The rest of the processing functions expect n_samples to be the number of
+    // samples per channel.
+    s->n_samples = n_samples / s->n_channels;
 
     // XXX: once we decide whether or not samples need to be stored as floats,
     // this can be replaced by a memcpy.
-    for (size_t i = 0; i < tot_samples; i += 1)
+    for (size_t i = 0; i < n_samples; i += 1)
         s->samples[i] = (storage_t) samples[i];
 }
 
