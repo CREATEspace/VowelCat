@@ -85,9 +85,11 @@ typedef struct sound_t {
     storage_t *samples;
 } sound_t;
 
-// Initialize the given sound and fill in its sample rate and number of
-// channels.
-void sound_init(sound_t *s, size_t sample_rate, size_t n_channels);
+// Initialize the given sound to a default state.
+void sound_init(sound_t *s);
+
+// Reset the given sound to have the given sample rate and channel setup.
+void sound_reset(sound_t *s, size_t sample_rate, size_t n_channels);
 
 // Release the memory held by the given sound.
 void sound_destroy(sound_t *s);

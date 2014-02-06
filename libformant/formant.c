@@ -84,13 +84,18 @@ static inline void sound_set_sample(sound_t *s, size_t chan, size_t i,
     s->samples[i * s->n_channels + chan] = val;
 }
 
-void sound_init(sound_t *s, size_t sample_rate, size_t n_channels) {
+void sound_init(sound_t *s) {
     *s = (sound_t) {
-        .sample_rate = sample_rate,
-        .n_channels = n_channels,
+        .sample_rate = 0,
+        .n_channels = 0,
         .n_samples = 0,
         .samples = NULL,
     };
+}
+
+void sound_reset(sound_t *s, size_t sample_rate, size_t n_channels) {
+    s->sample_rate = sample_rate;
+    s->n_channels = n_channels;
 }
 
 void sound_destroy(sound_t *s) {
