@@ -36,8 +36,8 @@
  * requested that these non-binding requests be included along with the 
  * license above.
  */
-#ifndef RECORD_H
-#define RECORD_H
+#ifndef AUDIO_H
+#define AUDIO_H
 
 #include "portaudio.h"
 #include "formant.h"
