@@ -92,6 +92,7 @@ private:
   QTimer dataTimer;
   QCPItemTracer *itemDemoPhaseTracer;
   int currentDemoIndex;
+  int frame;
 };
 
 #endif // MAINWINDOW_H
