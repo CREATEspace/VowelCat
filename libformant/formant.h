@@ -85,16 +85,17 @@ typedef struct sound_t {
     storage_t *samples;
 } sound_t;
 
-// Initialize the given sound and fill in its sample rate and number of
-// channels.
-void sound_init(sound_t *s, size_t sample_rate, size_t n_channels);
+// Initialize the given sound to a default state.
+void sound_init(sound_t *s);
+
+// Reset the given sound to have the given sample rate and channel setup.
+void sound_reset(sound_t *s, size_t sample_rate, size_t n_channels);
 
 // Release the memory held by the given sound.
 void sound_destroy(sound_t *s);
 
 // Load a buffer of samples into the given sound. Note that n_samples is the
-// number of samples *per channel*, so the sound buffer must hold n_samples *
-// s->n_channels samples.
+// total number of samples in the buffer, not per channel.
 void sound_load_samples(sound_t *s, const short *samples, size_t n_samples);
 
 // Calculate the formants for the samples in the given sound. The sound is
