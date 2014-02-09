@@ -15,6 +15,7 @@
 #include <math.h>
 #include <stdbool.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "formant.h"
 #include "processing.h"
@@ -97,7 +98,7 @@ void formant_opts_process(formant_opts_t *opts) {
 }
 
 static inline void sound_set_sample(sound_t *s, size_t chan, size_t i,
-                                    storage_t val)
+                                    sample_t val)
 {
     s->samples[i * s->n_channels + chan] = val;
 }
@@ -121,17 +122,16 @@ void sound_destroy(sound_t *s) {
 }
 
 void sound_load_samples(sound_t *s, const short *samples, size_t n_samples) {
+    size_t n_bytes = n_samples * sizeof(sample_t);
+
     if (n_samples > s->n_samples * s->n_channels)
-        s->samples = realloc(s->samples, n_samples * sizeof(storage_t));
+        s->samples = realloc(s->samples, n_bytes);
 
     // The rest of the processing functions expect n_samples to be the number of
     // samples per channel.
     s->n_samples = n_samples / s->n_channels;
 
-    // XXX: once we decide whether or not samples need to be stored as floats,
-    // this can be replaced by a memcpy.
-    for (size_t i = 0; i < n_samples; i += 1)
-        s->samples[i] = (storage_t) samples[i];
+    memcpy(s->samples, samples, n_bytes);
 }
 
 /* A formant tracker based on LPC polynomial roots and dynamic programming */

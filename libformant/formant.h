@@ -18,8 +18,6 @@
 
 // How input samples are represented.
 typedef short sample_t;
-// How samples are stored in the sound structure.
-typedef float storage_t;
 
 // Parameters for calculating formants.
 typedef struct {
@@ -69,7 +67,7 @@ typedef struct sound_t {
     // The number of samples per channel in the audio data.
     size_t n_samples;
     // The audio data itself.
-    storage_t *samples;
+    sample_t *samples;
 } sound_t;
 
 // Initialize the given sound to a default state.
@@ -91,7 +89,7 @@ void sound_load_samples(sound_t *s, const short *samples, size_t n_samples);
 bool sound_calc_formants(sound_t *s, const formant_opts_t *opts);
 
 // Get the i'th sample in the given channel.
-static inline storage_t sound_get_sample(const sound_t *s, size_t chan, size_t i) {
+static inline sample_t sound_get_sample(const sound_t *s, size_t chan, size_t i) {
     return s->samples[i * s->n_channels + chan];
 }
 
