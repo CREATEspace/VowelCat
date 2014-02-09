@@ -53,21 +53,8 @@ typedef struct {
     double nom_freq;
 } formant_opts_t;
 
-// These match the default values passed in by wavesurfer.
-static const formant_opts_t FORMANT_OPTS_DEFAULT = {
-    .n_formants = 4,
-
-    .downsample_rate = 10000,
-    .pre_emph_factor = 0.7,
-
-    .window_type = WINDOW_TYPE_RECTANGULAR,
-    .window_dur = 0.049,
-    .frame_dur = 0.01,
-
-    .lpc_type = LPC_TYPE_NORMAL,
-    .lpc_order = 12,
-    .nom_freq = -10,
-};
+// Initialize the given options to (wavesurfer) defaults.
+void formant_opts_init(formant_opts_t *opts);
 
 // Process and validate the given options. The options must be ran through this
 // function before being passed into sound_calc_formants.
