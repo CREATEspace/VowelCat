@@ -8,10 +8,12 @@ BUILD = build
 # Final paths of static libraries.
 STATICLIB_PORTAUDIO = $(BUILD)/libportaudio.a
 STATICLIB_FORMANT = $(BUILD)/libformant.a
+STATICLIB_AUDIO = $(BUILD)/libaudio.a
 
 # Source paths of static libraries.
 STATICLIB_PORTAUDIO_BUILD = $(BUILD)/libportaudio/lib/.libs/libportaudio.a
 STATICLIB_FORMANT_BUILD = $(BUILD)/libformant/libformant.a
+STATICLIB_AUDIO_BUILD = $(BUILD)/libaudio/libaudio.a
 
 # Turn on optimizations and LTO?
 ifdef OPTIMIZE
@@ -60,7 +62,17 @@ $(STATICLIB_FORMANT_BUILD): $(BUILD)/libformant
 $(STATICLIB_FORMANT): $(STATICLIB_FORMANT_BUILD)
 	cp $< $@
 
-staticlibs: $(STATICLIB_FORMANT) $(STATICLIB_PORTAUDIO)
+# Build the audio static library.
+$(BUILD)/libaudio: libaudio 
+	$(set_up_build)
+	$(MAKE) -C $@
+
+$(STATICLIB_AUDIO_BUILD): $(BUILD)/libaudio
+
+$(STATICLIB_AUDIO): $(STATICLIB_AUDIO_BUILD)
+	cp $< $@
+
+staticlibs: $(STATICLIB_FORMANT) $(STATICLIB_PORTAUDIO) $(STATICLIB_AUDIO)
 
 clean:
 	-rm -r $(BUILD)
