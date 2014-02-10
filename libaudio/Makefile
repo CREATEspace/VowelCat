@@ -1,7 +1,7 @@
 ALL_CFLAGS += -std=c11 -Wall -Wextra -pipe
 ALL_CFLAGS += $(CFLAGS)
 
-INC_FORMANT = ../libformant
+INC_FORMANT   = ../libformant
 INC_PORTAUDIO = ../libportaudio/include
 INC_HEADER    = -I$(INC_FORMANT) -I$(INC_PORTAUDIO)
 
