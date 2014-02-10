@@ -933,3 +933,22 @@ bool sound_calc_formants(sound_t *s, const formant_opts_t *opts) {
 
     return true;
 }
+
+#ifdef LIBFORMANT_TEST
+#include "greatest.h"
+
+TEST test_formant_opts() {
+    formant_opts_t opts;
+    formant_opts_init(&opts);
+
+    GREATEST_ASSERTm("default options should validate",
+        formant_opts_process(&opts));
+
+    PASS();
+}
+
+SUITE(formant_suite) {
+    RUN_TEST(test_formant_opts);
+}
+
+#endif
