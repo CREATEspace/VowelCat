@@ -56,7 +56,7 @@ void formant_opts_init(formant_opts_t *opts);
 
 // Process and validate the given options. The options must be ran through this
 // function before being passed into sound_calc_formants.
-void formant_opts_process(formant_opts_t *opts);
+bool formant_opts_process(formant_opts_t *opts);
 
 // A raw audio segment.
 typedef struct sound_t {

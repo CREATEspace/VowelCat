@@ -82,12 +82,15 @@ void formant_opts_init(formant_opts_t *opts) {
     };
 }
 
-void formant_opts_process(formant_opts_t *opts) {
-    assert(opts->lpc_order <= LPC_ORDER_MAX);
-    assert(opts->lpc_order >= LPC_ORDER_MIN);
+bool formant_opts_process(formant_opts_t *opts) {
+    if (opts->lpc_order > LPC_ORDER_MAX || opts->lpc_order < LPC_ORDER_MIN)
+        return false;
 
-    assert(opts->n_formants <= (opts->lpc_order - 4) / 2);
-    assert(opts->n_formants <= MAX_FORMANTS);
+    if (opts->n_formants > (opts->lpc_order - 4) / 2)
+        return false;
+
+    if (opts->n_formants > MAX_FORMANTS)
+        return false;
 
     /* force "standard" stabilized covariance (ala bsa) */
     if (opts->lpc_type == LPC_TYPE_BSA) {
@@ -95,6 +98,8 @@ void formant_opts_process(formant_opts_t *opts) {
         /* exp(-1800*pi*T) */
         opts->pre_emph_factor = exp(-62.831853 * 90 / opts->downsample_rate);
     }
+
+    return true;
 }
 
 static inline void sound_set_sample(sound_t *s, size_t chan, size_t i,
