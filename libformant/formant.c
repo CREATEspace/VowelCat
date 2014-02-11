@@ -20,6 +20,10 @@
 #include "formant.h"
 #include "processing.h"
 
+#ifdef LIBFORMANT_TEST
+#include "greatest.h"
+#endif
+
 enum { MAX_FORMANTS = 7 };
 
 enum { LPC_ORDER_MIN = 2 };
@@ -101,6 +105,18 @@ bool formant_opts_process(formant_opts_t *opts) {
 
     return true;
 }
+
+#ifdef LIBFORMANT_TEST
+TEST test_formant_opts_process() {
+    formant_opts_t opts;
+    formant_opts_init(&opts);
+
+    GREATEST_ASSERTm("default options should validate",
+        formant_opts_process(&opts));
+
+    PASS();
+}
+#endif
 
 static inline void sound_set_sample(sound_t *s, size_t chan, size_t i,
                                     sample_t val)
@@ -935,20 +951,7 @@ bool sound_calc_formants(sound_t *s, const formant_opts_t *opts) {
 }
 
 #ifdef LIBFORMANT_TEST
-#include "greatest.h"
-
-TEST test_formant_opts() {
-    formant_opts_t opts;
-    formant_opts_init(&opts);
-
-    GREATEST_ASSERTm("default options should validate",
-        formant_opts_process(&opts));
-
-    PASS();
-}
-
 SUITE(formant_suite) {
-    RUN_TEST(test_formant_opts);
+    RUN_TEST(test_formant_opts_process);
 }
-
 #endif
