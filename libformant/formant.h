@@ -81,7 +81,7 @@ void sound_destroy(sound_t *s);
 
 // Load a buffer of samples into the given sound. Note that n_samples is the
 // total number of samples in the buffer, not per channel.
-void sound_load_samples(sound_t *s, const short *samples, size_t n_samples);
+void sound_load_samples(sound_t *s, const sample_t *samples, size_t n_samples);
 
 // Calculate the formants for the samples in the given sound. The sound is
 // modified in place. Return false if the formants couldn't be calculated for

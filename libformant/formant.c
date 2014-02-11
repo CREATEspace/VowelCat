@@ -142,7 +142,7 @@ void sound_destroy(sound_t *s) {
     free(s->samples);
 }
 
-void sound_load_samples(sound_t *s, const short *samples, size_t n_samples) {
+void sound_load_samples(sound_t *s, const sample_t *samples, size_t n_samples) {
     size_t n_bytes = n_samples * sizeof(sample_t);
 
     if (n_samples > s->n_samples * s->n_channels)
