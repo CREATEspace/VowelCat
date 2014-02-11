@@ -62,7 +62,7 @@ typedef struct record_t{
 } record_t;
 
 
-//*************INITIALIZE_RECORDING*************
+//*************RECORD_INIT**********************
 // Locate user's microphone in the computer
 // and initialize the sound_t and formant_opts_t
 // objects for use in storing recorded data and 
@@ -70,7 +70,7 @@ typedef struct record_t{
 // Audio settings are specified here.
 //**********************************************
 
-bool initialize_recording(
+bool record_init(
    record_t*            record,
    PaStreamParameters*  inputParameters,
    PaStream**           stream,            //Audio data stream
@@ -80,38 +80,38 @@ bool initialize_recording(
    unsigned long        frames_per_buffer  //the number of sample frames that PortAudio will request from the callback
 );
 
-//****************OPEN_AUDIO_INPUT****************
+//****************RECORD_OPEN_AUDIO***************
 // Function called within initialized_recording().
 // Used to locate and power a user's microphone in
 // the computer. Microphone settings are carried 
 // over from the specifications entered for 
 // initialize_recording().
 //************************************************
-bool open_audio_input(
+bool record_open_audio( 
    PaStreamParameters   *inputParameters,
    size_t               n_channels,
    size_t               sample_format
 );
 
-//*****************START_RECORDING****************
+//*****************RECORD_START*******************
 // This function serves as a wrapper function
 // for the PortAudio StartStream(). A separate 
 // thread will be created to begin the processing
 // and storing of the recorded data. 
 //************************************************
-bool start_recording(   
+bool record_start(   
    PaStream             *stream,           
    int                  record_time        //Specify duration of recording in seconds
 );
 
-//****************TERMINATE_RECORDING***************
+//****************RECORD_STOP***********************
 // This function must be called after recording
 // to deallocate the space generated for storing
 // recorded data samples in the sound_t object.
 // Also, the PortAudio recording streams and buffers
 // must also be closed.
 //**************************************************
-void terminate_recording(record_t *record);
+void record_stop(record_t *record);
 
 //*****************RECORDCALLBACK********************
 // This is a reference to the PortAudio callback 

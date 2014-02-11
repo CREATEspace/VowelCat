@@ -44,7 +44,7 @@ static int recordCallback( const void *inputBuffer, void *outputBuffer,
 //END FUNCTION
 
 //************************INITIALIZE MIC AND AUDIO SETTINGS*********************
-bool initialize_recording( 
+bool record_init( 
    record_t*            record,
    PaStreamParameters*  inputParameters,
    PaStream**           stream,
@@ -59,7 +59,7 @@ bool initialize_recording(
    if( err != paNoError ) return false;
    
    /* Find computer microphone */
-   if(!open_audio_input(inputParameters, n_channels, sample_format)) return false;
+   if(!record_open_audio(inputParameters, n_channels, sample_format)) return false;
 
 
    /* Initialize structures for recorded data storage and processing */
@@ -87,7 +87,7 @@ bool initialize_recording(
 //END FUNCTION
 
 //****************************FIND MICROPHONE********************************************
-bool open_audio_input(PaStreamParameters *inputParameters, size_t n_channels, size_t sample_format)
+bool record_open_audio(PaStreamParameters *inputParameters, size_t n_channels, size_t sample_format)
 {
    inputParameters->device = Pa_GetDefaultInputDevice(); /* default input device */
    if (inputParameters->device == paNoDevice) {
@@ -105,7 +105,7 @@ bool open_audio_input(PaStreamParameters *inputParameters, size_t n_channels, si
 //END FUNCTION
 
 //*********************START RECORDING FROM MIC***************************************
-bool start_recording(PaStream *stream, int record_time)
+bool record_start(PaStream *stream, int record_time)
 {
    PaError err = paNoError;
 
@@ -126,7 +126,7 @@ bool start_recording(PaStream *stream, int record_time)
 //END FUNCTION
 
 //*********************TERMINATE ALLOCATED DATA FOR RECORDING********************************
-void terminate_recording(record_t *record)
+void record_stop(record_t *record)
 {
    Pa_Terminate();
    sound_destroy(&record->s);
