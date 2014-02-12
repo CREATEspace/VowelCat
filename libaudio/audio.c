@@ -11,7 +11,7 @@ static int recordCallback( const void *inputBuffer, void *outputBuffer,
                            PaStreamCallbackFlags statusFlags,
                            void *userData)
 {
-  
+
     record_t *record = userData;         /* User data to store samples and calculate formants */
     const sample_t *rptr = inputBuffer;  /* Retrieval of recorded samples */
 
@@ -27,44 +27,44 @@ static int recordCallback( const void *inputBuffer, void *outputBuffer,
 
     /* Process recorded data for formant calculations */
     size_t n_samples = framesPerBuffer / (record->s.n_channels);
-    sound_load_samples(&record->s,rptr,n_samples); 
+    sound_load_samples(&record->s,rptr,n_samples);
     sound_calc_formants(&record->s, &record->opts);
 
-    
+
      /*for (size_t i = 0; i < record->s.n_samples; i += 1) {
         for (size_t j = 0; j < record->s.n_channels; j += 1)
             printf("%f\n", sound_get_sample(&record->s, j, i));
 
         putchar('\n');
     } */
-    
-    
+
+
     return paContinue; /* Keep recording stream active. CLOSED ELSEWHERE */
 }
 //END FUNCTION
 
 //************************INITIALIZE MIC AND AUDIO SETTINGS*********************
-bool record_init( 
+bool record_init(
    record_t*            record,
    PaStreamParameters*  inputParameters,
    PaStream**           stream,
-   size_t               n_channels,    
-   size_t               sample_format,     
-   size_t               sample_rate,      
+   size_t               n_channels,
+   size_t               sample_format,
+   size_t               sample_rate,
    unsigned long        frames_per_buffer )
 {
    PaError err = paNoError;
 
    err = Pa_Initialize(); /* Initialize PA internal data structures */
    if( err != paNoError ) return false;
-   
+
    /* Find computer microphone */
    if(!record_open_audio(inputParameters, n_channels, sample_format)) return false;
 
 
    /* Initialize structures for recorded data storage and processing */
-   sound_init(&record->s, sample_rate, n_channels);
-   record->opts = FORMANT_OPTS_DEFAULT;
+   sound_init(&record->s);
+   formant_opts_init(&record->opts);
    formant_opts_process(&record->opts);
    record->sample_rate = sample_rate;
    record->n_channels = n_channels;
@@ -94,9 +94,9 @@ bool record_open_audio(PaStreamParameters *inputParameters, size_t n_channels, s
       fprintf(stderr,"Error: No default input device.\n");
       return false;
    }
- 
+
    /* Specify recording settings */
-   inputParameters->channelCount = n_channels;                    
+   inputParameters->channelCount = n_channels;
    inputParameters->sampleFormat = sample_format;
    inputParameters->suggestedLatency = Pa_GetDeviceInfo( inputParameters->device )->defaultLowInputLatency;
    inputParameters->hostApiSpecificStreamInfo = NULL;
@@ -112,7 +112,7 @@ bool record_start(PaStream *stream, int record_time)
    if(Pa_StartStream( stream ) != paNoError) return false;  /* Start recording stream */
 
    printf("\n\n*****START SPEAKING INTO THE MIC*******\n");
-   
+
    while(record_time--) /* Countdown in seconds until termination */
    {
       Pa_Sleep(1000);
