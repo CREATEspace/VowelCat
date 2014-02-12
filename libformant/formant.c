@@ -491,10 +491,6 @@ static void dpform(sound_t *ps, pole_t **poles, size_t nform, double nom_f1) {
 }
 
 /* computation and I/O routines for dealing with LPC poles */
-static double integerize(double dur, double freq) {
-    return (int)(.5 + freq * dur) / freq;
-}
-
 static double frand() {
     return (((double)rand())/(double)RAND_MAX);
 }
@@ -549,10 +545,6 @@ static pole_t **lpc_poles(sound_t *sp, const formant_opts_t *opts) {
 
     // Duration of the given samples in seconds.
     double samples_dur;
-    // Duration of the window function in seconds.
-    double window_dur;
-    // Duration of the window frame in seconds.
-    double frame_dur;
 
     bap = NULL;
     frp = NULL;
@@ -560,16 +552,14 @@ static pole_t **lpc_poles(sound_t *sp, const formant_opts_t *opts) {
 
     x = PI / (opts->lpc_order + 1);
 
-    window_dur = integerize(opts->window_dur, sp->sample_rate);
-    frame_dur = integerize(opts->frame_dur, sp->sample_rate);
     samples_dur = (double)(sp->n_samples) / sp->sample_rate;
 
-    if (samples_dur < window_dur)
+    if (samples_dur < opts->window_dur)
         return NULL;
 
-    nfrm = 1 + (int)((samples_dur - window_dur) / frame_dur);
-    size = (int)(.5 + window_dur * sp->sample_rate);
-    step = (int)(.5 + frame_dur * sp->sample_rate);
+    nfrm = 1 + (int)((samples_dur - opts->window_dur) / opts->frame_dur);
+    size = (int)(.5 + opts->window_dur * sp->sample_rate);
+    step = (int)(.5 + opts->frame_dur * sp->sample_rate);
     poles = malloc(nfrm * sizeof(pole_t *));
     dporg = malloc(sizeof(short) * sp->n_samples);
     datap = dporg;
@@ -631,7 +621,7 @@ static pole_t **lpc_poles(sound_t *sp, const formant_opts_t *opts) {
 
     free(dporg);
 
-    sp->sample_rate = (int)(1.0 / frame_dur);
+    sp->sample_rate = (int)(1.0 / opts->frame_dur);
     sp->n_channels = opts->lpc_order;
     sp->n_samples = nfrm;
 
