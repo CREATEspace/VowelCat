@@ -118,12 +118,6 @@ TEST test_formant_opts_process() {
 }
 #endif
 
-static inline void sound_set_sample(sound_t *s, size_t chan, size_t i,
-                                    sample_t val)
-{
-    s->samples[i * s->n_channels + chan] = val;
-}
-
 void sound_init(sound_t *s) {
     *s = (sound_t) {
         .sample_rate = 0,
@@ -175,6 +169,12 @@ TEST test_sound_load_samples() {
     PASS();
 }
 #endif
+
+static inline void sound_set_sample(sound_t *s, size_t chan, size_t i,
+                                    sample_t val)
+{
+    s->samples[i * s->n_channels + chan] = val;
+}
 
 /* A formant tracker based on LPC polynomial roots and dynamic programming */
 /* At each frame, the LPC poles are ordered by increasing frequency.  All
