@@ -142,17 +142,18 @@ void sound_destroy(sound_t *s) {
     free(s->samples);
 }
 
-void sound_load_samples(sound_t *s, const sample_t *samples, size_t n_samples) {
-    size_t n_bytes = n_samples * sizeof(sample_t);
-
+void sound_resize(sound_t *s, size_t n_samples) {
     if (n_samples > s->n_samples * s->n_channels)
-        s->samples = realloc(s->samples, n_bytes);
+        s->samples = realloc(s->samples, n_samples * sizeof(sample_t));
 
     // The rest of the processing functions expect n_samples to be the number of
     // samples per channel.
     s->n_samples = n_samples / s->n_channels;
+}
 
-    memcpy(s->samples, samples, n_bytes);
+void sound_load_samples(sound_t *s, const sample_t *samples, size_t n_samples) {
+    sound_resize(s, n_samples);
+    memcpy(s->samples, samples, n_samples * sizeof(sample_t));
 }
 
 #ifdef LIBFORMANT_TEST

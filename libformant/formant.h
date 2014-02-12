@@ -79,6 +79,9 @@ void sound_reset(sound_t *s, size_t sample_rate, size_t n_channels);
 // Release the memory held by the given sound.
 void sound_destroy(sound_t *s);
 
+// Resize the given sound so it can hold the given number of samples.
+void sound_resize(sound_t *s, size_t n_samples);
+
 // Load a buffer of samples into the given sound. Note that n_samples is the
 // total number of samples in the buffer, not per channel.
 void sound_load_samples(sound_t *s, const sample_t *samples, size_t n_samples);
