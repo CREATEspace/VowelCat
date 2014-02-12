@@ -15,6 +15,10 @@ STATICLIB_PORTAUDIO_BUILD = $(BUILD)/libportaudio/lib/.libs/libportaudio.a
 STATICLIB_FORMANT_BUILD = $(BUILD)/libformant/libformant.a
 STATICLIB_AUDIO_BUILD = $(BUILD)/libaudio/libaudio.a
 
+CFLAGS += -I$(PWD)/libportaudio/include
+CFLAGS += -I$(PWD)/libaudio
+CFLAGS += -I$(PWD)/libformant
+
 # Turn on optimizations and LTO?
 ifdef OPTIMIZE
     CFLAGS += -O2 -flto
@@ -63,7 +67,7 @@ $(STATICLIB_FORMANT): $(STATICLIB_FORMANT_BUILD)
 	cp $< $@
 
 # Build the audio static library.
-$(BUILD)/libaudio: libaudio 
+$(BUILD)/libaudio: libaudio
 	$(set_up_build)
 	$(MAKE) -C $@
 
