@@ -68,7 +68,6 @@ typedef struct {   /* structure to hold raw LPC analysis data */
     double *band;  /* array of complex pole bandwidths (Hz) */
 } pole_t;
 
-// These match the default values passed in by wavesurfer.
 void formant_opts_init(formant_opts_t *opts) {
     *opts = (formant_opts_t) {
         .n_formants = 4,
