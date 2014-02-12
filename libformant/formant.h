@@ -96,4 +96,14 @@ static inline sample_t sound_get_sample(const sound_t *s, size_t chan, size_t i)
     return s->samples[i * s->n_channels + chan];
 }
 
+// Get the i'th F1 formant.
+static inline sample_t sound_get_f1(const sound_t *s, size_t i) {
+    return sound_get_sample(s, 0, i);
+}
+
+// Get the i'th F2 formant.
+static inline sample_t sound_get_f2(const sound_t *s, size_t i) {
+    return sound_get_sample(s, 1, i);
+}
+
 #endif
