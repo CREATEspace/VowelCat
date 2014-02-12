@@ -482,11 +482,9 @@ static void dpform(sound_t *ps, pole_t **poles, size_t nform, double nom_f1) {
 
     ps->n_channels = nform * 2;
 
-    for (size_t i = 0; i < ps->n_samples; i++) {
-        for (size_t j = 0; j < nform * 2; j++) {
+    for (size_t i = 0; i < ps->n_samples; i++)
+        for (size_t j = 0; j < ps->n_channels; j++)
             sound_set_sample(ps, j, i, fr[j][i]);
-        }
-    }
 
     for(size_t i = 0; i < nform*2; i++) free(fr[i]);
     free(fr);
