@@ -40,7 +40,7 @@ endif
 # because there's no dependency on the timestamp of $(BUILD).
 define set_up_build =
     -mkdir -p $(BUILD)
-    cp -ru $< $@
+    cp -ru $< $(BUILD)
 endef
 
 all: staticlibs
