@@ -107,8 +107,6 @@ bool record_open_audio(PaStreamParameters *inputParameters, size_t n_channels, s
 //*********************START RECORDING FROM MIC***************************************
 bool record_start(PaStream *stream, int record_time)
 {
-   PaError err = paNoError;
-
    if(Pa_StartStream( stream ) != paNoError) return false;  /* Start recording stream */
 
    printf("\n\n*****START SPEAKING INTO THE MIC*******\n");
