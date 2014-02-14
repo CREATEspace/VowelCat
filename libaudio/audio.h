@@ -38,91 +38,85 @@
  */
 #ifndef AUDIO_H
 #define AUDIO_H
+#include <stdlib.h>
+#include <pthread.h>
 
 #include "portaudio.h"
 #include "formant.h"
+#include "pa_ringbuffer.h"
 
 //********RECORDING DATA***********
 // Input struct for the callback 
-// function. sound_t will store
-// the recorded samples and carry
-// the data to the formant library
-// for formant calculations. 
-// formant_opts_t will contain
-// the recording and formant 
-// specifications. These two 
-// structs are detailed further in
-// the formant.h file.
+// function. Recorded data will
+// be stored in a ringbuffer
+// for easy access by the read end.
+// Write and read threads will
+// communicate with pthread 
+// signaling.
 //********************************
 typedef struct record_t{
-   sound_t s;
-   formant_opts_t opts;
-   size_t sample_rate;
-   size_t n_channels;
+
+   // Ring buffer (FIFO) for "communicating" towards audio callback 
+   PaUtilRingBuffer    rBufToRT;
+   void*               rBufToRTData;
+   // Ring buffer (FIFO) for "communicating" from audio callback 
+   PaUtilRingBuffer    rBufFromRT;
+   void*               rBufFromRTData;
+
+   PaStream*           stream;          // Audio data stream
+   
+   // Help write end signal read end to extract data
+   bool            wakeup;
+   pthread_cond_t  cond;
+   pthread_mutex_t mutex;
+
+   // General audio settings
+   size_t sample_rate;      // Sample rate of the audio data in Hz
+   size_t n_channels;       // Number of channels (1 for mono, 2 for stereo, and so on)
+   size_t n_samples; // Number of samples collected at once from input buffer 
+
 } record_t;
 
 
 //*************RECORD_INIT**********************
-// Locate user's microphone in the computer
-// and initialize the sound_t and formant_opts_t
-// objects for use in storing recorded data and 
-// converting such data to formant coordinates.
-// Audio settings are specified here.
+// 
 //**********************************************
 
-bool record_init(
-   record_t*            record,
-   PaStreamParameters*  inputParameters,
-   PaStream**           stream,            //Audio data stream
-   size_t               n_channels,        //Number of channels
-   size_t               sample_format,     //8, 16, 24 or 32 bit integer formats or 32 bit floating point
-   size_t               sample_rate,       //Sample rate of the audio data in Hz.
-   unsigned long        frames_per_buffer  //the number of sample frames that PortAudio will request from the callback
+void record_init(
+   record_t*           r,
+   size_t              sample_format,
+   size_t              sample_rate,
+   size_t              n_chanels,
+   size_t              n_samples
 );
 
-//****************RECORD_OPEN_AUDIO***************
-// Function called within initialized_recording().
-// Used to locate and power a user's microphone in
-// the computer. Microphone settings are carried 
-// over from the specifications entered for 
-// initialize_recording().
-//************************************************
-bool record_open_audio( 
-   PaStreamParameters   *inputParameters,
-   size_t               n_channels,
-   size_t               sample_format
-);
 
 //*****************RECORD_START*******************
-// This function serves as a wrapper function
-// for the PortAudio StartStream(). A separate 
-// thread will be created to begin the processing
-// and storing of the recorded data. 
+//
 //************************************************
-bool record_start(   
-   PaStream             *stream,           
-   int                  record_time        //Specify duration of recording in seconds
-);
+void record_start(record_t *r);
 
 //****************RECORD_STOP***********************
-// This function must be called after recording
-// to deallocate the space generated for storing
-// recorded data samples in the sound_t object.
-// Also, the PortAudio recording streams and buffers
-// must also be closed.
+//
 //**************************************************
-void record_stop(record_t *record);
+void record_stop(record_t *r);
+
+//***************RECORD_ACCESS_SAMPLES************
+//
+//**********************************************
+void record_access_samples(record_t *r);
 
 //*****************RECORDCALLBACK********************
 // This is a reference to the PortAudio callback 
 // function. This area executes in a separate thread
-// from the main program to work on the actually 
+// from the main program to work on the actual 
 // referencing and transfering of the recorded data
 // within the inputbuffer. Here we take the data 
-// from the inputbuffer and store the data in the
-// sound_t object for formant calculations within
-// the formant library. More details on this function
-// and proper use are given at the PortAudio website.
+// from the inputbuffer and store the data in our
+// ringbuffer, which will further pass the data
+// for formant calculations in the main thread.	
+// More details on this function and proper use are 
+// given at the PortAudio website.
 //***************************************************
 /*static int recordCallback( 
    const void *inputBuffer, 
