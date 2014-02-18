@@ -2,8 +2,9 @@
 # assignments below.
 export
 
-# Where things will be built.
+# Relative and absolute path where things will be built.
 BUILD = build
+BUILD_ABS = $(PWD)/$(BUILD)
 
 # Final paths of static libraries.
 STATICLIB_PORTAUDIO = $(BUILD)/libportaudio.a
@@ -15,9 +16,10 @@ STATICLIB_PORTAUDIO_BUILD = $(BUILD)/libportaudio/lib/.libs/libportaudio.a
 STATICLIB_FORMANT_BUILD = $(BUILD)/libformant/libformant.a
 STATICLIB_AUDIO_BUILD = $(BUILD)/libaudio/libaudio.a
 
-CFLAGS += -I$(PWD)/libportaudio/include
-CFLAGS += -I$(PWD)/libaudio
-CFLAGS += -I$(PWD)/libformant
+# Set up include dirs.
+CFLAGS += -I$(BUILD_ABS)/libportaudio/include
+CFLAGS += -I$(BUILD_ABS)/libaudio
+CFLAGS += -I$(BUILD_ABS)/libformant
 
 # Turn on optimizations and LTO?
 ifdef OPTIMIZE
