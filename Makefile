@@ -11,6 +11,11 @@ STATICLIB_PORTAUDIO = $(BUILD)/libportaudio.a
 STATICLIB_FORMANT = $(BUILD)/libformant.a
 STATICLIB_AUDIO = $(BUILD)/libaudio.a
 
+# Collect all the static libs here.
+STATICLIBS = $(STATICLIB_FORMANT) \
+             $(STATICLIB_PORTAUDIO) \
+             $(STATICLIB_AUDIO) \
+
 # Source paths of static libraries.
 STATICLIB_PORTAUDIO_BUILD = $(BUILD)/libportaudio/lib/.libs/libportaudio.a
 STATICLIB_FORMANT_BUILD = $(BUILD)/libformant/libformant.a
@@ -78,7 +83,7 @@ $(STATICLIB_AUDIO_BUILD): $(BUILD)/libaudio
 $(STATICLIB_AUDIO): $(STATICLIB_AUDIO_BUILD)
 	cp $< $@
 
-staticlibs: $(STATICLIB_FORMANT) $(STATICLIB_PORTAUDIO) $(STATICLIB_AUDIO)
+staticlibs: $(STATICLIBS)
 
 clean:
 	-rm -r $(BUILD)
