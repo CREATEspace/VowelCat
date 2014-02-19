@@ -2815,6 +2815,12 @@ mainwindow.o: ../plots/mainwindow.cpp ../plots/mainwindow.h \
 		../../../../../../../Qt/5.2.0/gcc_64/include/QtPrintSupport/qprintpreviewwidget.h \
 		../../../../../../../Qt/5.2.0/gcc_64/include/QtPrintSupport/qtprintsupportversion.h \
 		ui_mainwindow.h \
+		../../../../../../../Qt/5.2.0/gcc_64/include/QtWidgets/QAction \
+		../../../../../../../Qt/5.2.0/gcc_64/include/QtWidgets/QApplication \
+		../../../../../../../Qt/5.2.0/gcc_64/include/QtWidgets/QButtonGroup \
+		../../../../../../../Qt/5.2.0/gcc_64/include/QtWidgets/QHeaderView \
+		../../../../../../../Qt/5.2.0/gcc_64/include/QtWidgets/QStatusBar \
+		../../../../../../../Qt/5.2.0/gcc_64/include/QtWidgets/QVBoxLayout \
 		../../../../../../../Qt/5.2.0/gcc_64/include/QtWidgets/QDesktopWidget \
 		../../../../../../../Qt/5.2.0/gcc_64/include/QtGui/QScreen \
 		../../../../../../../Qt/5.2.0/gcc_64/include/QtWidgets/QMessageBox \
