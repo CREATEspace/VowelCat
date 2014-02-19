@@ -17,3 +17,12 @@ HEADERS  += mainwindow.h \
 
 FORMS    += mainwindow.ui
 
+OTHER_FILES += \
+    ae.points \
+    augh.points \
+    eeee.points \
+    oooo.points \
+    ../build-plot-examples-Desktop_Qt_5_2_0_GCC_64bit-Debug/a_sound.txt \
+    ../build-plot-examples-Desktop_Qt_5_2_0_GCC_64bit-Debug/e_sound.txt \
+    ../build-plot-examples-Desktop_Qt_5_2_0_GCC_64bit-Debug/o_sound.txt
+

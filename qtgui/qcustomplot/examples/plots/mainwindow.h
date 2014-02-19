@@ -87,10 +87,13 @@ private slots:
   void allScreenShots();
   
 private:
+  QVector<double> x, y;
   Ui::MainWindow *ui;
   QString demoName;
   QTimer dataTimer;
-  QCPItemTracer *itemDemoPhaseTracer;
+  QCPItemTracer *tracer;
+  QCPItemTracer *laggingTracer;
+  QCPItemTracer *laggingTracer2;
   int currentDemoIndex;
   int frame;
 };
