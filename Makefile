@@ -1,6 +1,6 @@
 # Export all variables to subshells so submakes pick up the CFLAGS and LDFLAGS
 # assignments below.
-export
+export CFLAGS LDFLAGS
 
 # Relative and absolute path where things will be built.
 BUILD = build
