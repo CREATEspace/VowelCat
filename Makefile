@@ -6,6 +6,11 @@ export CFLAGS LDFLAGS
 BUILD = build
 BUILD_ABS = $(PWD)/$(BUILD)
 
+# Build directories.
+BUILD_FORMANT = $(BUILD)/libformant
+BUILD_PORTAUDIO = $(BUILD)/libportaudio
+BUILD_AUDIO = $(BUILD)/libaudio
+
 # Final paths of static libraries.
 STATICLIB_PORTAUDIO = $(BUILD)/libportaudio.a
 STATICLIB_FORMANT = $(BUILD)/libformant.a
@@ -17,9 +22,9 @@ STATICLIBS = $(STATICLIB_FORMANT) \
              $(STATICLIB_AUDIO) \
 
 # Source paths of static libraries.
-STATICLIB_PORTAUDIO_BUILD = $(BUILD)/libportaudio/lib/.libs/libportaudio.a
-STATICLIB_FORMANT_BUILD = $(BUILD)/libformant/libformant.a
-STATICLIB_AUDIO_BUILD = $(BUILD)/libaudio/libaudio.a
+STATICLIB_PORTAUDIO_BUILD = $(BUILD_PORTAUDIO)/lib/.libs/libportaudio.a
+STATICLIB_FORMANT_BUILD = $(BUILD_FORMANT)/libformant.a
+STATICLIB_AUDIO_BUILD = $(BUILD_AUDIO)/libaudio.a
 
 # Set up include dirs.
 CFLAGS += -I$(BUILD_ABS)/libportaudio/include
