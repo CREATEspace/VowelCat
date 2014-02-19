@@ -1,0 +1,4 @@
+Name: libformant
+Description: Library for calculating formants.
+Version: 0.42
+Libs: -lm -lformant
