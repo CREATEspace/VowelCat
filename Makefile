@@ -49,7 +49,7 @@ ifeq ($(STAGE), 2)
     # Tell the compiler to search the build dir for libs.
     LDFLAGS += -L$(BUILD_ABS)
     # Include the LDFLAGS required by libs.
-    LDFLAGS += $(shell pkg-config --libs $PKG_CONFIGS)
+    LDFLAGS += $(shell pkg-config --libs $(PKG_CONFIGS))
 endif
 
 # Turn on optimizations and LTO?
