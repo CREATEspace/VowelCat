@@ -99,10 +99,10 @@ $(BUILD):
 # Build the portaudio static library.
 $(BUILD)/libportaudio: libportaudio
 	cp -ru $< $(BUILD)
-	cd $@ && autoreconf -fi && ./configure --enable-static
-	$(MAKE) -C $@
 
-$(STATICLIB_PORTAUDIO_BUILD): $(BUILD)/libportaudio
+$(STATICLIB_PORTAUDIO_BUILD): | $(BUILD)/libportaudio
+	cd $| && autoreconf -fi && ./configure --enable-static
+	$(MAKE) -C $|
 
 $(STATICLIB_PORTAUDIO): $(STATICLIB_PORTAUDIO_BUILD)
 	cp $< $@
@@ -110,9 +110,9 @@ $(STATICLIB_PORTAUDIO): $(STATICLIB_PORTAUDIO_BUILD)
 # Build the formant static library.
 $(BUILD)/libformant: libformant
 	cp -ru $< $(BUILD)
-	$(MAKE) -C $@
 
 $(STATICLIB_FORMANT_BUILD): $(BUILD)/libformant
+	$(MAKE) -C $<
 
 $(STATICLIB_FORMANT): $(STATICLIB_FORMANT_BUILD)
 	cp $< $@
@@ -120,9 +120,9 @@ $(STATICLIB_FORMANT): $(STATICLIB_FORMANT_BUILD)
 # Build the audio static library.
 $(BUILD)/libaudio: libaudio
 	cp -ru $< $(BUILD)
-	$(MAKE) -C $@
 
 $(STATICLIB_AUDIO_BUILD): $(BUILD)/libaudio
+	$(MAKE) -C $<
 
 $(STATICLIB_AUDIO): $(STATICLIB_AUDIO_BUILD)
 	cp $< $@
