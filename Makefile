@@ -48,18 +48,16 @@ ifdef DEBUG
     CFLAGS += -O0 -g
 endif
 
-# Common commands to set up a build dir. This is used instead of a $(BUILD) rule
-# because there's no dependency on the timestamp of $(BUILD).
-define set_up_build =
-    -mkdir -p $(BUILD)
-    cp -ru $< $(BUILD)
-endef
 
 all: staticlibs
 
+# Create the build directory.
+$(BUILD):
+	-mkdir -p $@
+
 # Build the portaudio static library.
 $(BUILD)/libportaudio: libportaudio
-	$(set_up_build)
+	cp -ru $< $(BUILD)
 	cd $@ && autoreconf -fi && ./configure --enable-static
 	$(MAKE) -C $@
 
@@ -70,7 +68,7 @@ $(STATICLIB_PORTAUDIO): $(STATICLIB_PORTAUDIO_BUILD)
 
 # Build the formant static library.
 $(BUILD)/libformant: libformant
-	$(set_up_build)
+	cp -ru $< $(BUILD)
 	$(MAKE) -C $@
 
 $(STATICLIB_FORMANT_BUILD): $(BUILD)/libformant
@@ -80,7 +78,7 @@ $(STATICLIB_FORMANT): $(STATICLIB_FORMANT_BUILD)
 
 # Build the audio static library.
 $(BUILD)/libaudio: libaudio
-	$(set_up_build)
+	cp -ru $< $(BUILD)
 	$(MAKE) -C $@
 
 $(STATICLIB_AUDIO_BUILD): $(BUILD)/libaudio
@@ -88,7 +86,7 @@ $(STATICLIB_AUDIO_BUILD): $(BUILD)/libaudio
 $(STATICLIB_AUDIO): $(STATICLIB_AUDIO_BUILD)
 	cp $< $@
 
-staticlibs: $(STATICLIBS)
+staticlibs: $(BUILD) $(STATICLIBS)
 
 clean:
 	-rm -r $(BUILD)
