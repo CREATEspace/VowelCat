@@ -17,7 +17,7 @@
 #include "processing.h"
 
 // How input samples are represented.
-typedef short sample_t;
+typedef short formant_sample_t;
 
 // Parameters for calculating formants.
 typedef struct {
@@ -67,7 +67,7 @@ typedef struct sound_t {
     // The number of samples per channel in the audio data.
     size_t n_samples;
     // The audio data itself.
-    sample_t *samples;
+    formant_sample_t *samples;
 } sound_t;
 
 // Initialize the given sound to a default state.
@@ -84,7 +84,7 @@ void sound_resize(sound_t *s, size_t n_samples);
 
 // Load a buffer of samples into the given sound. Note that n_samples is the
 // total number of samples in the buffer, not per channel.
-void sound_load_samples(sound_t *s, const sample_t *samples, size_t n_samples);
+void sound_load_samples(sound_t *s, const formant_sample_t *samples, size_t n_samples);
 
 // Calculate the formants for the samples in the given sound. The sound is
 // modified in place. Return false if the formants couldn't be calculated for
@@ -92,17 +92,17 @@ void sound_load_samples(sound_t *s, const sample_t *samples, size_t n_samples);
 bool sound_calc_formants(sound_t *s, const formant_opts_t *opts);
 
 // Get the i'th sample in the given channel.
-static inline sample_t sound_get_sample(const sound_t *s, size_t chan, size_t i) {
+static inline formant_sample_t sound_get_sample(const sound_t *s, size_t chan, size_t i) {
     return s->samples[i * s->n_channels + chan];
 }
 
 // Get the i'th F1 formant.
-static inline sample_t sound_get_f1(const sound_t *s, size_t i) {
+static inline formant_sample_t sound_get_f1(const sound_t *s, size_t i) {
     return sound_get_sample(s, 0, i);
 }
 
 // Get the i'th F2 formant.
-static inline sample_t sound_get_f2(const sound_t *s, size_t i) {
+static inline formant_sample_t sound_get_f2(const sound_t *s, size_t i) {
     return sound_get_sample(s, 1, i);
 }
 

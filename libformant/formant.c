@@ -137,16 +137,16 @@ void sound_destroy(sound_t *s) {
 
 void sound_resize(sound_t *s, size_t n_samples) {
     if (n_samples > s->n_samples * s->n_channels)
-        s->samples = realloc(s->samples, n_samples * sizeof(sample_t));
+        s->samples = realloc(s->samples, n_samples * sizeof(formant_sample_t));
 
     // The rest of the processing functions expect n_samples to be the number of
     // samples per channel.
     s->n_samples = n_samples / s->n_channels;
 }
 
-void sound_load_samples(sound_t *s, const sample_t *samples, size_t n_samples) {
+void sound_load_samples(sound_t *s, const formant_sample_t *samples, size_t n_samples) {
     sound_resize(s, n_samples);
-    memcpy(s->samples, samples, n_samples * sizeof(sample_t));
+    memcpy(s->samples, samples, n_samples * sizeof(formant_sample_t));
 }
 
 #ifdef LIBFORMANT_TEST
@@ -159,7 +159,7 @@ TEST test_sound_load_samples() {
     GREATEST_ASSERT_EQm("don't allocate with no samples", s.samples, NULL);
     GREATEST_ASSERT_EQm("don't set n_samples with no samples", s.n_samples, 0);
 
-    sample_t samples[8] = {0, 0, 0, 0, 0, 0, 0, 42};
+    formant_sample_t samples[8] = {0, 0, 0, 0, 0, 0, 0, 42};
     sound_load_samples(&s, samples, 8);
     GREATEST_ASSERT_EQm("set n_samples correctly", s.n_samples, 4);
     GREATEST_ASSERTm("samples allocated", s.samples);
@@ -170,7 +170,7 @@ TEST test_sound_load_samples() {
 #endif
 
 static inline void sound_set_sample(sound_t *s, size_t chan, size_t i,
-                                    sample_t val)
+                                    formant_sample_t val)
 {
     s->samples[i * s->n_channels + chan] = val;
 }
