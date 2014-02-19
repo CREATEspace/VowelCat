@@ -1,3 +1,11 @@
+# The build process is split into multiple -- currently two -- stages:
+#
+#  1. Build static libraries and generate their pkgconfigs.
+#  2. Link binaries with static libraries.
+#
+# The stage to run is specified by the STAGE environmental variable. If no stage
+# is given, all stages are ran.
+
 # Export all variables to subshells so submakes pick up the CFLAGS and LDFLAGS
 # assignments below.
 export CFLAGS LDFLAGS
@@ -26,10 +34,23 @@ STATICLIB_PORTAUDIO_BUILD = $(BUILD_PORTAUDIO)/lib/.libs/libportaudio.a
 STATICLIB_FORMANT_BUILD = $(BUILD_FORMANT)/libformant.a
 STATICLIB_AUDIO_BUILD = $(BUILD_AUDIO)/libaudio.a
 
-# Set up include dirs.
-CFLAGS += -I$(BUILD_ABS)/libportaudio/include
-CFLAGS += -I$(BUILD_ABS)/libaudio
-CFLAGS += -I$(BUILD_ABS)/libformant
+# Pkg-config files to use.
+PKG_CONFIGS = $(BUILD_FORMANT)/libformant.pc \
+              $(BUILD_PORTAUDIO)/portaudio-2.0.pc \
+
+ifneq ($(STAGE), )
+    # Set up include dirs.
+    CFLAGS += -I$(BUILD_ABS)/libportaudio/include
+    CFLAGS += -I$(BUILD_ABS)/libaudio
+    CFLAGS += -I$(BUILD_ABS)/libformant
+endif
+
+ifeq ($(STAGE), 2)
+    # Tell the compiler to search the build dir for libs.
+    LDFLAGS += -L$(BUILD_ABS)
+    # Include the LDFLAGS required by libs.
+    LDFLAGS += $(shell pkg-config --libs $PKG_CONFIGS)
+endif
 
 # Turn on optimizations and LTO?
 ifdef OPTIMIZE
@@ -48,8 +69,28 @@ ifdef DEBUG
     CFLAGS += -O0 -g
 endif
 
+ifeq ($(STAGE), )
+all: bootstrap
+endif
 
+ifeq ($(STAGE), 1)
 all: staticlibs
+endif
+
+ifeq ($(STAGE), 2)
+all: link
+endif
+
+# Build both stages.
+bootstrap:
+	$(MAKE) STAGE=1
+	$(MAKE) STAGE=2
+
+# Build static libs.
+staticlibs: $(BUILD) $(STATICLIBS)
+
+# Build linked binaries.
+link:
 
 # Create the build directory.
 $(BUILD):
@@ -86,9 +127,7 @@ $(STATICLIB_AUDIO_BUILD): $(BUILD)/libaudio
 $(STATICLIB_AUDIO): $(STATICLIB_AUDIO_BUILD)
 	cp $< $@
 
-staticlibs: $(BUILD) $(STATICLIBS)
-
 clean:
 	-rm -r $(BUILD)
 
-.PHONY: all staticlibs clean
+.PHONY: all boostrap staticlibs link clean
