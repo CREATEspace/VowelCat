@@ -53,19 +53,19 @@ ifeq ($(STAGE), 2)
 endif
 
 # Turn on optimizations and LTO?
-ifdef OPTIMIZE
+ifeq ($(OPTIMIZE), 1)
     CFLAGS += -O2 -flto
     LDFLAGS += -flto
 endif
 
 # Compile for the build computer?
-ifdef NATIVE
+ifeq ($(NATIVE), 1)
     CFLAGS += -march=native
     LDFLAGS += -march=native
 endif
 
 # Enable debug symbols?
-ifdef DEBUG
+ifeq ($(DEBUG), 1)
     CFLAGS += -O0 -g
 endif
 
