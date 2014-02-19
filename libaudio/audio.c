@@ -112,8 +112,15 @@ bool record_init(
 //*
 bool record_start(record_t *r)
 {
-   if(Pa_StartStream(r->stream) != paNoError) // Start recording stream
-      return false;   
+   return Pa_StartStream(r->stream) == paNoError; // Start recording stream
+}
+//END FUNCTION
+
+//********************************STOP RECORDING**************************************
+//*
+bool record_stop(record_t *r)
+{
+   return Pa_CloseStream(r->stream) == paNoError;
 }
 //END FUNCTION
 
@@ -131,17 +138,14 @@ void record_read(record_t *r, sample_t *samples)
 }
 //END FUNCTION
 
+
 //*******************************TERMINATE ALLOCATED DATA FOR RECORDING**************************************//
 //*
-bool record_stop(record_t *r)
+void record_destroy(record_t *r)
 {
-   if(Pa_CloseStream(r->stream) != paNoError) 
-      return false;  // Close recording stream 
-   
    Pa_Terminate();
    //*******************
-   if (r->rBufFromRTData)
-      free(r->rBufFromRTData);
+   free(r->rBufFromRTData);
 
    pthread_cond_destroy(&r->cond);
    pthread_mutex_destroy(&r->mutex);

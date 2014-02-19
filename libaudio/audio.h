@@ -40,10 +40,10 @@
 #define AUDIO_H
 
 #include <stdlib.h>
+#include <stdbool.h>
 #include <pthread.h>
 #include "portaudio.h"
 #include "pa_ringbuffer.h"
-#include "formant.h"
 
 //********RECORDING DATA***********
 // Input struct for the callback 
@@ -54,6 +54,9 @@
 // communicate with pthread 
 // signaling.
 //********************************
+
+typedef short sample_t; 
+
 typedef struct record_t{
 
    // Ring buffer (FIFO) for "communicating" from audio callback 
@@ -98,10 +101,14 @@ bool record_start(record_t *r);
 //**************************************************
 bool record_stop(record_t *r);
 
-//***************RECORD_ACCESS_SAMPLES************
+//***************RECORD_READ************
 //
 //**********************************************
 void record_read(record_t *r, sample_t *samples);
+
+//***************RECORD_DESTORY*****************
+//
+void record_destroy(record_t *r);
 
 //*****************RECORDCALLBACK********************
 // This is a reference to the PortAudio callback 
