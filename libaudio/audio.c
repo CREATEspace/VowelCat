@@ -14,9 +14,9 @@ static int recordCallback( const void *inputBuffer, void *outputBuffer,
 
 
     (void) outputBuffer; // Prevent unused variable warnings. 
+    (void) framesPerBuffer;
     (void) timeInfo;
     (void) statusFlags;
-    (void) userData;
 
     //********Pull samples from input buffer***************************
     PaUtil_WriteRingBuffer(&r->rBufFromRT, &rptr[0], r->n_samples);     
@@ -32,7 +32,7 @@ static int recordCallback( const void *inputBuffer, void *outputBuffer,
 
 //************************INITIALIZE MIC AND AUDIO SETTINGS**********************************************//
 //*
-void record_init( 
+bool record_init( 
    record_t*            r,
    size_t               sample_format,     
    size_t               sample_rate,      
@@ -41,13 +41,13 @@ void record_init(
 {
 
    //***Initialize PA internal data structures******
-   Pa_Initialize();  
+   PaError err = paNoError;
+   err = Pa_Initialize();  
+   if(err != paNoError) return false;
    //*************
 
    //*****Initialize communication ring buffers******************** 
    unsigned long rb_samples_count = 16384; // Must be a power of 2
-   r->rBufToRTData = malloc(sizeof(sample_t) * rb_samples_count);  
-   PaUtil_InitializeRingBuffer(&r->rBufToRT, sizeof(sample_t), rb_samples_count, r->rBufToRTData); 
    r->rBufFromRTData = malloc(sizeof(sample_t) * rb_samples_count); 
    PaUtil_InitializeRingBuffer(&r->rBufFromRT, sizeof(sample_t), rb_samples_count, r->rBufFromRTData);
    //**************
@@ -55,10 +55,8 @@ void record_init(
    //******Initialize input device******* 
    PaStreamParameters inputParameters;
    inputParameters.device = Pa_GetDefaultInputDevice();  
-   if (inputParameters.device == paNoDevice) {
-      //fprintf(stderr,"Error: No default input device.\n");
-      return;
-   }
+   if(inputParameters.device == paNoDevice) return false;
+   
    // Specify recording settings 
    inputParameters.channelCount = n_channels;                    
    inputParameters.sampleFormat = sample_format;
@@ -68,7 +66,7 @@ void record_init(
 
    //********Open the input stream******* 
    PaStream *stream=NULL;
-   Pa_OpenStream(
+   err = Pa_OpenStream(
       &stream,
       &inputParameters,
       NULL,              
@@ -77,8 +75,10 @@ void record_init(
       paClipOff,          
       recordCallback,
       r);
+   if(err != paNoError) return false;
    //**************
 
+   
    //******Initialize thread settings******
    r->wakeup = false;
    r->cond   = (pthread_cond_t) PTHREAD_COND_INITIALIZER;
@@ -90,77 +90,56 @@ void record_init(
    r->sample_rate = sample_rate;
    r->n_channels = n_channels;
    r->n_samples = n_samples;
-   //**************
+
+   /*r = (record_t) {
+      //******Initialize thread settings******
+      .wakeup = false,
+      .cond   = PTHREAD_COND_INITIALIZER,
+      .mutex  = PTHREAD_MUTEX_INITIALIZER,
+      //**************
+
+      //*********Store audio settings******
+      .stream      = stream,
+      .sample_rate = sample_rate,
+      .n_channels  = n_channels,
+      .n_samples   = n_samples
+      //**************
+   };*/
 }
 //END FUNCTION
 
 //************************************START RECORDING FROM MIC*********************************************//
 //*
-void record_start(record_t *r)
+bool record_start(record_t *r)
 {
-   Pa_StartStream(r->stream);  // Start recording stream 
-   record_access_samples(r);   // Receive and process recorded samples
-   Pa_CloseStream(r->stream);  // Close recording stream 
-
+   if(Pa_StartStream(r->stream) != paNoError) // Start recording stream
+      return false;   
 }
 //END FUNCTION
 
 //***********************************ACCESS AND PROCESS RECORDED SAMPLES***********************************//
 //*
-void record_access_samples(record_t *r)
+void record_read(record_t *r, sample_t *samples)
 {
-   //**********************
-   sound_t s;
-   sound_init(&s);
-   sound_reset(&s, r->sample_rate, r->n_channels);  
-   sound_resize(&s, r->n_samples);
-
-   formant_opts_t opts;
-   formant_opts_init(&opts);   
-   //*******
-
-   for(;;)
-   {
-      //****************************
-      sound_reset(&s, r->sample_rate, r->n_channels);  
-      //*******
+   pthread_mutex_lock(&r->mutex);
+   if(!r->wakeup)
+      pthread_cond_wait(&r->cond, &r->mutex);
+   r->wakeup = false;
+   pthread_mutex_unlock(&r->mutex);
       
-      //****************************
-      pthread_mutex_lock(&r->mutex);
-      if(!r->wakeup)
-         pthread_cond_wait(&r->cond, &r->mutex);
-      r->wakeup = false;
-      pthread_mutex_unlock(&r->mutex);
-      
-      PaUtil_ReadRingBuffer(&r->rBufFromRT, &s.samples[0], r->n_samples); 
-      sound_resize(&s, r->n_samples);
-      
-      sound_calc_formants(&s, &opts); 
-      //****** 
-      
-      //****************************
-      for (size_t i = 0; i < s.n_samples; i += 1) {
-         float f1 = sound_get_f1(&s, i);
-         float f2 = sound_get_f2(&s, i);
-        
-         // Send formants to Qt
-      }
-      //******
-   }
-   sound_destroy(&s);
+   PaUtil_ReadRingBuffer(&r->rBufFromRT, &samples[0], r->n_samples); 
 }
 //END FUNCTION
 
 //*******************************TERMINATE ALLOCATED DATA FOR RECORDING**************************************//
 //*
-void record_stop(record_t *r)
+bool record_stop(record_t *r)
 {
+   if(Pa_CloseStream(r->stream) != paNoError) 
+      return false;  // Close recording stream 
+   
    Pa_Terminate();
-
    //*******************
-   if (r->rBufToRTData)
-      free(r->rBufToRTData);
-
    if (r->rBufFromRTData)
       free(r->rBufFromRTData);
 

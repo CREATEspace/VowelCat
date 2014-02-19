@@ -38,12 +38,12 @@
  */
 #ifndef AUDIO_H
 #define AUDIO_H
+
 #include <stdlib.h>
 #include <pthread.h>
-
 #include "portaudio.h"
-#include "formant.h"
 #include "pa_ringbuffer.h"
+#include "formant.h"
 
 //********RECORDING DATA***********
 // Input struct for the callback 
@@ -56,9 +56,6 @@
 //********************************
 typedef struct record_t{
 
-   // Ring buffer (FIFO) for "communicating" towards audio callback 
-   PaUtilRingBuffer    rBufToRT;
-   void*               rBufToRTData;
    // Ring buffer (FIFO) for "communicating" from audio callback 
    PaUtilRingBuffer    rBufFromRT;
    void*               rBufFromRTData;
@@ -71,9 +68,9 @@ typedef struct record_t{
    pthread_mutex_t mutex;
 
    // General audio settings
-   size_t sample_rate;      // Sample rate of the audio data in Hz
-   size_t n_channels;       // Number of channels (1 for mono, 2 for stereo, and so on)
-   size_t n_samples; // Number of samples collected at once from input buffer 
+   size_t sample_rate; // Sample rate of the audio data in Hz
+   size_t n_channels;  // Number of channels (1 for mono, 2 for stereo, and so on)
+   size_t n_samples;   // Number of samples collected at once from input buffer 
 
 } record_t;
 
@@ -82,7 +79,7 @@ typedef struct record_t{
 // 
 //**********************************************
 
-void record_init(
+bool record_init(
    record_t*           r,
    size_t              sample_format,
    size_t              sample_rate,
@@ -94,17 +91,17 @@ void record_init(
 //*****************RECORD_START*******************
 //
 //************************************************
-void record_start(record_t *r);
+bool record_start(record_t *r);
 
 //****************RECORD_STOP***********************
 //
 //**************************************************
-void record_stop(record_t *r);
+bool record_stop(record_t *r);
 
 //***************RECORD_ACCESS_SAMPLES************
 //
 //**********************************************
-void record_access_samples(record_t *r);
+void record_read(record_t *r, sample_t *samples);
 
 //*****************RECORDCALLBACK********************
 // This is a reference to the PortAudio callback 
