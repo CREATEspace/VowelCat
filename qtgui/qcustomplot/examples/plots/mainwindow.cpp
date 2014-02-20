@@ -104,7 +104,7 @@ void MainWindow::setupItemDemo(QCustomPlot *customPlot)
     points.close();
   }
 
-  points.open("o_sound.txt");
+  points.open("oooo2.points");
   if (points.is_open()) {
     while (!points.eof()){
         points >> xpoint;

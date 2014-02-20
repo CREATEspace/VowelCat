@@ -24,5 +24,6 @@ OTHER_FILES += \
     oooo.points \
     ../build-plot-examples-Desktop_Qt_5_2_0_GCC_64bit-Debug/a_sound.txt \
     ../build-plot-examples-Desktop_Qt_5_2_0_GCC_64bit-Debug/e_sound.txt \
-    ../build-plot-examples-Desktop_Qt_5_2_0_GCC_64bit-Debug/o_sound.txt
+    ../build-plot-examples-Desktop_Qt_5_2_0_GCC_64bit-Debug/o_sound.txt \
+    ../build-plot-examples-Desktop_Qt_5_2_0_GCC_64bit-Debug/oooo2.points
 
