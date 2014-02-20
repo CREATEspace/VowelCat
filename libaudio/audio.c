@@ -10,7 +10,7 @@ static int recordCallback( const void *inputBuffer, void *outputBuffer,
 {
   
     record_t *r = userData;               
-    const sample_t *rptr = inputBuffer;  
+    const audio_sample_t *rptr = inputBuffer;  
 
 
     (void) outputBuffer; // Prevent unused variable warnings. 
@@ -48,8 +48,8 @@ bool record_init(
 
    //*****Initialize communication ring buffers******************** 
    unsigned long rb_samples_count = 16384; // Must be a power of 2
-   r->rBufFromRTData = malloc(sizeof(sample_t) * rb_samples_count); 
-   PaUtil_InitializeRingBuffer(&r->rBufFromRT, sizeof(sample_t), rb_samples_count, r->rBufFromRTData);
+   r->rBufFromRTData = malloc(sizeof(audio_sample_t) * rb_samples_count); 
+   PaUtil_InitializeRingBuffer(&r->rBufFromRT, sizeof(audio_sample_t), rb_samples_count, r->rBufFromRTData);
    //**************
    
    //******Initialize input device******* 
@@ -91,20 +91,17 @@ bool record_init(
    r->n_channels = n_channels;
    r->n_samples = n_samples;
 
-   /*r = (record_t) {
-      //******Initialize thread settings******
+   /**r = (record_t) {
       .wakeup = false,
       .cond   = PTHREAD_COND_INITIALIZER,
       .mutex  = PTHREAD_MUTEX_INITIALIZER,
-      //**************
 
-      //*********Store audio settings******
       .stream      = stream,
       .sample_rate = sample_rate,
       .n_channels  = n_channels,
       .n_samples   = n_samples
-      //**************
    };*/
+   return true;
 }
 //END FUNCTION
 
@@ -120,13 +117,13 @@ bool record_start(record_t *r)
 //*
 bool record_stop(record_t *r)
 {
-   return Pa_CloseStream(r->stream) == paNoError;
+   return Pa_CloseStream(r->stream) == paNoError; // Stop recording stream
 }
 //END FUNCTION
 
 //***********************************ACCESS AND PROCESS RECORDED SAMPLES***********************************//
 //*
-void record_read(record_t *r, sample_t *samples)
+void record_read(record_t *r, audio_sample_t *samples)
 {
    pthread_mutex_lock(&r->mutex);
    if(!r->wakeup)
@@ -146,9 +143,9 @@ void record_destroy(record_t *r)
    Pa_Terminate();
    //*******************
    free(r->rBufFromRTData);
-
+   //*******************
    pthread_cond_destroy(&r->cond);
    pthread_mutex_destroy(&r->mutex);
-   //**********
+   //*******************
 }
 //END FUNCTION

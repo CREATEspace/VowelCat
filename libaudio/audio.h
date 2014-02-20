@@ -55,7 +55,7 @@
 // signaling.
 //********************************
 
-typedef short sample_t; 
+typedef short audio_sample_t; 
 
 typedef struct record_t{
 
@@ -104,7 +104,7 @@ bool record_stop(record_t *r);
 //***************RECORD_READ************
 //
 //**********************************************
-void record_read(record_t *r, sample_t *samples);
+void record_read(record_t *r, audio_sample_t *samples);
 
 //***************RECORD_DESTORY*****************
 //
