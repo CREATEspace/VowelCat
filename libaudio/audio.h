@@ -3,7 +3,7 @@
  * PortAudio API Header File
  * Latest version available at: http://www.portaudio.com
  *
- * Copyright (c) 2014 Formant Industries, Inc.
+ * Copyright (c) 2014-     Formant Industries, Inc.
  * Copyright (c) 1999-2006 Ross Bencina and Phil Burk
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -36,6 +36,7 @@
  * requested that these non-binding requests be included along with the 
  * license above.
  */
+
 #ifndef AUDIO_H
 #define AUDIO_H
 
@@ -44,16 +45,6 @@
 #include <pthread.h>
 #include "portaudio.h"
 #include "pa_ringbuffer.h"
-
-//********RECORDING DATA***********
-// Input struct for the callback 
-// function. Recorded data will
-// be stored in a ringbuffer
-// for easy access by the read end.
-// Write and read threads will
-// communicate with pthread 
-// signaling.
-//********************************
 
 typedef short audio_sample_t; 
 
@@ -90,7 +81,6 @@ bool record_init(
    size_t              n_samples
 );
 
-
 //*****************RECORD_START*******************
 //
 //************************************************
@@ -110,24 +100,4 @@ void record_read(record_t *r, audio_sample_t *samples);
 //
 void record_destroy(record_t *r);
 
-//*****************RECORDCALLBACK********************
-// This is a reference to the PortAudio callback 
-// function. This area executes in a separate thread
-// from the main program to work on the actual 
-// referencing and transfering of the recorded data
-// within the inputbuffer. Here we take the data 
-// from the inputbuffer and store the data in our
-// ringbuffer, which will further pass the data
-// for formant calculations in the main thread.	
-// More details on this function and proper use are 
-// given at the PortAudio website.
-//***************************************************
-/*static int recordCallback( 
-   const void *inputBuffer, 
-   void *outputBuffer,
-   unsigned long framesPerBuffer,
-   const PaStreamCallbackTimeInfo* timeInfo,
-   PaStreamCallbackFlags statusFlags,
-   void *userData
-);*/
 #endif
