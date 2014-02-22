@@ -130,7 +130,6 @@ void record_read(record_t *r, audio_sample_t *samples)
 void record_destroy(record_t *r)
 {
    //*******************
-   Pa_CloseStream(r->stream);
    Pa_Terminate();
    //*******************
    free(r->rBufFromRTData);
