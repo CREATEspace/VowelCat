@@ -17,7 +17,8 @@ $(LIB): $(OBJ)
 %.o: %.c
 	$(CC) $(ALL_CFLAGS) -c -o $@ $<
 
-test-libformant: $(SRC) test/test.c
-	$(CC) $(ALL_CFLAGS) -DLIBFORMANT_TEST -I. -Itest -o $@ $^ $(ALL_LDFLAGS)
+test-libformant: test/test.o $(SRC)
+	$(MAKE) CFLAGS='-DLIBFORMANT_TEST -I. -Itest' $(LIB) -B
+	$(CC) $(ALL_CFLAGS) -o $@ $< $(ALL_LDFLAGS) -L.
 
 .PHONY: all test
