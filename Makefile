@@ -66,9 +66,9 @@ STATICLIB_AUDIO_BUILD = $(BUILD_AUDIO)/libaudio.a
 
 # Pkg-config files to use.
 PKG_CONFIGS = \
+    $(BUILD_AUDIO)/libaudio.pc \
     $(BUILD_PORTAUDIO)/portaudio-2.0.pc \
     $(BUILD_FORMANT)/libformant.pc \
-    $(BUILD_AUDIO)/libaudio.pc \
 
 # If on any stage, set up CFLAGS.
 ifneq ($(STAGE), )

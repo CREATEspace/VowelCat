@@ -1,4 +1,4 @@
 Name: libaudio
 Description: Library for recoding audio.
 Version: 0.95
-Libs: -lpthread -lportaudio -laudio
+Libs: -laudio -lportaudio -lpthread
