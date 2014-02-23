@@ -26,4 +26,3 @@ OTHER_FILES += \
     pointData/augh.points \
     pointData/eeee.points \
     pointData/oooo.points \
-    oooo.points
