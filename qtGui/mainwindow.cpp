@@ -21,7 +21,6 @@ MainWindow::MainWindow(QWidget *parent) :
   setGeometry(400, 250, 1000, 800);
 
   setupPlot(ui->customPlot);
-  statusBar()->clearMessage();
   ui->customPlot->replot();
 }
 
@@ -55,7 +54,6 @@ void MainWindow::setupPlot(QCustomPlot *customPlot)
       points.close();
     }
   }
-
 
   customPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom);
   QCPGraph *graph = customPlot->addGraph();
@@ -114,12 +112,6 @@ void MainWindow::setupPlot(QCustomPlot *customPlot)
 
 void MainWindow::bracketDataSlot()
 {
-#if QT_VERSION < QT_VERSION_CHECK(4, 7, 0)
-  double secs = 0;
-#else
-  double secs = QDateTime::currentDateTime().toMSecsSinceEpoch()/1000.0;
-#endif
-
   frame++;
 
   tracer->setGraphKey(x[frame%x.size()]);
@@ -131,23 +123,6 @@ void MainWindow::bracketDataSlot()
   else laggingTracer2->setGraphKey(x[frame%x.size() - 2]);
 
   ui->customPlot->replot();
-
-  // calculate frames per second:
-  double key = secs;
-  static double lastFpsKey;
-  static int frameCount;
-  ++frameCount;
-  if (key-lastFpsKey > 2) // average fps over 2 seconds
-  {
-    ui->statusBar->showMessage(
-          QString("%1 FPS, Total Data points: %2, %3 executions")
-          .arg(frameCount/(key-lastFpsKey), 0, 'f', 0)
-          .arg(ui->customPlot->graph(0)->data()->count())
-          .arg(frame)
-          , 0);
-    lastFpsKey = key;
-    frameCount = 0;
-  }
 }
 
 MainWindow::~MainWindow()
