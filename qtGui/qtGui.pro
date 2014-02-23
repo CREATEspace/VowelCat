@@ -8,7 +8,7 @@ TARGET = qtGui
 TEMPLATE = app
 
 SOURCES += \
-    main.cpp\
+    main.cpp \
     mainwindow.cpp \
     qcustomplot.cpp \
 
