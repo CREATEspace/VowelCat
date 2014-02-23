@@ -5,7 +5,7 @@ LIB = libformant.a
 ALL_CFLAGS += -std=c11 -Wall -Wextra -pipe
 ALL_CFLAGS += $(CFLAGS)
 
-ALL_LDFLAGS += -lm
+ALL_LDFLAGS += $(shell pkg-config --libs libformant.pc)
 ALL_LDFLAGS += $(LDFLAGS)
 
 all: $(LIB)
