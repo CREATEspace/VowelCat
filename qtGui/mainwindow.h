@@ -58,3 +58,5 @@ private:
 };
 
 #endif // MAINWINDOW_H
+
+// vim: sw=2

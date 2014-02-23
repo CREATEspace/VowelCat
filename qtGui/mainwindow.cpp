@@ -171,3 +171,5 @@ MainWindow::~MainWindow()
 void MainWindow::screenShot(){}
 
 void MainWindow::allScreenShots(){}
+
+// vim: sw=2
