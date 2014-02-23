@@ -50,6 +50,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <vector>
 
 using namespace std;
 
@@ -80,57 +81,35 @@ void MainWindow::setupItemDemo(QCustomPlot *customPlot)
   int ypoint;
   ifstream points;
 
-//  points.open("a_sound.txt");
-//  if (points.is_open()) {
-//    while (!points.eof()){
-//        points >> xpoint;
-//        points >> ypoint;
-//        x.append(xpoint);
-//        y.append(ypoint);
-//        //cout << "xpoint: " << xpoint << "  ypoint: " << ypoint << endl;
-//    }
-//    points.close();
-//  }
+  vector<string> pointFiles;
+  pointFiles.push_back("oooo.points");
+  pointFiles.push_back("eeee.points");
+  pointFiles.push_back("augh.points");
+  pointFiles.push_back("ae.points");
+  pointFiles.push_back("a_sound.txt");
+  pointFiles.push_back("e_sound.txt");
+  pointFiles.push_back("o_sound.txt");
+  pointFiles.push_back("oooo2.points");
 
-  points.open("oooo.points");
-  if (points.is_open()) {
-    while (!points.eof()){
-        points >> xpoint;
-        points >> ypoint;
+  for (uint i = 0; i < pointFiles.size(); i++){
+    points.open(pointFiles[i].c_str());
+    if (points.is_open()) {
+      points >> xpoint;
+      points >> ypoint;
+      while (!points.eof()){
         x.append(xpoint);
         y.append(ypoint);
-        //cout << "xpoint: " << xpoint << "  ypoint: " << ypoint << endl;
-    }
-    points.close();
-  }
-
-  points.open("oooo2.points");
-  if (points.is_open()) {
-    while (!points.eof()){
         points >> xpoint;
         points >> ypoint;
-        x.append(xpoint);
-        y.append(ypoint);
-        //cout << "xpoint: " << xpoint << "  ypoint: " << ypoint << endl;
+      }
+      points.close();
     }
-    points.close();
   }
 
-//  points.open("ae.points");
-//  if (points.is_open()) {
-//    while (!points.eof()){
-//        points >> xpoint;
-//        points >> ypoint;
-//        x.append(xpoint);
-//        y.append(ypoint);
-//        //cout << "xpoint: " << xpoint << "  ypoint: " << ypoint << endl;
-//    }
-//    points.close();
-//  }
 
   customPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom);
   QCPGraph *graph = customPlot->addGraph();
-  frame = 0;
+  frame = -1;
   graph->setData(x, y);
   graph->setPen(QPen(Qt::white));
   graph->rescaleKeyAxis();
@@ -154,7 +133,7 @@ void MainWindow::setupItemDemo(QCustomPlot *customPlot)
   phaseTracer->setStyle(QCPItemTracer::tsCircle);
   phaseTracer->setPen(QPen(Qt::red));
   phaseTracer->setBrush(Qt::red);
-  phaseTracer->setSize(20);
+  phaseTracer->setSize(30);
 
   QCPItemTracer *phaseTracerLagging = new QCPItemTracer(customPlot);
   customPlot->addItem(phaseTracerLagging);
@@ -165,18 +144,18 @@ void MainWindow::setupItemDemo(QCustomPlot *customPlot)
   phaseTracerLagging->setStyle(QCPItemTracer::tsCircle);
   phaseTracerLagging->setPen(QPen(Qt::red));
   phaseTracerLagging->setBrush(Qt::red);
-  phaseTracerLagging->setSize(14);
+  phaseTracerLagging->setSize(20);
 
-//  QCPItemTracer *phaseTracerLagging2 = new QCPItemTracer(customPlot);
-//  customPlot->addItem(phaseTracerLagging2);
-//  laggingTracer = phaseTracerLagging2; // so we can access it later in the bracketDataSlot for animation
-//  phaseTracerLagging2->setGraph(graph);
-//  phaseTracerLagging2->setGraphKey(755);
-//  phaseTracerLagging2->setInterpolating(false);
-//  phaseTracerLagging2->setStyle(QCPItemTracer::tsCircle);
-//  phaseTracerLagging2->setPen(QPen(Qt::red));
-//  phaseTracerLagging2->setBrush(Qt::red);
-//  phaseTracerLagging2->setSize(14);
+  QCPItemTracer *phaseTracerLagging2 = new QCPItemTracer(customPlot);
+  customPlot->addItem(phaseTracerLagging2);
+  laggingTracer2 = phaseTracerLagging2; // so we can access it later in the bracketDataSlot for animation
+  phaseTracerLagging2->setGraph(graph);
+  phaseTracerLagging2->setGraphKey(755);
+  phaseTracerLagging2->setInterpolating(false);
+  phaseTracerLagging2->setStyle(QCPItemTracer::tsCircle);
+  phaseTracerLagging2->setPen(QPen(Qt::red));
+  phaseTracerLagging2->setBrush(Qt::red);
+  phaseTracerLagging2->setSize(14);
 
   // setup a timer that repeatedly calls MainWindow::realtimeDataSlot:
   connect(&dataTimer, SIGNAL(timeout()), this, SLOT(bracketDataSlot()));
@@ -197,29 +176,12 @@ void MainWindow::bracketDataSlot()
   //ui->customPlot->graph()->setData(x, y);
 
   tracer->setGraphKey(x[frame%x.size()]);
-  cout << "frame%x.size() " << frame%x.size();
-  cout << "  tracer x: " << x[frame%x.size()];
 
-  if (frame%x.size() < 1){
-      laggingTracer->setGraphKey(x[x.size()-1]);
-      cout << "  laggingTracerx: " << x[x.size()-1] << endl;
-  }
-  else{
-      laggingTracer->setGraphKey(x[frame%x.size() - 1]);
-      cout << "  laggingTracerx: " << x[frame%x.size() - 1] << endl;
-  }
+  if (frame%x.size() < 1) laggingTracer->setGraphKey(x[x.size()-1]);
+  else laggingTracer->setGraphKey(x[frame%x.size() - 1]);
 
-//  if (frame%x.size() < 2){
-//      cout << "x.size() - 2 : " << x.size() - 2 << endl;
-//      cout << "x[x.size() - 2]: " << x[x.size() - 2] << endl;
-//      laggingTracer2->setGraphKey(x[x.size()-2]);
-//      cout << "  laggingTracer2x: " << x[x.size()-2] << endl;
-//  }
-//  else{
-//      laggingTracer2->setGraphKey(x[frame%x.size() - 2]);
-//      cout << "  laggingTracer2x: " << x[frame%x.size() - 2] << endl;
-//  }
-
+  if (frame%x.size() < 2) laggingTracer2->setGraphKey(x[x.size()-2]);
+  else laggingTracer2->setGraphKey(x[frame%x.size() - 2]);
 
   ui->customPlot->replot();
 
