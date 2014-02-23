@@ -130,7 +130,7 @@ $(BUILD)/libformant: libformant | $(BUILD)
 	cp -ru $< $|
 
 $(STATICLIB_FORMANT_BUILD): $(BUILD)/libformant
-	$(MAKE) -C $<
+	$(MAKE) -C $< clean all
 
 $(STATICLIB_FORMANT): $(STATICLIB_FORMANT_BUILD)
 	cp $< $@
