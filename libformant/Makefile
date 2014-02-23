@@ -21,4 +21,7 @@ test-libformant: test/test.o $(SRC)
 	$(MAKE) CFLAGS='-DLIBFORMANT_TEST -I. -Itest' $(LIB) -B
 	$(CC) $(ALL_CFLAGS) -o $@ $< $(ALL_LDFLAGS) -L.
 
-.PHONY: all test
+clean:
+	-rm $(OBJ) $(LIB)
+
+.PHONY: all test clean
