@@ -1,22 +1,24 @@
 SRC = formant.c processing.c
 OBJ = $(SRC:.c=.o)
+LIB = libformant.a
 
 ALL_CFLAGS += -std=c11 -Wall -Wextra -pipe
 ALL_CFLAGS += $(CFLAGS)
 
-ALL_LDFLAGS += -lm
+ALL_LDFLAGS += $(shell pkg-config --libs libformant.pc)
 ALL_LDFLAGS += $(LDFLAGS)
 
-all: libformant.a
+all: $(LIB)
 test: test-libformant
 
-libformant.a: $(OBJ)
+$(LIB): $(OBJ)
 	$(AR) rcs $@ $^
 
 %.o: %.c
 	$(CC) $(ALL_CFLAGS) -c -o $@ $<
 
-test-libformant: $(SRC) test/test.c
-	$(CC) $(ALL_CFLAGS) $(ALL_LDFLAGS) -DLIBFORMANT_TEST -I. -Itest -o $@ $^
+test-libformant: test/test.o $(SRC)
+	$(MAKE) CFLAGS='-DLIBFORMANT_TEST -I. -Itest' $(LIB) -B
+	$(CC) $(ALL_CFLAGS) -o $@ $< $(ALL_LDFLAGS) -L.
 
 .PHONY: all test
