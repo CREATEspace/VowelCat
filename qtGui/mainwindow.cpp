@@ -20,21 +20,16 @@ MainWindow::MainWindow(QWidget *parent) :
   ui->setupUi(this);
   setGeometry(400, 250, 1000, 800);
 
-  //setupDemo(15);
-  setupItemDemo(ui->customPlot);
-  setWindowTitle("QCustomPlot: "+demoName);
+  setupPlot(ui->customPlot);
   statusBar()->clearMessage();
-  currentDemoIndex = 15;
   ui->customPlot->replot();
 }
 
-void MainWindow::setupItemDemo(QCustomPlot *customPlot)
+void MainWindow::setupPlot(QCustomPlot *customPlot)
 {
 #if QT_VERSION < QT_VERSION_CHECK(4, 7, 0)
   QMessageBox::critical(this, "", "You're using Qt < 4.7, the animation of the item demo needs functions that are available with Qt 4.7 to work properly");
 #endif
-
-  demoName = "Item Demo";
 
   int xpoint;
   int ypoint;
@@ -117,8 +112,6 @@ void MainWindow::setupItemDemo(QCustomPlot *customPlot)
   dataTimer.start(100); // Interval 0 means to refresh as fast as possible
 }
 
-void MainWindow::realtimeDataSlot(){}
-
 void MainWindow::bracketDataSlot()
 {
 #if QT_VERSION < QT_VERSION_CHECK(4, 7, 0)
@@ -128,7 +121,6 @@ void MainWindow::bracketDataSlot()
 #endif
 
   frame++;
-  //ui->customPlot->graph()->setData(x, y);
 
   tracer->setGraphKey(x[frame%x.size()]);
 
@@ -158,18 +150,9 @@ void MainWindow::bracketDataSlot()
   }
 }
 
-void MainWindow::setupPlayground(QCustomPlot *customPlot)
-{
-  Q_UNUSED(customPlot)
-}
-
 MainWindow::~MainWindow()
 {
   delete ui;
 }
-
-void MainWindow::screenShot(){}
-
-void MainWindow::allScreenShots(){}
 
 // vim: sw=2
