@@ -1,5 +1,4 @@
-#include "mainwindow.h"
-#include "ui_mainwindow.h"
+#include <QColor>
 #include <QDebug>
 #include <QDesktopWidget>
 #include <QScreen>
@@ -10,18 +9,38 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include <cmath>
+
+#include "mainwindow.h"
+#include "ui_mainwindow.h"
 
 using namespace std;
 
 MainWindow::MainWindow(QWidget *parent) :
   QMainWindow(parent),
-  ui(new Ui::MainWindow)
+  ui(new Ui::MainWindow),
+  frame(0)
 {
   ui->setupUi(this);
   setGeometry(400, 250, 1000, 800);
 
   setupPlot(ui->customPlot);
   ui->customPlot->replot();
+}
+
+static double tracerSize(double x) {
+  enum { TRACER_SIZE_MAX = 40 };
+  enum { TRACER_SIZE_MIN = 14 };
+  enum { TRACER_SIZE_RANGE = TRACER_SIZE_MAX - TRACER_SIZE_MIN };
+
+  return TRACER_SIZE_RANGE * x / N_TRACERS + TRACER_SIZE_MIN;
+}
+
+static double tracerAlpha(double x) {
+  enum { TRACER_ALPHA_MAX = 255 };
+  enum { TRACER_ALPHA_MIN = 64 };
+
+  return pow(TRACER_ALPHA_MAX, x / TRACER_LAST);
 }
 
 void MainWindow::setupPlot(QCustomPlot *customPlot)
@@ -57,7 +76,6 @@ void MainWindow::setupPlot(QCustomPlot *customPlot)
 
   customPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom);
   QCPGraph *graph = customPlot->addGraph();
-  frame = -1;
   graph->setData(x, y);
   graph->setPen(QPen(Qt::white));
   graph->rescaleKeyAxis();
@@ -71,39 +89,17 @@ void MainWindow::setupPlot(QCustomPlot *customPlot)
   customPlot->yAxis->setRangeReversed(true);
   customPlot->yAxis->setLabel("F1 (Hz)");
 
-  // add the phase tracer (red circle) which sticks to the graph data (and gets updated in bracketDataSlot by timer event):
-  QCPItemTracer *phaseTracer = new QCPItemTracer(customPlot);
-  customPlot->addItem(phaseTracer);
-  tracer = phaseTracer; // so we can access it later in the bracketDataSlot for animation
-  phaseTracer->setGraph(graph);
-  phaseTracer->setGraphKey(832);
-  phaseTracer->setInterpolating(false);
-  phaseTracer->setStyle(QCPItemTracer::tsCircle);
-  phaseTracer->setPen(QPen(Qt::red));
-  phaseTracer->setBrush(Qt::red);
-  phaseTracer->setSize(30);
-
-  QCPItemTracer *phaseTracerLagging = new QCPItemTracer(customPlot);
-  customPlot->addItem(phaseTracerLagging);
-  laggingTracer = phaseTracerLagging; // so we can access it later in the bracketDataSlot for animation
-  phaseTracerLagging->setGraph(graph);
-  phaseTracerLagging->setGraphKey(1263);
-  phaseTracerLagging->setInterpolating(false);
-  phaseTracerLagging->setStyle(QCPItemTracer::tsCircle);
-  phaseTracerLagging->setPen(QPen(Qt::red));
-  phaseTracerLagging->setBrush(Qt::red);
-  phaseTracerLagging->setSize(20);
-
-  QCPItemTracer *phaseTracerLagging2 = new QCPItemTracer(customPlot);
-  customPlot->addItem(phaseTracerLagging2);
-  laggingTracer2 = phaseTracerLagging2; // so we can access it later in the bracketDataSlot for animation
-  phaseTracerLagging2->setGraph(graph);
-  phaseTracerLagging2->setGraphKey(755);
-  phaseTracerLagging2->setInterpolating(false);
-  phaseTracerLagging2->setStyle(QCPItemTracer::tsCircle);
-  phaseTracerLagging2->setPen(QPen(Qt::red));
-  phaseTracerLagging2->setBrush(Qt::red);
-  phaseTracerLagging2->setSize(14);
+  for (size_t i = 0; i < N_TRACERS; i += 1) {
+    tracers[i] = new QCPItemTracer(customPlot);
+    tracers[i]->setGraph(graph);
+    tracers[i]->setInterpolating(false);
+    tracers[i]->setStyle(QCPItemTracer::tsCircle);
+    tracers[i]->setPen(Qt::NoPen);
+    QColor color(Qt::red);
+    color.setAlpha(tracerAlpha(i));
+    tracers[i]->setBrush(color);
+    tracers[i]->setSize(tracerSize(i));
+  }
 
   // setup a timer that repeatedly calls MainWindow::realtimeDataSlot:
   connect(&dataTimer, SIGNAL(timeout()), this, SLOT(bracketDataSlot()));
@@ -112,17 +108,19 @@ void MainWindow::setupPlot(QCustomPlot *customPlot)
 
 void MainWindow::bracketDataSlot()
 {
-  frame++;
+  double key = x[frame % x.size()];
+  double val = y[frame % y.size()];
 
-  tracer->setGraphKey(x[frame%x.size()]);
+  ui->customPlot->graph()->removeData(tracers[TRACER_FIRST]->graphKey());
+  ui->customPlot->graph()->addData(key, val);
 
-  if (frame%x.size() < 1) laggingTracer->setGraphKey(x[x.size()-1]);
-  else laggingTracer->setGraphKey(x[frame%x.size() - 1]);
+  for (size_t i = TRACER_FIRST; i < TRACER_LAST; i += 1)
+    tracers[i]->setGraphKey(tracers[i + 1]->graphKey());
 
-  if (frame%x.size() < 2) laggingTracer2->setGraphKey(x[x.size()-2]);
-  else laggingTracer2->setGraphKey(x[frame%x.size() - 2]);
-
+  tracers[TRACER_LAST]->setGraphKey(key);
   ui->customPlot->replot();
+
+  frame += 1;
 }
 
 MainWindow::~MainWindow()
