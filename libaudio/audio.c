@@ -58,7 +58,7 @@ bool record_init(
    //*************
 
    //*****Initialize communication ring buffers******************** 
-   unsigned long rb_size = 16384; // Must be a power of 2
+   int rb_size = 1 << (sizeof(n_samples) * CHAR_BIT - __builtin_clz(n_samples * RB_MULTIPLIER));
    r->rBufFromRTData = malloc(sizeof(audio_sample_t) * rb_size); 
    PaUtil_InitializeRingBuffer(&r->rBufFromRT, sizeof(audio_sample_t), rb_size, r->rBufFromRTData);
    //**************

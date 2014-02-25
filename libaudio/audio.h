@@ -42,10 +42,12 @@
 
 #include <stdlib.h>
 #include <stdbool.h>
+#include <limits.h>
 #include <pthread.h>
 #include "portaudio.h"
 #include "pa_ringbuffer.h"
 
+#define RB_MULTIPLIER 2
 typedef short audio_sample_t; 
 
 typedef struct record_t{
