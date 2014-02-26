@@ -1,3 +1,6 @@
+#include <inttypes.h>
+#include <math.h>
+
 #include <QColor>
 #include <QDebug>
 #include <QDesktopWidget>
@@ -5,13 +8,33 @@
 #include <QMessageBox>
 #include <QMetaEnum>
 
-#include <math.h>
-
 #include "formant.h"
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
 using namespace std;
+
+double Tracer::size(double x) {
+    return DIAM_MIN + DIAM_RANGE * x / Tracer::LAST;
+}
+
+uint32_t Tracer::alpha(double x) {
+    return ALPHA_MIN + pow(ALPHA_RANGE + 1, x / Tracer::LAST) - 1;
+}
+
+uint32_t Tracer::rgba(double x) {
+    return alpha(x) << 24 | COLOR_BASE;
+}
+
+Tracer::Tracer(QCustomPlot *plot, QCPGraph *graph, size_t i):
+    QCPItemTracer(plot)
+{
+    setGraph(graph);
+    setStyle(QCPItemTracer::tsCircle);
+    setPen(Qt::NoPen);
+    setBrush(QColor::fromRgba(rgba(i)));
+    setSize(size(i));
+}
 
 MainWindow::MainWindow(QWidget *parent) :
   QMainWindow(parent),
@@ -25,21 +48,6 @@ MainWindow::MainWindow(QWidget *parent) :
 
   setupPlot();
   plot->replot();
-}
-
-static double tracerSize(double x) {
-  enum { TRACER_SIZE_MAX = 40 };
-  enum { TRACER_SIZE_MIN = 14 };
-  enum { TRACER_SIZE_RANGE = TRACER_SIZE_MAX - TRACER_SIZE_MIN };
-
-  return TRACER_SIZE_RANGE * x / N_TRACERS + TRACER_SIZE_MIN;
-}
-
-static double tracerAlpha(double x) {
-  enum { TRACER_ALPHA_MAX = 255 };
-  enum { TRACER_ALPHA_MIN = 64 };
-
-  return pow(TRACER_ALPHA_MAX, x / TRACER_LAST);
 }
 
 void MainWindow::setupPlot()
@@ -57,27 +65,18 @@ void MainWindow::setupPlot()
   plot->yAxis->setRangeReversed(true);
   plot->yAxis->setLabel("F1 (Hz)");
 
-  for (size_t i = 0; i < N_TRACERS; i += 1) {
-    tracers[i] = new QCPItemTracer(plot);
-    tracers[i]->setGraph(graph);
-    tracers[i]->setInterpolating(false);
-    tracers[i]->setStyle(QCPItemTracer::tsCircle);
-    tracers[i]->setPen(Qt::NoPen);
-    QColor color(Qt::red);
-    color.setAlpha(tracerAlpha(i));
-    tracers[i]->setBrush(color);
-    tracers[i]->setSize(tracerSize(i));
-  }
+  for (size_t i = 0; i < Tracer::COUNT; i += 1)
+    tracers[i] = new Tracer(plot, graph, i);
 }
 
 void MainWindow::plotFormant(formant_sample_t f2, formant_sample_t f1) {
-  graph->removeData(tracers[TRACER_FIRST]->graphKey());
+  graph->removeData(tracers[0]->graphKey());
   graph->addData(f2, f1);
 
-  for (size_t i = TRACER_FIRST; i < TRACER_LAST; i += 1)
+  for (size_t i = 0; i < Tracer::LAST; i += 1)
     tracers[i]->setGraphKey(tracers[i + 1]->graphKey());
 
-  tracers[TRACER_LAST]->setGraphKey(f2);
+  tracers[Tracer::LAST]->setGraphKey(f2);
   plot->replot();
 }
 
