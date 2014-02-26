@@ -84,6 +84,7 @@ void MainWindow::setupPlot()
   plot->xAxis->setRangeReversed(true);
   plot->xAxis->setLabel("F2 (Hz)");
 
+  plot->yAxis->grid()->setZeroLinePen(Qt::NoPen);
   plot->yAxis->setRange(3000, 0);
   plot->yAxis->setRangeReversed(true);
   plot->yAxis->setLabel("F1 (Hz)");
