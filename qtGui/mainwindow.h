@@ -23,7 +23,7 @@ private:
   QCPItemTracer *tracers[N_TRACERS];
 
 public:
-  explicit MainWindow(QWidget *parent = 0);
+  explicit MainWindow(QWidget *parent = NULL);
   ~MainWindow();
 
 public slots:
