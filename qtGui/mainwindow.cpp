@@ -148,6 +148,12 @@ void MainWindow::setupPlot()
 }
 
 void MainWindow::plotFormant(formant_sample_t f2, formant_sample_t f1) {
+  #if QT_VERSION < QT_VERSION_CHECK(4, 7, 0)
+    double secs = 0;
+  #else
+    double secs = QDateTime::currentDateTime().toMSecsSinceEpoch()/1000.0;
+  #endif
+
   graph->removeData(tracers[0]->graphKey());
   graph->addData(f2, f1);
 
@@ -156,6 +162,21 @@ void MainWindow::plotFormant(formant_sample_t f2, formant_sample_t f1) {
 
   tracers[Tracer::LAST]->setGraphKey(f2);
   plot->replot();
+
+  double key = secs;
+  static double lastFpsKey;
+  static int frameCount;
+  ++frameCount;
+  if (key-lastFpsKey > 2) // average fps over 2 seconds
+  {
+    ui->statusBar->showMessage(
+          QString("%1 FPS, Total Data points: %2")
+          .arg(frameCount/(key-lastFpsKey), 0, 'f', 0)
+          .arg(ui->customPlot->graph(0)->data()->count())
+          , 0);
+    lastFpsKey = key;
+    frameCount = 0;
+  }
 }
 
 MainWindow::~MainWindow()
