@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <QTimer>
 
+#include "formant.h"
 #include "qcustomplot.h"
 #include "ui_mainwindow.h"
 
@@ -31,6 +32,7 @@ public:
 
 private slots:
   void bracketDataSlot();
+  void plotFormant(formant_sample_t f2, formant_sample_t f1);
 
 private:
   void setupPlot();

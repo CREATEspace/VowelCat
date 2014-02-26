@@ -11,6 +11,7 @@
 #include <vector>
 #include <cmath>
 
+#include "formant.h"
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
@@ -109,16 +110,19 @@ void MainWindow::bracketDataSlot()
   double key = x[frame % x.size()];
   double val = y[frame % y.size()];
 
+  plotFormant(key, val);
+  frame += 1;
+}
+
+void MainWindow::plotFormant(formant_sample_t f2, formant_sample_t f1) {
   graph->removeData(tracers[TRACER_FIRST]->graphKey());
-  graph->addData(key, val);
+  graph->addData(f2, f1);
 
   for (size_t i = TRACER_FIRST; i < TRACER_LAST; i += 1)
     tracers[i]->setGraphKey(tracers[i + 1]->graphKey());
 
-  tracers[TRACER_LAST]->setGraphKey(key);
+  tracers[TRACER_LAST]->setGraphKey(f2);
   plot->replot();
-
-  frame += 1;
 }
 
 MainWindow::~MainWindow()
