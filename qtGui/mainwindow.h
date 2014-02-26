@@ -23,12 +23,14 @@ private slots:
   void bracketDataSlot();
 
 private:
-  void setupPlot(QCustomPlot *customPlot);
+  void setupPlot();
 
   QCPItemTracer *tracers[N_TRACERS];
 
   QVector<double> x, y;
   Ui::MainWindow *ui;
+  QCustomPlot *plot;
+  QCPGraph *graph;
   QTimer dataTimer;
   int frame;
 };

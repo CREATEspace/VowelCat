@@ -24,8 +24,11 @@ MainWindow::MainWindow(QWidget *parent) :
   ui->setupUi(this);
   setGeometry(400, 250, 1000, 800);
 
-  setupPlot(ui->customPlot);
-  ui->customPlot->replot();
+  plot = ui->customPlot;
+  graph = plot->addGraph();
+
+  setupPlot();
+  plot->replot();
 }
 
 static double tracerSize(double x) {
@@ -43,7 +46,7 @@ static double tracerAlpha(double x) {
   return pow(TRACER_ALPHA_MAX, x / TRACER_LAST);
 }
 
-void MainWindow::setupPlot(QCustomPlot *customPlot)
+void MainWindow::setupPlot()
 {
 #if QT_VERSION < QT_VERSION_CHECK(4, 7, 0)
   QMessageBox::critical(this, "", "You're using Qt < 4.7, the animation of the item demo needs functions that are available with Qt 4.7 to work properly");
@@ -74,23 +77,22 @@ void MainWindow::setupPlot(QCustomPlot *customPlot)
     }
   }
 
-  customPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom);
-  QCPGraph *graph = customPlot->addGraph();
+  plot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom);
   graph->setData(x, y);
   graph->setPen(QPen(Qt::white));
   graph->rescaleKeyAxis();
 
-  customPlot->xAxis->grid()->setZeroLinePen(Qt::NoPen);
-  customPlot->xAxis->setRange(3000, 0);
-  customPlot->xAxis->setRangeReversed(true);
-  customPlot->xAxis->setLabel("F2 (Hz)");
+  plot->xAxis->grid()->setZeroLinePen(Qt::NoPen);
+  plot->xAxis->setRange(3000, 0);
+  plot->xAxis->setRangeReversed(true);
+  plot->xAxis->setLabel("F2 (Hz)");
 
-  customPlot->yAxis->setRange(3000, 0);
-  customPlot->yAxis->setRangeReversed(true);
-  customPlot->yAxis->setLabel("F1 (Hz)");
+  plot->yAxis->setRange(3000, 0);
+  plot->yAxis->setRangeReversed(true);
+  plot->yAxis->setLabel("F1 (Hz)");
 
   for (size_t i = 0; i < N_TRACERS; i += 1) {
-    tracers[i] = new QCPItemTracer(customPlot);
+    tracers[i] = new QCPItemTracer(plot);
     tracers[i]->setGraph(graph);
     tracers[i]->setInterpolating(false);
     tracers[i]->setStyle(QCPItemTracer::tsCircle);
@@ -111,14 +113,14 @@ void MainWindow::bracketDataSlot()
   double key = x[frame % x.size()];
   double val = y[frame % y.size()];
 
-  ui->customPlot->graph()->removeData(tracers[TRACER_FIRST]->graphKey());
-  ui->customPlot->graph()->addData(key, val);
+  graph->removeData(tracers[TRACER_FIRST]->graphKey());
+  graph->addData(key, val);
 
   for (size_t i = TRACER_FIRST; i < TRACER_LAST; i += 1)
     tracers[i]->setGraphKey(tracers[i + 1]->graphKey());
 
   tracers[TRACER_LAST]->setGraphKey(key);
-  ui->customPlot->replot();
+  plot->replot();
 
   frame += 1;
 }
