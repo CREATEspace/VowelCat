@@ -101,6 +101,48 @@ void MainWindow::setupPlot()
   lowerLowBackUnrounded->setText("ɑ");
   lowerLowBackUnrounded->setFont(QFont(font().family(), 20));
 
+  QCPItemText *lowerLowCentralUnrounded = new QCPItemText(ui->customPlot);
+  ui->customPlot->addItem(lowerLowCentralUnrounded);
+  lowerLowCentralUnrounded->position->setCoords(1211, 784);
+  lowerLowCentralUnrounded->setText("ä");
+  lowerLowCentralUnrounded->setFont(QFont(font().family(), 20));
+
+  QCPItemText *lowerLowFrontUnrounded = new QCPItemText(ui->customPlot);
+  ui->customPlot->addItem(lowerLowFrontUnrounded);
+  lowerLowFrontUnrounded->position->setCoords(1632, 806);
+  lowerLowFrontUnrounded->setText("a");
+  lowerLowFrontUnrounded->setFont(QFont(font().family(), 20));
+
+  QCPItemText *upperLowFrontUnrounded = new QCPItemText(ui->customPlot);
+  ui->customPlot->addItem(upperLowFrontUnrounded);
+  upperLowFrontUnrounded->position->setCoords(1782, 766);
+  upperLowFrontUnrounded->setText("æ");
+  upperLowFrontUnrounded->setFont(QFont(font().family(), 20));
+
+  QCPItemText *lowerMidFrontUnrounded = new QCPItemText(ui->customPlot);
+  ui->customPlot->addItem(lowerMidFrontUnrounded);
+  lowerMidFrontUnrounded->position->setCoords(1840, 541);
+  lowerMidFrontUnrounded->setText("ɛ");
+  lowerMidFrontUnrounded->setFont(QFont(font().family(), 20));
+
+  QCPItemText *upperMidFrontUnrounded = new QCPItemText(ui->customPlot);
+  ui->customPlot->addItem(upperMidFrontUnrounded);
+  upperMidFrontUnrounded->position->setCoords(2148, 434);
+  upperMidFrontUnrounded->setText("e");
+  upperMidFrontUnrounded->setFont(QFont(font().family(), 20));
+
+  QCPItemText *lowerHighFrontUnrounded = new QCPItemText(ui->customPlot);
+  ui->customPlot->addItem(lowerHighFrontUnrounded);
+  lowerHighFrontUnrounded->position->setCoords(2187, 360);
+  lowerHighFrontUnrounded->setText("ɪ");
+  lowerHighFrontUnrounded->setFont(QFont(font().family(), 20));
+
+  QCPItemText *upperHighFrontUnrounded = new QCPItemText(ui->customPlot);
+  ui->customPlot->addItem(upperHighFrontUnrounded);
+  upperHighFrontUnrounded->position->setCoords(2343, 294);
+  upperHighFrontUnrounded->setText("i");
+  upperHighFrontUnrounded->setFont(QFont(font().family(), 20));
+
   for (size_t i = 0; i < Tracer::COUNT; i += 1)
     tracers[i] = new Tracer(plot, graph, i);
 }
