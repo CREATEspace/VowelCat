@@ -22,16 +22,11 @@ private:
   QCPGraph *graph;
   QCPItemTracer *tracers[N_TRACERS];
 
-  QVector<double> x, y;
-  QTimer dataTimer;
-  int frame;
-
 public:
   explicit MainWindow(QWidget *parent = 0);
   ~MainWindow();
 
-private slots:
-  void bracketDataSlot();
+public slots:
   void plotFormant(formant_sample_t f2, formant_sample_t f1);
 
 private:

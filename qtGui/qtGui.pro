@@ -11,21 +11,16 @@ SOURCES += \
     main.cpp \
     mainwindow.cpp \
     qcustomplot.cpp \
+    formant-worker.cpp \
 
 HEADERS += \
     mainwindow.h \
     qcustomplot.h \
+    formant-worker.h \
 
 FORMS += \
     mainwindow.ui \
 
-OTHER_FILES += \
-    pointData/ae.points \
-    pointData/augh.points \
-    pointData/eeee.points \
-    pointData/oooo.points \
-
 QMAKE_CFLAGS += $$(CFLAGS)
 QMAKE_CXXFLAGS += $$(CFLAGS)
-QMAKE_CXXFLAGS += -Wall -Wextra -pipe
 LIBS += $(LDFLAGS)

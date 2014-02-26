@@ -5,11 +5,7 @@
 #include <QMessageBox>
 #include <QMetaEnum>
 
-#include <iostream>
-#include <fstream>
-#include <string>
-#include <vector>
-#include <cmath>
+#include <math.h>
 
 #include "formant.h"
 #include "mainwindow.h"
@@ -19,8 +15,7 @@ using namespace std;
 
 MainWindow::MainWindow(QWidget *parent) :
   QMainWindow(parent),
-  ui(new Ui::MainWindow),
-  frame(0)
+  ui(new Ui::MainWindow)
 {
   ui->setupUi(this);
   setGeometry(400, 250, 1000, 800);
@@ -49,35 +44,8 @@ static double tracerAlpha(double x) {
 
 void MainWindow::setupPlot()
 {
-  int xpoint;
-  int ypoint;
-  ifstream points;
-
-  vector<string> pointFiles;
-  pointFiles.push_back("pointData/oooo.points");
-  pointFiles.push_back("pointData/eeee.points");
-  pointFiles.push_back("pointData/augh.points");
-  pointFiles.push_back("pointData/ae.points");
-
-  for (uint i = 0; i < pointFiles.size(); i++){
-    points.open(pointFiles[i].c_str());
-    if (points.is_open()) {
-      points >> xpoint;
-      points >> ypoint;
-      while (!points.eof()){
-        x.append(xpoint);
-        y.append(ypoint);
-        points >> xpoint;
-        points >> ypoint;
-      }
-      points.close();
-    }
-  }
-
   plot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom);
-  graph->setData(x, y);
   graph->setPen(Qt::NoPen);
-  graph->rescaleKeyAxis();
 
   plot->xAxis->grid()->setZeroLinePen(Qt::NoPen);
   plot->xAxis->setRange(3000, 0);
@@ -100,19 +68,6 @@ void MainWindow::setupPlot()
     tracers[i]->setBrush(color);
     tracers[i]->setSize(tracerSize(i));
   }
-
-  // setup a timer that repeatedly calls MainWindow::realtimeDataSlot:
-  connect(&dataTimer, SIGNAL(timeout()), this, SLOT(bracketDataSlot()));
-  dataTimer.start(100); // Interval 0 means to refresh as fast as possible
-}
-
-void MainWindow::bracketDataSlot()
-{
-  double key = x[frame % x.size()];
-  double val = y[frame % y.size()];
-
-  plotFormant(key, val);
-  frame += 1;
 }
 
 void MainWindow::plotFormant(formant_sample_t f2, formant_sample_t f1) {
