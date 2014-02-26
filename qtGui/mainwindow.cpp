@@ -84,5 +84,3 @@ MainWindow::~MainWindow()
 {
   delete ui;
 }
-
-// vim: sw=2
