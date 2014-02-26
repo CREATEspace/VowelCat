@@ -3,11 +3,9 @@
 
 #include <QMainWindow>
 #include <QTimer>
-#include "qcustomplot.h"
 
-namespace Ui {
-class MainWindow;
-}
+#include "qcustomplot.h"
+#include "ui_mainwindow.h"
 
 enum { N_TRACERS = 5 };
 enum { TRACER_FIRST = 0 };
