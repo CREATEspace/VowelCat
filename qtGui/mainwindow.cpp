@@ -79,7 +79,7 @@ void MainWindow::setupPlot()
 
   plot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom);
   graph->setData(x, y);
-  graph->setPen(QPen(Qt::white));
+  graph->setPen(Qt::NoPen);
   graph->rescaleKeyAxis();
 
   plot->xAxis->grid()->setZeroLinePen(Qt::NoPen);
