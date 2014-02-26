@@ -83,6 +83,24 @@ void MainWindow::setupPlot()
   upperMidBackRounded->setText("o");
   upperMidBackRounded->setFont(QFont(font().family(), 20));
 
+  QCPItemText *lowerMidBackRounded = new QCPItemText(ui->customPlot);
+  ui->customPlot->addItem(lowerMidBackRounded);
+  lowerMidBackRounded->position->setCoords(830, 541);
+  lowerMidBackRounded->setText("ɔ");
+  lowerMidBackRounded->setFont(QFont(font().family(), 20));
+
+  QCPItemText *lowerLowBackRounded = new QCPItemText(ui->customPlot);
+  ui->customPlot->addItem(lowerLowBackRounded);
+  lowerLowBackRounded->position->setCoords(843, 652);
+  lowerLowBackRounded->setText("ɒ");
+  lowerLowBackRounded->setFont(QFont(font().family(), 20));
+
+  QCPItemText *lowerLowBackUnrounded = new QCPItemText(ui->customPlot);
+  ui->customPlot->addItem(lowerLowBackUnrounded);
+  lowerLowBackUnrounded->position->setCoords(1065, 781);
+  lowerLowBackUnrounded->setText("ɑ");
+  lowerLowBackUnrounded->setFont(QFont(font().family(), 20));
+
   for (size_t i = 0; i < Tracer::COUNT; i += 1)
     tracers[i] = new Tracer(plot, graph, i);
 }
