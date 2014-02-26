@@ -15,6 +15,16 @@ class MainWindow : public QMainWindow
 {
   Q_OBJECT
 
+private:
+  Ui::MainWindow *ui;
+  QCustomPlot *plot;
+  QCPGraph *graph;
+  QCPItemTracer *tracers[N_TRACERS];
+
+  QVector<double> x, y;
+  QTimer dataTimer;
+  int frame;
+
 public:
   explicit MainWindow(QWidget *parent = 0);
   ~MainWindow();
@@ -24,15 +34,6 @@ private slots:
 
 private:
   void setupPlot();
-
-  QCPItemTracer *tracers[N_TRACERS];
-
-  QVector<double> x, y;
-  Ui::MainWindow *ui;
-  QCustomPlot *plot;
-  QCPGraph *graph;
-  QTimer dataTimer;
-  int frame;
 };
 
 #endif // MAINWINDOW_H
