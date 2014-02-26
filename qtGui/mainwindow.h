@@ -1,60 +1,76 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include <inttypes.h>
+#include <stddef.h>
+
 #include <QMainWindow>
 #include <QTimer>
-#include "qcustomplot.h" // the header file of QCustomPlot. Don't forget to add it to your project, if you use an IDE, so it gets compiled.
 
-namespace Ui {
-class MainWindow;
-}
+#include "formant.h"
+#include "qcustomplot.h"
+#include "ui_mainwindow.h"
+
+class Tracer: public QCPItemTracer {
+public:
+    enum { COUNT = 5 };
+    enum { LAST = COUNT - 1 };
+
+private:
+    enum { DIAM_MAX = 40 };
+    enum { DIAM_MIN = 14 };
+    enum { DIAM_RANGE = DIAM_MAX - DIAM_MIN };
+
+    // Red.
+    enum { COLOR_BASE = 0xff0000 };
+
+    enum { ALPHA_MAX = 255 };
+    enum { ALPHA_MIN = 0 };
+    enum { ALPHA_RANGE = ALPHA_MAX - ALPHA_MIN };
+
+public:
+    Tracer(QCustomPlot *plot, QCPGraph *graph, size_t i);
+
+private:
+    // Calculate a tracer diameter f(x) for the tracer x s.t.
+    //
+    //   f(0) = DIAM_MIN
+    //   f(Tracer::LAST) = DIAM_MAX
+    //
+    // and all values in between follow a simple linear curve.
+    static double size(double x);
+
+    // Calculate an alpha value f(x) for the tracer x s.t.
+    //
+    //   f(0) = ALPHA_MIN
+    //   f(Tracer::LAST) = ALPHA_MAX
+    //
+    // and all values inbetween follow an exponential curve.
+    static uint32_t alpha(double x);
+
+    // Splice together an RGBA integer for QColor::fromRgba of the form AARRGGBB.
+    static uint32_t rgba(double i);
+};
 
 class MainWindow : public QMainWindow
 {
   Q_OBJECT
 
+private:
+  Ui::MainWindow *ui;
+  QCustomPlot *plot;
+  QCPGraph *graph;
+  Tracer *tracers[Tracer::COUNT];
+
 public:
-  explicit MainWindow(QWidget *parent = 0);
+  explicit MainWindow(QWidget *parent = NULL);
   ~MainWindow();
 
-  void setupDemo(int demoIndex);
-  void setupQuadraticDemo(QCustomPlot *customPlot);
-  void setupSimpleDemo(QCustomPlot *customPlot);
-  void setupSincScatterDemo(QCustomPlot *customPlot);
-  void setupScatterStyleDemo(QCustomPlot *customPlot);
-  void setupLineStyleDemo(QCustomPlot *customPlot);
-  void setupScatterPixmapDemo(QCustomPlot *customPlot);
-  void setupDateDemo(QCustomPlot *customPlot);
-  void setupTextureBrushDemo(QCustomPlot *customPlot);
-  void setupMultiAxisDemo(QCustomPlot *customPlot);
-  void setupLogarithmicDemo(QCustomPlot *customPlot);
-  void setupRealtimeDataDemo(QCustomPlot *customPlot);
-  void setupParametricCurveDemo(QCustomPlot *customPlot);
-  void setupBarChartDemo(QCustomPlot *customPlot);
-  void setupStatisticalDemo(QCustomPlot *customPlot);
-  void setupSimpleItemDemo(QCustomPlot *customPlot);
-  void setupItemDemo(QCustomPlot *customPlot);
-  void setupStyledDemo(QCustomPlot *customPlot);
-  void setupAdvancedAxesDemo(QCustomPlot *customPlot);
-
-  void setupPlayground(QCustomPlot *customPlot);
-
-private slots:
-  void realtimeDataSlot();
-  void bracketDataSlot();
-  void screenShot();
-  void allScreenShots();
+public slots:
+  void plotFormant(formant_sample_t f2, formant_sample_t f1);
 
 private:
-  QVector<double> x, y;
-  Ui::MainWindow *ui;
-  QString demoName;
-  QTimer dataTimer;
-  QCPItemTracer *tracer;
-  QCPItemTracer *laggingTracer;
-  QCPItemTracer *laggingTracer2;
-  int currentDemoIndex;
-  int frame;
+  void setupPlot();
 };
 
 #endif // MAINWINDOW_H

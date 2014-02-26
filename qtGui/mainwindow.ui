@@ -10,9 +10,6 @@
     <height>420</height>
    </rect>
   </property>
-  <property name="windowTitle">
-   <string>QCustomPlot plot examples</string>
-  </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
@@ -20,7 +17,6 @@
     </item>
    </layout>
   </widget>
-  <widget class="QStatusBar" name="statusBar"/>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>

@@ -150,8 +150,8 @@ $(BUILD)/qtGui: qtGui | $(BUILD)
 	cp -ru $< $|
 
 $(QTGUI): $(BUILD)/qtGui
-	$(MAKE) -C $<
-
+	$(MAKE) -C $< CFLAGS="$(CFLAGS)"
+ 
 stage-1:
 	$(MAKE) STAGE=1
 
