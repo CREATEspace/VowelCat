@@ -48,10 +48,6 @@ static double tracerAlpha(double x) {
 
 void MainWindow::setupPlot()
 {
-#if QT_VERSION < QT_VERSION_CHECK(4, 7, 0)
-  QMessageBox::critical(this, "", "You're using Qt < 4.7, the animation of the item demo needs functions that are available with Qt 4.7 to work properly");
-#endif
-
   int xpoint;
   int ypoint;
   ifstream points;
