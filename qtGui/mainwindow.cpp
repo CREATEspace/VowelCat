@@ -56,14 +56,32 @@ void MainWindow::setupPlot()
   graph->setPen(Qt::NoPen);
 
   plot->xAxis->grid()->setZeroLinePen(Qt::NoPen);
-  plot->xAxis->setRange(3000, 0);
+  plot->xAxis->setRange(2400, 700);
   plot->xAxis->setRangeReversed(true);
   plot->xAxis->setLabel("F2 (Hz)");
 
   plot->yAxis->grid()->setZeroLinePen(Qt::NoPen);
-  plot->yAxis->setRange(3000, 0);
+  plot->yAxis->setRange(900, 250);
   plot->yAxis->setRangeReversed(true);
   plot->yAxis->setLabel("F1 (Hz)");
+
+  QCPItemText *upperHighBackRounded = new QCPItemText(ui->customPlot);
+  ui->customPlot->addItem(upperHighBackRounded);
+  upperHighBackRounded->position->setCoords(750, 295);
+  upperHighBackRounded->setText("u");
+  upperHighBackRounded->setFont(QFont(font().family(), 20));
+
+  QCPItemText *lowerHighBackRounded = new QCPItemText(ui->customPlot);
+  ui->customPlot->addItem(lowerHighBackRounded);
+  lowerHighBackRounded->position->setCoords(910, 334);
+  lowerHighBackRounded->setText("ʊ");
+  lowerHighBackRounded->setFont(QFont(font().family(), 20));
+
+  QCPItemText *upperMidBackRounded = new QCPItemText(ui->customPlot);
+  ui->customPlot->addItem(upperMidBackRounded);
+  upperMidBackRounded->position->setCoords(727, 406);
+  upperMidBackRounded->setText("o");
+  upperMidBackRounded->setFont(QFont(font().family(), 20));
 
   for (size_t i = 0; i < Tracer::COUNT; i += 1)
     tracers[i] = new Tracer(plot, graph, i);
