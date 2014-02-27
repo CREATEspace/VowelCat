@@ -34,7 +34,6 @@ static int recordCallback( const void *inputBuffer, void *outputBuffer,
 //*
 bool record_init( 
    record_t*            r,
-   size_t               sample_format,     
    size_t               sample_rate,      
    size_t               n_channels,    
    size_t	        n_samples )
@@ -58,20 +57,23 @@ bool record_init(
    //*************
 
    //*****Initialize communication ring buffers******************** 
-   int rb_size = 1 << (sizeof(n_samples) * CHAR_BIT - __builtin_clz(n_samples * RB_MULTIPLIER));
+   size_t rb_size = 1 << (sizeof(n_samples) * CHAR_BIT - __builtin_clz(n_samples * RB_MULTIPLIER));
    r->rBufFromRTData = malloc(sizeof(audio_sample_t) * rb_size); 
    PaUtil_InitializeRingBuffer(&r->rBufFromRT, sizeof(audio_sample_t), rb_size, r->rBufFromRTData);
    //**************
    
    //******Initialize input device******* 
    PaStreamParameters inputParameters;
-   inputParameters.device = Pa_GetDefaultInputDevice();  
-   if(inputParameters.device == paNoDevice) return false;
-   // Specify recording settings 
-   inputParameters.channelCount = n_channels;                     
-   inputParameters.sampleFormat = sample_format;
-   inputParameters.suggestedLatency = Pa_GetDeviceInfo( inputParameters.device )->defaultLowInputLatency;
-   inputParameters.hostApiSpecificStreamInfo = NULL;
+   if((inputParameters.device = Pa_GetDefaultInputDevice()) == paNoDevice) return false;
+   //***************
+   inputParameters = (PaStreamParameters) {
+      //****************
+      .channelCount = n_channels,
+      .sampleFormat = paInt16,
+      .suggestedLatency = Pa_GetDeviceInfo(inputParameters.device)->defaultLowInputLatency,
+      .hostApiSpecificStreamInfo = NULL
+      //****************
+   };
    //***************
 
    //********Open the input stream******* 

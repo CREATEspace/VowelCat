@@ -77,7 +77,6 @@ typedef struct record_t{
 
 bool record_init(
    record_t*           r,
-   size_t              sample_format,
    size_t              sample_rate,
    size_t              n_channels,
    size_t              n_samples
