@@ -151,7 +151,7 @@ $(BUILD)/qtGui: qtGui | $(BUILD)
 
 $(QTGUI): $(BUILD)/qtGui
 	$(MAKE) -C $< CFLAGS="$(CFLAGS)"
- 
+
 stage-1:
 	$(MAKE) STAGE=1
 
