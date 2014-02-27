@@ -8,6 +8,10 @@ extern "C" {
 
 #include "formant-worker.h"
 
+FormantWorker::FormantWorker():
+    running(true)
+{}
+
 void FormantWorker::run() {
     enum { SAMPLE_RATE = 44100 };
     enum { SAMPLES = 5000 };
@@ -27,7 +31,7 @@ void FormantWorker::run() {
     ret = record_start(&rec);
     assert(ret);
 
-    for (;;) {
+    while (running) {
         sound_reset(&sound, SAMPLE_RATE, CHANNELS);
         sound_resize(&sound, SAMPLES);
         record_read(&rec, sound.samples);
@@ -40,9 +44,12 @@ void FormantWorker::run() {
             emit newFormant(f2, f1);
         }
     }
-}
 
-FormantWorker::~FormantWorker() {
     sound_destroy(&sound);
     record_destroy(&rec);
+}
+
+void FormantWorker::stop() {
+    running = false;
+    wait();
 }

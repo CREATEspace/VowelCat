@@ -13,6 +13,8 @@ class FormantWorker: public QThread {
     Q_OBJECT
 
 private:
+    bool running;
+
     record_t rec;
     formant_opts_t opts;
     sound_t sound;
@@ -20,8 +22,11 @@ private:
 signals:
     void newFormant(formant_sample_t f2, formant_sample_t f1);
 
+public slots:
+    void stop();
+
 public:
-    ~FormantWorker();
+    FormantWorker();
 
 private:
     void run();
