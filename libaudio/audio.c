@@ -64,7 +64,8 @@ bool record_init(
    
    //******Initialize input device******* 
    PaStreamParameters inputParameters;
-   if((inputParameters.device = Pa_GetDefaultInputDevice()) == paNoDevice) return false;
+   inputParameters.device = Pa_GetDefaultInputDevice();
+   if(inputParameters.device == paNoDevice) return false;
    //***************
    inputParameters = (PaStreamParameters) {
       //****************
