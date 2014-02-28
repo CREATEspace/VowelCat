@@ -15,7 +15,7 @@ void FormantWorker::run() {
 
     bool ret;
 
-    ret = record_init(&rec, 0x8, SAMPLE_RATE, CHANNELS, SAMPLES);
+    ret = record_init(&rec, SAMPLE_RATE, CHANNELS, SAMPLES);
     assert(ret);
 
     formant_opts_init(&opts);
