@@ -63,17 +63,20 @@ bool record_init(
    //**************
    
    //******Initialize input device******* 
-   PaStreamParameters inputParameters;
-   inputParameters.device = Pa_GetDefaultInputDevice();
-   if(inputParameters.device == paNoDevice) return false;
+   PaStreamParameters inparams;
+   PaDeviceIndex dev;
+   PaTime lat;
+   //**************
+   dev = Pa_GetDefaultInputDevice();
+   if(dev == paNoDevice) return false;
+   lat = Pa_GetDeviceInfo(dev)->defaultLowInputLatency;
    //***************
-   inputParameters = (PaStreamParameters) {
-      //****************
+   inparams = (PaStreamParameters) {
+      .device = dev,
       .channelCount = n_channels,
       .sampleFormat = paInt16,
-      .suggestedLatency = Pa_GetDeviceInfo(inputParameters.device)->defaultLowInputLatency,
+      .suggestedLatency = lat,
       .hostApiSpecificStreamInfo = NULL
-      //****************
    };
    //***************
 
@@ -81,7 +84,7 @@ bool record_init(
    PaStream *stream=NULL;
    if(Pa_OpenStream(
       &stream,
-      &inputParameters,
+      &inparams,
       NULL,              
       sample_rate,
       n_samples,
