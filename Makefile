@@ -102,6 +102,11 @@ ifeq ($(DEBUG), 1)
     CFLAGS += -O0 -g
 endif
 
+ifeq ($(PROFILE), 1)
+    CFLAGS += -pg
+    LDFLAGS += -pg
+endif
+
 ifeq ($(STAGE), )
 all: stage-2
 else ifeq ($(STAGE), 1)
