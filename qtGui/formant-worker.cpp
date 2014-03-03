@@ -17,6 +17,8 @@ void FormantWorker::run() {
     enum { SAMPLES = 5000 };
     enum { CHANNELS = 2 };
 
+    enum { DUR = 122863987 };
+
     bool ret;
 
     ret = record_init(&rec, SAMPLE_RATE, CHANNELS, SAMPLES);
@@ -37,12 +39,7 @@ void FormantWorker::run() {
         record_read(&rec, sound.samples);
         sound_calc_formants(&sound, &opts);
 
-        for (size_t i = 0; i < sound.n_samples; i += 1) {
-            formant_sample_t f1 = sound_get_f1(&sound, i);
-            formant_sample_t f2 = sound_get_f2(&sound, i);
-
-            emit newFormant(f2, f1);
-        }
+        emit newFormants(&sound, DUR);
     }
 
     sound_destroy(&sound);

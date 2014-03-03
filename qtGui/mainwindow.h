@@ -3,17 +3,19 @@
 
 #include <inttypes.h>
 #include <stddef.h>
+#include <time.h>
 
 #include <QMainWindow>
 #include <QTimer>
 
 #include "formant.h"
 #include "qcustomplot.h"
+#include "timespec.h"
 #include "ui_mainwindow.h"
 
 class Tracer: public QCPItemTracer {
 public:
-    enum { COUNT = 5 };
+    enum { COUNT = 16 };
     enum { LAST = COUNT - 1 };
 
 private:
@@ -57,6 +59,25 @@ class MainWindow : public QMainWindow
   Q_OBJECT
 
 private:
+  enum { TIMER_INTERVAL = 0 };
+
+  typedef struct {
+    formant_sample_t x, y;
+  } pair_t;
+
+  pair_t from;
+  pair_t cur;
+  pair_t *pairs;
+  size_t pair_count;
+  size_t from_pair;
+
+  uintmax_t nsec_per_pair;
+  timespec_t start;
+
+  double slope;
+  double x_range;
+
+  QTimer timer;
   Ui::MainWindow *ui;
   QCustomPlot *plot;
   QCPGraph *graph;
@@ -67,9 +88,15 @@ public:
   ~MainWindow();
 
 public slots:
-  void plotFormant(formant_sample_t f2, formant_sample_t f1);
+  void handleFormants(const sound_t *formants, uintmax_t nsec);
+  void stop();
+
+private slots:
+  void plotFormant();
 
 private:
+  void setupParams(const pair_t *pair);
+  void updateTracers(formant_sample_t x, formant_sample_t y);
   void setupPlot();
 };
 

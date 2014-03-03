@@ -20,7 +20,7 @@ private:
     sound_t sound;
 
 signals:
-    void newFormant(formant_sample_t f2, formant_sample_t f1);
+    void newFormants(const sound_t *formants, uint64_t nsec);
 
 public slots:
     void stop();

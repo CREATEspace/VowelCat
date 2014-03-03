@@ -6,11 +6,12 @@
 #include "mainwindow.h"
 #include "formant-worker.h"
 
+// Handle OS signals.
 static void sig(int s) {
     switch (s) {
     case SIGINT:
     case SIGTERM:
-        QCoreApplication::exit(0);
+        QCoreApplication::quit();
     }
 }
 
@@ -21,14 +22,18 @@ int main(int argc, char *argv[])
 #endif
 
   signal(SIGINT, sig);
+  signal(SIGTERM, sig);
 
   QApplication app(argc, argv);
   MainWindow window;
   FormantWorker worker;
 
-  QObject::connect(&worker, &FormantWorker::newFormant,
-                   &window, &MainWindow::plotFormant,
-                   Qt::QueuedConnection);
+  QObject::connect(&worker, &FormantWorker::newFormants,
+                   &window, &MainWindow::handleFormants,
+                   Qt::DirectConnection);
+
+  QObject::connect(&app, &QCoreApplication::aboutToQuit,
+                   &window, &MainWindow::stop);
 
   QObject::connect(&app, &QCoreApplication::aboutToQuit,
                    &worker, &FormantWorker::stop);

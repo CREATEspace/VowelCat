@@ -12,11 +12,13 @@ SOURCES += \
     mainwindow.cpp \
     qcustomplot.cpp \
     formant-worker.cpp \
+    timespec.cpp \
 
 HEADERS += \
     mainwindow.h \
     qcustomplot.h \
     formant-worker.h \
+    timespec.h \
 
 FORMS += \
     mainwindow.ui \

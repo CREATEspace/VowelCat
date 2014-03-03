@@ -1,15 +1,20 @@
 #include <inttypes.h>
 #include <math.h>
+#include <time.h>
+
+#ifdef __MACH__
+#include <mach/clock.h>
+#include <mach/mach.h>
+#endif
 
 #include <QColor>
-#include <QDebug>
-#include <QDesktopWidget>
-#include <QScreen>
-#include <QMessageBox>
-#include <QMetaEnum>
+#include <QObject>
+#include <QTimer>
+#include <QWidget>
 
 #include "formant.h"
 #include "mainwindow.h"
+#include "timespec.h"
 #include "ui_mainwindow.h"
 
 using namespace std;
@@ -38,16 +43,26 @@ Tracer::Tracer(QCustomPlot *plot, QCPGraph *graph, size_t i):
 
 MainWindow::MainWindow(QWidget *parent) :
   QMainWindow(parent),
+  pairs(NULL),
+  nsec_per_pair(UINTMAX_MAX),
   ui(new Ui::MainWindow)
 {
+  // Start at the origin for lack of a better place.
+  cur = (pair_t) {
+      .x = 0,
+      .y = 0,
+  };
+
   ui->setupUi(this);
   setGeometry(400, 250, 1000, 800);
 
   plot = ui->customPlot;
   graph = plot->addGraph();
 
+  QObject::connect(&timer, &QTimer::timeout,
+                   this, &MainWindow::plotFormant);
+
   setupPlot();
-  plot->replot();
 }
 
 void MainWindow::setupPlot()
@@ -147,7 +162,72 @@ void MainWindow::setupPlot()
     tracers[i] = new Tracer(plot, graph, i);
 }
 
-void MainWindow::plotFormant(formant_sample_t f2, formant_sample_t f1) {
+void MainWindow::handleFormants(const sound_t *formants, uintmax_t nsec) {
+    // Prevent any more running of plotFormant.
+    timer.stop();
+
+    // This array should never need to be reallocated after the first
+    // allocation, but better safe than sorry I guess.
+    pair_count = formants->n_samples;
+    pairs = (pair_t *) realloc(pairs, pair_count * sizeof(pair_t));
+
+    // Copy the raw formants into our pairs structure.
+    for (size_t i = 0; i < pair_count; i += 1) {
+        pairs[i] = (pair_t) {
+            .x = sound_get_f2(formants, i),
+            .y = sound_get_f1(formants, i),
+        };
+    }
+
+    // Calculate how long a pair should be tweened between before moving on to
+    // the next.
+    nsec_per_pair = nsec / pair_count;
+
+    // Set the initial point as the last-drawn point.
+    from = cur;
+    // Start from the first formant pair.
+    from_pair = 0;
+    // Set up initial graph params.
+    setupParams(&pairs[0]);
+
+    timespec_init(&start);
+    timer.start(TIMER_INTERVAL);
+}
+
+void MainWindow::setupParams(const pair_t *pair) {
+    x_range = pair->x - from.x;
+    slope = (pair->y - from.y) / x_range;
+}
+
+void MainWindow::plotFormant() {
+    timespec_t now;
+    uintmax_t diff;
+    size_t pair;
+    const pair_t *to;
+
+    timespec_init(&now);
+    diff = timespec_diff(&start, &now);
+    pair = diff / nsec_per_pair;
+
+    // Just leave the tracers at the last position if there are no more pairs.
+    if (pair >= pair_count)
+        return;
+
+    to = &pairs[pair];
+
+    if (pair != from_pair) {
+        from = pairs[from_pair];
+        from_pair = pair;
+        setupParams(to);
+    }
+
+    cur.x = from.x + x_range * (diff - nsec_per_pair * pair) / nsec_per_pair;
+    cur.y = from.y + slope * (cur.x - from.x);
+
+    updateTracers(cur.x, cur.y);
+}
+
+void MainWindow::updateTracers(formant_sample_t f2, formant_sample_t f1) {
   #if QT_VERSION < QT_VERSION_CHECK(4, 7, 0)
     double secs = 0;
   #else
@@ -179,10 +259,15 @@ void MainWindow::plotFormant(formant_sample_t f2, formant_sample_t f1) {
   }
 }
 
-MainWindow::~MainWindow()
-{
+void MainWindow::stop() {
+    timer.stop();
+}
+
+MainWindow::~MainWindow() {
   delete ui;
 
   for (size_t i = 0; i < Tracer::COUNT; i += 1)
     delete tracers[i];
+
+  free(pairs);
 }
