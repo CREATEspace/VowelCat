@@ -5,3 +5,9 @@ all: Makefile.qt
 
 Makefile.qt: qtGui.pro
 	$(QMAKE) -o $@
+
+clean: Makefile.qt
+	$(MAKE) -f $< clean
+	$(RM) $<
+
+.PHONY: all clean
