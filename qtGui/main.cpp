@@ -30,7 +30,7 @@ int main(int argc, char *argv[])
 
   QObject::connect(&worker, &FormantWorker::newFormants,
                    &window, &MainWindow::handleFormants,
-                   Qt::DirectConnection);
+                   Qt::BlockingQueuedConnection);
 
   QObject::connect(&app, &QCoreApplication::aboutToQuit,
                    &window, &MainWindow::stop);

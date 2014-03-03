@@ -33,11 +33,14 @@ void FormantWorker::run() {
     ret = record_start(&rec);
     assert(ret);
 
-    while (running) {
+    for (;;) {
         sound_reset(&sound, SAMPLE_RATE, CHANNELS);
         sound_resize(&sound, SAMPLES);
         record_read(&rec, sound.samples);
         sound_calc_formants(&sound, &opts);
+
+        if (!running)
+            break;
 
         emit newFormants(&sound, DUR);
     }
