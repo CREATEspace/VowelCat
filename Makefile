@@ -100,6 +100,7 @@ endif
 # Enable debug symbols?
 ifeq ($(DEBUG), 1)
     CFLAGS += -O0 -g
+    QMAKEFLAGS += CONFIG+=debug
 endif
 
 ifeq ($(PROFILE), 1)
@@ -155,7 +156,7 @@ $(BUILD)/qtGui: qtGui | $(BUILD)
 	cp -ru $< $|
 
 $(QTGUI): $(BUILD)/qtGui
-	$(MAKE) -C $< CFLAGS="$(CFLAGS)"
+	$(MAKE) -C $< CFLAGS="$(CFLAGS)" QMAKEFLAGS="$(QMAKEFLAGS)"
 
 stage-1:
 	$(MAKE) STAGE=1

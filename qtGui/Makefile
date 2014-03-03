@@ -4,7 +4,7 @@ all: Makefile.qt
 	$(MAKE) -f $<
 
 Makefile.qt: qtGui.pro
-	$(QMAKE) -o $@
+	$(QMAKE) $(QMAKEFLAGS) -o $@
 
 clean: Makefile.qt
 	$(MAKE) -f $< clean
