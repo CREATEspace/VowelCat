@@ -1,7 +1,5 @@
 #include "audio.h"
 
-//************************CALLBACK FUNCTION***********************************************************//
-//*
 static int recordCallback( const void *inputBuffer, void *outputBuffer,
                            unsigned long framesPerBuffer,
                            const PaStreamCallbackTimeInfo* timeInfo,
@@ -26,12 +24,9 @@ static int recordCallback( const void *inputBuffer, void *outputBuffer,
     pthread_mutex_unlock(&r->mutex);
     //*******************
 
-    return paContinue; // Keep recording stream active. CLOSED ELSEWHERE 
+    return paContinue;  
 }
-//END FUNCTION
 
-//************************INITIALIZE MIC AND AUDIO SETTINGS**********************************************//
-//*
 bool record_init( 
    record_t*            r,
    size_t               sample_rate,      
@@ -57,6 +52,7 @@ bool record_init(
    //*************
 
    //*****Initialize communication ring buffers******************** 
+   //rb_size must be a power of 2
    size_t rb_size = 1 << (sizeof(n_samples) * CHAR_BIT - __builtin_clz(n_samples * RB_MULTIPLIER));
    r->rBufFromRTData = malloc(sizeof(audio_sample_t) * rb_size); 
    PaUtil_InitializeRingBuffer(&r->rBufFromRT, sizeof(audio_sample_t), rb_size, r->rBufFromRTData);
@@ -96,26 +92,21 @@ bool record_init(
 
    return true;
 }
-//END FUNCTION
 
-//************************************START RECORDING*****************************************************//
-//*
 bool record_start(record_t *r)
 {
-   return Pa_StartStream(r->stream) == paNoError; 
+   //*****************
+   return Pa_StartStream(r->stream) == paNoError;  
+   //*****************
 }
-//END FUNCTION
 
-//************************************STOP RECORDING******************************************************//
-//*
 bool record_stop(record_t *r)
 {
+   //*****************
    return Pa_StopStream(r->stream) == paNoError; 
+   //*****************
 }
-//END FUNCTION
 
-//***********************************READ INPUTBUFFER******************************************************//
-//*
 void record_read(record_t *r, audio_sample_t *samples)
 {
    //***************************
@@ -128,15 +119,11 @@ void record_read(record_t *r, audio_sample_t *samples)
    PaUtil_ReadRingBuffer(&r->rBufFromRT, &samples[0], r->n_samples); 
    //***************************   
 }
-//END FUNCTION
 
-
-//*******************************TERMINATE ALLOCATED DATA***************************************************//
-//*
 void record_destroy(record_t *r)
 {
    //*******************
-   Pa_Terminate();
+   Pa_Terminate(); 
    //*******************
    free(r->rBufFromRTData);
    //*******************
@@ -144,4 +131,3 @@ void record_destroy(record_t *r)
    pthread_mutex_destroy(&r->mutex);
    //*******************
 }
-//END FUNCTION
