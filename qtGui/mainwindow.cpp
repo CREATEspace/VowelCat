@@ -182,4 +182,7 @@ void MainWindow::plotFormant(formant_sample_t f2, formant_sample_t f1) {
 MainWindow::~MainWindow()
 {
   delete ui;
+
+  for (size_t i = 0; i < Tracer::COUNT; i += 1)
+    delete tracers[i];
 }
