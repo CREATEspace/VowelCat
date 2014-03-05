@@ -1,10 +1,10 @@
 #include <signal.h>
+#include <stdlib.h>
 
 #include <QApplication>
-#include <QObject>
 
 #include "mainwindow.h"
-#include "formant-worker.h"
+#include "worker.h"
 
 // Handle OS signals.
 static void sig(int s) {
@@ -26,20 +26,19 @@ int main(int argc, char *argv[])
 
   QApplication app(argc, argv);
   MainWindow window;
-  FormantWorker worker;
-
-  QObject::connect(&worker, &FormantWorker::newFormants,
-                   &window, &MainWindow::handleFormants,
-                   Qt::BlockingQueuedConnection);
+  worker_t worker;
 
   QObject::connect(&app, &QCoreApplication::aboutToQuit,
                    &window, &MainWindow::stop);
-
-  QObject::connect(&app, &QCoreApplication::aboutToQuit,
-                   &worker, &FormantWorker::stop);
-
   window.show();
-  worker.start();
 
-  return app.exec();
+  worker_init(&worker, &window);
+  worker_start(&worker);
+
+  // This function blocks until the main window is closed or
+  // QCoreApplication::quit is called.
+  QCoreApplication::exec();
+
+  worker_stop(&worker);
+  worker_destroy(&worker);
 }

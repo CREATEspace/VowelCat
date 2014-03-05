@@ -87,8 +87,9 @@ public:
   explicit MainWindow(QWidget *parent = NULL);
   ~MainWindow();
 
-public slots:
   void handleFormants(const sound_t *formants, uintmax_t nsec);
+
+public slots:
   void stop();
 
 private slots:
