@@ -86,9 +86,14 @@ void sound_resize(sound_t *s, size_t n_samples);
 // total number of samples in the buffer, not per channel.
 void sound_load_samples(sound_t *s, const formant_sample_t *samples, size_t n_samples);
 
-// Calculate the formants for the samples in the given sound. The sound is
-// modified in place. Return false if the formants couldn't be calculated for
-// some reason and true otherwise.
+// Calculate the formants for the samples in the given sound. Return true if the
+// formants were calculated successfully and false otherwise.
+//
+// The sound is modified in place such that
+//
+//  - n_samples is set to the number of formants calculated
+//  - n_channels is set to 2 * n_samples
+//
 bool sound_calc_formants(sound_t *s, const formant_opts_t *opts);
 
 // Get the i'th sample in the given channel.
