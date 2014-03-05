@@ -621,7 +621,7 @@ static pole_t **lpc_poles(sound_t *sp, const formant_opts_t *opts) {
 
     free(dporg);
 
-    sp->sample_rate = (int)(1.0 / opts->frame_dur);
+    sp->sample_rate = (size_t)(1.0 / opts->frame_dur);
     sp->n_channels = opts->lpc_order;
     sp->n_samples = nfrm;
 
