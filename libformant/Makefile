@@ -24,4 +24,7 @@ test-libformant: test/test.o $(SRC)
 clean:
 	-rm $(OBJ) $(LIB)
 
-.PHONY: all test clean
+distclean: clean
+	-rm $(LIB)
+
+.PHONY: all test clean distclean
