@@ -1,3 +1,5 @@
+export CFLAGS LDFLAGS
+
 QMAKE = qmake
 
 all: Makefile.qt
