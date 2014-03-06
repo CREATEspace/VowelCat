@@ -80,6 +80,7 @@ ifneq ($(STAGE), )
     ifeq ($(OPTIMIZE), 1)
 	CFLAGS += -O2 -flto -DNDEBUG
 	LDFLAGS += -O2 -flto
+	QMAKEFLAGS += CONFIG+=release
     endif
 
     # Compile for the build computer?
