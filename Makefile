@@ -79,7 +79,7 @@ ifneq ($(STAGE), )
     # Turn on optimizations and LTO?
     ifeq ($(OPTIMIZE), 1)
 	CFLAGS += -O2 -flto -DNDEBUG
-	LDFLAGS += -flto
+	LDFLAGS += -O2 -flto
     endif
 
     # Compile for the build computer?
