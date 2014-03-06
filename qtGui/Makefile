@@ -10,4 +10,7 @@ clean: Makefile.qt
 	$(MAKE) -f $< clean
 	$(RM) $<
 
-.PHONY: all clean
+distclean: Makefile.qt
+	$(MAKE) -f $< distclean
+
+.PHONY: all clean distclean
