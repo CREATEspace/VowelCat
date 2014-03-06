@@ -168,9 +168,12 @@ stage-2: stage-1
 ifeq ($(DIR), )
 compile:
 	@echo error: specify a directory to compile with DIR=
-else
+else ifeq ($(STAGE), 1)
 compile:
 	$(MAKE) -C $(DIR)
+else
+compile:
+	$(MAKE) STAGE=1 compile
 endif
 
 # Build linked binaries.
