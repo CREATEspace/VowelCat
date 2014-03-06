@@ -24,8 +24,8 @@
 # The stage to run is specified by the STAGE environmental variable. If no stage
 # is given, all stages are ran.
 
-# Export CFLAGS and LDFLAGS to submakes.
-export CFLAGS LDFLAGS
+# Variables to export to submakes.
+export CFLAGS LDFLAGS QMAKEFLAGS
 
 # Relative and absolute path where things will be built.
 BUILD = build
@@ -156,7 +156,7 @@ $(BUILD)/qtGui: qtGui | $(BUILD)
 	cp -ru $< $|
 
 $(QTGUI): $(BUILD)/qtGui
-	$(MAKE) -C $< CFLAGS="$(CFLAGS)" QMAKEFLAGS="$(QMAKEFLAGS)"
+	$(MAKE) -C $< CFLAGS="$(CFLAGS)"
 
 stage-1:
 	$(MAKE) STAGE=1
