@@ -21,6 +21,5 @@ HEADERS += \
 FORMS += \
     mainwindow.ui \
 
-QMAKE_CFLAGS += $$(CFLAGS)
 QMAKE_CXXFLAGS += $$(CFLAGS)
 LIBS += $(LDFLAGS)
