@@ -225,23 +225,15 @@ void MainWindow::plotFormant() {
     cur.y = from.y + slope * (cur.x - from.x);
 
     updateTracers(cur.x, cur.y);
+    updateFPS();
 }
 
-void MainWindow::updateTracers(formant_sample_t f2, formant_sample_t f1) {
+void MainWindow::updateFPS() {
   #if QT_VERSION < QT_VERSION_CHECK(4, 7, 0)
     double secs = 0;
   #else
     double secs = QDateTime::currentDateTime().toMSecsSinceEpoch()/1000.0;
   #endif
-
-  graph->removeData(tracers[0]->graphKey());
-  graph->addData(f2, f1);
-
-  for (size_t i = 0; i < Tracer::LAST; i += 1)
-    tracers[i]->setGraphKey(tracers[i + 1]->graphKey());
-
-  tracers[Tracer::LAST]->setGraphKey(f2);
-  plot->replot();
 
   double key = secs;
   static double lastFpsKey;
@@ -257,6 +249,17 @@ void MainWindow::updateTracers(formant_sample_t f2, formant_sample_t f1) {
     lastFpsKey = key;
     frameCount = 0;
   }
+}
+
+void MainWindow::updateTracers(formant_sample_t f2, formant_sample_t f1) {
+  graph->removeData(tracers[0]->graphKey());
+  graph->addData(f2, f1);
+
+  for (size_t i = 0; i < Tracer::LAST; i += 1)
+    tracers[i]->setGraphKey(tracers[i + 1]->graphKey());
+
+  tracers[Tracer::LAST]->setGraphKey(f2);
+  plot->replot();
 }
 
 void MainWindow::stop() {

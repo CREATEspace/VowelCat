@@ -98,6 +98,7 @@ private slots:
 private:
   void setupParams(const pair_t *pair);
   void updateTracers(formant_sample_t x, formant_sample_t y);
+  void updateFPS();
   void setupPlot();
 };
 
