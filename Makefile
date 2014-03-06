@@ -75,6 +75,30 @@ ifneq ($(STAGE), )
     CFLAGS += -I$(BUILD_ABS)/libportaudio/include
     CFLAGS += -I$(BUILD_ABS)/libaudio
     CFLAGS += -I$(BUILD_ABS)/libformant
+
+    # Turn on optimizations and LTO?
+    ifeq ($(OPTIMIZE), 1)
+	CFLAGS += -O2 -flto -DNDEBUG
+	LDFLAGS += -flto
+    endif
+
+    # Compile for the build computer?
+    ifeq ($(NATIVE), 1)
+	CFLAGS += -march=native
+	LDFLAGS += -march=native
+    endif
+
+    # Enable debug symbols?
+    ifeq ($(DEBUG), 1)
+	CFLAGS += -O0 -g
+	QMAKEFLAGS += CONFIG+=debug
+    endif
+
+    # Enable profiling instrumentation?
+    ifeq ($(PROFILE), 1)
+	CFLAGS += -pg
+	LDFLAGS += -pg
+    endif
 endif
 
 # If on stage 2, set up LDFLAGS.
@@ -83,29 +107,6 @@ ifeq ($(STAGE), 2)
     LDFLAGS += -L$(BUILD_ABS)
     # Include the LDFLAGS required by libs.
     LDFLAGS += $(shell pkg-config --libs $(PKG_CONFIGS))
-endif
-
-# Turn on optimizations and LTO?
-ifeq ($(OPTIMIZE), 1)
-    CFLAGS += -O2 -flto
-    LDFLAGS += -flto
-endif
-
-# Compile for the build computer?
-ifeq ($(NATIVE), 1)
-    CFLAGS += -march=native
-    LDFLAGS += -march=native
-endif
-
-# Enable debug symbols?
-ifeq ($(DEBUG), 1)
-    CFLAGS += -O0 -g
-    QMAKEFLAGS += CONFIG+=debug
-endif
-
-ifeq ($(PROFILE), 1)
-    CFLAGS += -pg
-    LDFLAGS += -pg
 endif
 
 ifeq ($(STAGE), )
