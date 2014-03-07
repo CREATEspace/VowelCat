@@ -17,6 +17,12 @@ enum { SAMPLES = 5000 };
 // Duration in nanoseconds over which to tween tracers.
 enum { TWEEN_DURATION = 122863987 };
 
+// Number of samples to take into account when checking for noise.
+enum { NOISE_SAMPLES = SAMPLES / 500 };
+// If recorded samples have an average value less than this, then consider them
+// noise.
+enum { NOISE_THRESHOLD = INT16_MAX / 4 };
+
 // Worker that processes formants in a separate thread.
 typedef struct {
     // Thread ID.

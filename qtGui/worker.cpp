@@ -36,9 +36,14 @@ void worker_destroy(worker_t *w) {
     record_destroy(&w->rec);
 }
 
+#define ABS(x) ((x) > 0 ? (x) : -(x))
+
 // Start recording and processing formants until told to stop.
 static void worker_run(worker_t *w) {
+    enum { NOISE_STRIDE = SAMPLES / NOISE_SAMPLES };
+
     bool ret;
+    uintmax_t avg;
 
 #ifdef NDEBUG
     (void) ret;
@@ -51,6 +56,16 @@ static void worker_run(worker_t *w) {
         sound_reset(&w->sound, SAMPLE_RATE, CHANNELS);
         sound_resize(&w->sound, SAMPLES);
         record_read(&w->rec, w->sound.samples);
+
+        avg = 0;
+
+        for (size_t i = 0; i < w->sound.n_samples; i += NOISE_STRIDE)
+            avg += ABS(w->sound.samples[i]);
+
+        if (avg < NOISE_THRESHOLD * NOISE_SAMPLES) {
+            plotter_wakeup(w->plotter);
+            continue;
+        }
 
         ret = sound_calc_formants(&w->sound, &w->opts);
         assert(ret);
