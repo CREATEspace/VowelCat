@@ -8,9 +8,10 @@ extern "C" {
 }
 
 #include "mainwindow.h"
+#include "plotter.h"
 #include "worker.h"
 
-void worker_init(worker_t *w, MainWindow *window) {
+void worker_init(worker_t *w, MainWindow *window, plotter_t *plotter) {
     bool ret;
 
 #ifdef NDEBUG
@@ -27,6 +28,7 @@ void worker_init(worker_t *w, MainWindow *window) {
 
     sound_init(&w->sound);
     w->window = window;
+    w->plotter = plotter;
 }
 
 void worker_destroy(worker_t *w) {
@@ -54,6 +56,7 @@ static void worker_run(worker_t *w) {
         assert(ret);
 
         w->window->handleFormants(&w->sound, TWEEN_DURATION);
+        plotter_wakeup(w->plotter);
     }
 
     record_stop(&w->rec);

@@ -9,7 +9,6 @@
 
 #include <QColor>
 #include <QObject>
-#include <QTimer>
 #include <QWidget>
 
 #include "formant.h"
@@ -44,8 +43,10 @@ Tracer::Tracer(QCustomPlot *plot, QCPGraph *graph, size_t i):
 MainWindow::MainWindow(QWidget *parent) :
   QMainWindow(parent),
   pairs(NULL),
+  pair_count(0),
   nsec_per_pair(UINTMAX_MAX),
-  ui(new Ui::MainWindow)
+  ui(new Ui::MainWindow),
+  tracer(Tracer::COUNT)
 {
   // Start at the origin for lack of a better place.
   cur = (pair_t) {
@@ -58,9 +59,6 @@ MainWindow::MainWindow(QWidget *parent) :
 
   plot = ui->customPlot;
   graph = plot->addGraph();
-
-  QObject::connect(&timer, &QTimer::timeout,
-                   this, &MainWindow::plotFormant);
 
   setupPlot();
 }
@@ -163,9 +161,6 @@ void MainWindow::setupPlot()
 }
 
 void MainWindow::handleFormants(const sound_t *formants, uintmax_t nsec) {
-    // Prevent any more running of plotFormant.
-    timer.stop();
-
     // This array should never need to be reallocated after the first
     // allocation, but better safe than sorry I guess.
     pair_count = formants->n_samples;
@@ -190,8 +185,9 @@ void MainWindow::handleFormants(const sound_t *formants, uintmax_t nsec) {
     // Set up initial graph params.
     setupParams(&pairs[0]);
 
+    tracer = 0;
+
     timespec_init(&start);
-    timer.start(TIMER_INTERVAL);
 }
 
 void MainWindow::setupParams(const pair_t *pair) {
@@ -199,7 +195,7 @@ void MainWindow::setupParams(const pair_t *pair) {
     slope = (pair->y - from.y) / x_range;
 }
 
-void MainWindow::plotFormant() {
+bool MainWindow::plotFormant() {
     timespec_t now;
     uintmax_t diff;
     size_t pair;
@@ -210,8 +206,15 @@ void MainWindow::plotFormant() {
     pair = diff / nsec_per_pair;
 
     // Just leave the tracers at the last position if there are no more pairs.
-    if (pair >= pair_count)
-        return;
+    if (pair >= pair_count) {
+        if (tracer == Tracer::COUNT)
+            return false;
+
+        clearTracer();
+        tracer += 1;
+
+        return true;
+    }
 
     to = &pairs[pair];
 
@@ -226,6 +229,8 @@ void MainWindow::plotFormant() {
 
     updateTracers(cur.x, cur.y);
     updateFPS();
+
+    return true;
 }
 
 void MainWindow::updateFPS() {
@@ -262,8 +267,14 @@ void MainWindow::updateTracers(formant_sample_t f2, formant_sample_t f1) {
   plot->replot();
 }
 
-void MainWindow::stop() {
-    timer.stop();
+void MainWindow::clearTracer() {
+    graph->removeData(tracers[0]->graphKey());
+
+    for (size_t i = 0; i < Tracer::LAST; i += 1)
+        tracers[i]->setGraphKey(tracers[i + 1]->graphKey());
+
+    graph->removeData(tracers[Tracer::LAST - tracer]->graphKey());
+    plot->replot();
 }
 
 MainWindow::~MainWindow() {

@@ -77,27 +77,24 @@ private:
   double slope;
   double x_range;
 
-  QTimer timer;
   Ui::MainWindow *ui;
   QCustomPlot *plot;
   QCPGraph *graph;
+
   Tracer *tracers[Tracer::COUNT];
+  size_t tracer;
 
 public:
   explicit MainWindow(QWidget *parent = NULL);
   ~MainWindow();
 
   void handleFormants(const sound_t *formants, uintmax_t nsec);
-
-public slots:
-  void stop();
-
-private slots:
-  void plotFormant();
+  bool plotFormant();
 
 private:
   void setupParams(const pair_t *pair);
   void updateTracers(formant_sample_t x, formant_sample_t y);
+  void clearTracer();
   void updateFPS();
   void setupPlot();
 };
