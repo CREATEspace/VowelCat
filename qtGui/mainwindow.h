@@ -92,11 +92,13 @@ public:
   bool plotFormant();
 
 private:
+  void setupPlot();
   void setupParams(const pair_t *pair);
+
   void updateTracers(formant_sample_t x, formant_sample_t y);
   void clearTracer();
+
   void updateFPS();
-  void setupPlot();
 };
 
 #endif // MAINWINDOW_H
