@@ -39,7 +39,6 @@ void worker_destroy(worker_t *w) {
 }
 
 #define ABS(x) ((x) > 0 ? (x) : -(x))
-#define MIN(x, y) ((x) < (y) ? (x) : (y))
 
 // Start recording and processing formants until told to stop.
 static void worker_run(worker_t *w) {
@@ -49,7 +48,7 @@ static void worker_run(worker_t *w) {
     uintmax_t avg;
 
     timespec_t before, after;
-    uintmax_t diff, dur = UINTMAX_MAX;
+    uintmax_t dur = 0, count = 0;
 
 #ifdef NDEBUG
     (void) ret;
@@ -65,8 +64,8 @@ static void worker_run(worker_t *w) {
         record_read(&w->rec, w->sound.samples);
         timespec_init(&after);
 
-        diff = timespec_diff(&before, &after);
-        dur = MIN(dur, diff);
+        dur = (timespec_diff(&before, &after) + count * dur) / (count + 1);
+        count += 1;
 
         avg = 0;
 
