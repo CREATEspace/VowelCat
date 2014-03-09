@@ -1,3 +1,4 @@
+#include <float.h>
 #include <inttypes.h>
 #include <math.h>
 #include <time.h>
@@ -46,7 +47,8 @@ MainWindow::MainWindow(QWidget *parent) :
   pair_count(0),
   nsec_per_pair(UINTMAX_MAX),
   ui(new Ui::MainWindow),
-  tracer(Tracer::COUNT)
+  tracer(Tracer::COUNT),
+  plot_lock(PTHREAD_MUTEX_INITIALIZER)
 {
   // Start at the origin for lack of a better place.
   cur = (pair_t) {
@@ -60,6 +62,10 @@ MainWindow::MainWindow(QWidget *parent) :
   plot = ui->customPlot;
   graph = plot->addGraph();
 
+  QObject::connect(&timer, &QTimer::timeout,
+                   this, &MainWindow::plotFormant);
+  timer.start(TIMER_INTERVAL);
+
   setupPlot();
 }
 
@@ -67,6 +73,7 @@ void MainWindow::setupPlot()
 {
   plot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom);
   graph->setPen(Qt::NoPen);
+  graph->addData(DBL_MAX, DBL_MAX);
 
   plot->xAxis->grid()->setZeroLinePen(Qt::NoPen);
   plot->xAxis->setRange(2400, 700);
@@ -161,6 +168,8 @@ void MainWindow::setupPlot()
 }
 
 void MainWindow::handleFormants(const sound_t *formants, uintmax_t nsec) {
+    pthread_mutex_lock(&plot_lock);
+
     // This array should never need to be reallocated after the first
     // allocation, but better safe than sorry I guess.
     pair_count = formants->n_samples;
@@ -186,8 +195,9 @@ void MainWindow::handleFormants(const sound_t *formants, uintmax_t nsec) {
     setupParams(&pairs[0]);
 
     tracer = 0;
-
     timespec_init(&start);
+
+    pthread_mutex_unlock(&plot_lock);
 }
 
 void MainWindow::setupParams(const pair_t *pair) {
@@ -195,11 +205,13 @@ void MainWindow::setupParams(const pair_t *pair) {
     slope = (pair->y - from.y) / x_range;
 }
 
-bool MainWindow::plotFormant() {
+void MainWindow::plotFormant() {
     timespec_t now;
     uintmax_t diff;
     size_t pair;
     const pair_t *to;
+
+    pthread_mutex_lock(&plot_lock);
 
     timespec_init(&now);
     diff = timespec_diff(&start, &now);
@@ -207,13 +219,17 @@ bool MainWindow::plotFormant() {
 
     // Just leave the tracers at the last position if there are no more pairs.
     if (pair >= pair_count) {
-        if (tracer == Tracer::COUNT)
-            return false;
+        if (tracer == Tracer::COUNT) {
+            pthread_mutex_unlock(&plot_lock);
+            return;
+        }
+
+        tracer += 1;
+        pthread_mutex_unlock(&plot_lock);
 
         clearTracer();
-        tracer += 1;
 
-        return true;
+        return;
     }
 
     to = &pairs[pair];
@@ -224,13 +240,13 @@ bool MainWindow::plotFormant() {
         setupParams(to);
     }
 
+    pthread_mutex_unlock(&plot_lock);
+
     cur.x = from.x + x_range * (diff - nsec_per_pair * pair) / nsec_per_pair;
     cur.y = from.y + slope * (cur.x - from.x);
 
     updateTracers(cur.x, cur.y);
     updateFPS();
-
-    return true;
 }
 
 void MainWindow::updateFPS() {
@@ -257,7 +273,9 @@ void MainWindow::updateFPS() {
 }
 
 void MainWindow::updateTracers(formant_sample_t f2, formant_sample_t f1) {
-  graph->removeData(tracers[0]->graphKey());
+  if (tracers[0]->graphKey() != DBL_MAX)
+    graph->removeData(tracers[0]->graphKey());
+
   graph->addData(f2, f1);
 
   for (size_t i = 0; i < Tracer::LAST; i += 1)
@@ -268,12 +286,16 @@ void MainWindow::updateTracers(formant_sample_t f2, formant_sample_t f1) {
 }
 
 void MainWindow::clearTracer() {
-    graph->removeData(tracers[0]->graphKey());
+    if (tracers[0]->graphKey() != DBL_MAX)
+        graph->removeData(tracers[0]->graphKey());
 
     for (size_t i = 0; i < Tracer::LAST; i += 1)
         tracers[i]->setGraphKey(tracers[i + 1]->graphKey());
 
-    graph->removeData(tracers[Tracer::LAST - tracer]->graphKey());
+    if (tracers[Tracer::LAST - tracer]->graphKey() != DBL_MAX)
+        graph->removeData(tracers[Tracer::LAST - tracer]->graphKey());
+
+    tracers[Tracer::LAST - tracer]->setGraphKey(DBL_MAX);
     plot->replot();
 }
 

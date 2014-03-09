@@ -4,7 +4,6 @@
 #include <QApplication>
 
 #include "mainwindow.h"
-#include "plotter.h"
 #include "worker.h"
 
 // Handle OS signals.
@@ -27,15 +26,11 @@ int main(int argc, char *argv[])
 
   QApplication app(argc, argv);
   MainWindow window;
-  plotter_t plotter;
   worker_t worker;
 
   window.show();
 
-  plotter_init(&plotter, &window);
-  worker_init(&worker, &window, &plotter);
-
-  plotter_start(&plotter);
+  worker_init(&worker, &window);
   worker_start(&worker);
 
   // This function blocks until the main window is closed or
@@ -43,8 +38,5 @@ int main(int argc, char *argv[])
   QCoreApplication::exec();
 
   worker_stop(&worker);
-  plotter_stop(&plotter);
-
   worker_destroy(&worker);
-  plotter_destroy(&plotter);
 }

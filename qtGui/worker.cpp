@@ -9,11 +9,10 @@ extern "C" {
 }
 
 #include "mainwindow.h"
-#include "plotter.h"
 #include "timespec.h"
 #include "worker.h"
 
-void worker_init(worker_t *w, MainWindow *window, plotter_t *plotter) {
+void worker_init(worker_t *w, MainWindow *window) {
     bool ret;
 
 #ifdef NDEBUG
@@ -30,7 +29,6 @@ void worker_init(worker_t *w, MainWindow *window, plotter_t *plotter) {
 
     sound_init(&w->sound);
     w->window = window;
-    w->plotter = plotter;
 }
 
 void worker_destroy(worker_t *w) {
@@ -72,16 +70,13 @@ static void worker_run(worker_t *w) {
         for (size_t i = 0; i < w->sound.n_samples; i += NOISE_STRIDE)
             avg += ABS(w->sound.samples[i]);
 
-        if (avg < NOISE_THRESHOLD * NOISE_SAMPLES) {
-            plotter_wakeup(w->plotter);
+        if (avg < NOISE_THRESHOLD * NOISE_SAMPLES)
             continue;
-        }
 
         ret = sound_calc_formants(&w->sound, &w->opts);
         assert(ret);
 
         w->window->handleFormants(&w->sound, dur);
-        plotter_wakeup(w->plotter);
     }
 
     record_stop(&w->rec);

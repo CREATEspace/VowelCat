@@ -11,14 +11,12 @@ SOURCES += \
     main.cpp \
     mainwindow.cpp \
     qcustomplot.cpp \
-    plotter.cpp \
     timespec.cpp \
     worker.cpp \
 
 HEADERS += \
     mainwindow.h \
     qcustomplot.h \
-    plotter.h \
     timespec.h \
     worker.h \
 

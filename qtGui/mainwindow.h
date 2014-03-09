@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <inttypes.h>
+#include <pthread.h>
 #include <stddef.h>
 #include <time.h>
 
@@ -84,12 +85,17 @@ private:
   Tracer *tracers[Tracer::COUNT];
   size_t tracer;
 
+  pthread_mutex_t plot_lock;
+  QTimer timer;
+
 public:
   explicit MainWindow(QWidget *parent = NULL);
   ~MainWindow();
 
   void handleFormants(const sound_t *formants, uintmax_t nsec);
-  bool plotFormant();
+
+private slots:
+  void plotFormant();
 
 private:
   void setupPlot();

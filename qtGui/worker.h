@@ -3,11 +3,9 @@
 
 #include <pthread.h>
 
-#include "formant.h"
 #include "audio.h"
-
+#include "formant.h"
 #include "mainwindow.h"
-#include "plotter.h"
 
 // Some audio constants for now.
 enum { SAMPLE_RATE = 44100 };
@@ -34,11 +32,10 @@ typedef struct {
 
     // Window to update.
     MainWindow *window;
-    plotter_t *plotter;
 } worker_t;
 
 // Initialize the given worker.
-void worker_init(worker_t *w, MainWindow *window, plotter_t *plotter);
+void worker_init(worker_t *w, MainWindow *window);
 
 // Free memory held by the given worker.
 void worker_destroy(worker_t *w);
