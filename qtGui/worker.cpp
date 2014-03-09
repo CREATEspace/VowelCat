@@ -1,14 +1,16 @@
 #include <assert.h>
+#include <inttypes.h>
 #include <pthread.h>
 #include <stdlib.h>
 
 extern "C" {
-#include "formant.h"
 #include "audio.h"
+#include "formant.h"
 }
 
 #include "mainwindow.h"
 #include "plotter.h"
+#include "timespec.h"
 #include "worker.h"
 
 void worker_init(worker_t *w, MainWindow *window, plotter_t *plotter) {
@@ -37,6 +39,7 @@ void worker_destroy(worker_t *w) {
 }
 
 #define ABS(x) ((x) > 0 ? (x) : -(x))
+#define MIN(x, y) ((x) < (y) ? (x) : (y))
 
 // Start recording and processing formants until told to stop.
 static void worker_run(worker_t *w) {
@@ -44,6 +47,9 @@ static void worker_run(worker_t *w) {
 
     bool ret;
     uintmax_t avg;
+
+    timespec_t before, after;
+    uintmax_t diff, dur = UINTMAX_MAX;
 
 #ifdef NDEBUG
     (void) ret;
@@ -53,9 +59,14 @@ static void worker_run(worker_t *w) {
     assert(ret);
 
     while (w->run) {
+        timespec_init(&before);
         sound_reset(&w->sound, SAMPLE_RATE, CHANNELS);
         sound_resize(&w->sound, SAMPLES);
         record_read(&w->rec, w->sound.samples);
+        timespec_init(&after);
+
+        diff = timespec_diff(&before, &after);
+        dur = MIN(dur, diff);
 
         avg = 0;
 
@@ -70,7 +81,7 @@ static void worker_run(worker_t *w) {
         ret = sound_calc_formants(&w->sound, &w->opts);
         assert(ret);
 
-        w->window->handleFormants(&w->sound, TWEEN_DURATION);
+        w->window->handleFormants(&w->sound, dur);
         plotter_wakeup(w->plotter);
     }
 
