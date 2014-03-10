@@ -16,7 +16,7 @@ enum { SAMPLES = 5000 };
 enum { NOISE_SAMPLES = SAMPLES / 500 };
 // If recorded samples have an average value less than this, then consider them
 // noise.
-enum { NOISE_THRESHOLD = INT16_MAX / 4 };
+enum { NOISE_THRESHOLD = 100 };
 
 // Worker that processes formants in a separate thread.
 typedef struct {
