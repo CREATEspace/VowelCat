@@ -4,7 +4,7 @@
 #  	build libraries and link gui into build directory
 #  - make -B
 #  	force rebuild all libraries and gui
-#  - rm -r build/libformant build/qtGui; make
+#  - rm build/libformant build/qtGui; make
 #  	force rebuild/relink of libformant and the gui
 #  - make deploy
 #  	on mac, package binary into standalone app
@@ -15,17 +15,6 @@
 #  	link the code in qtGui using the Makefile in that directory
 #  - make clean
 #  	remove build directory
-
-# Public make flags:
-#
-#  - DEBUG=1
-#       disable optimizations and enable debugging symbols
-#  - OPTIMIZE=1
-#       enable compiler and link-time optimizations
-#  - NATIVE=1
-#       compile for the native instruction set of the host computer
-#  - PROFILE=1
-#       enable gprof profiling symbols
 
 # The build process is split into multiple -- currently two -- stages:
 #
@@ -38,14 +27,6 @@
 # Variables to export to submakes.
 export CFLAGS LDFLAGS QMAKEFLAGS
 
-# Capture variables from the enviromnent.
-ECFLAGS := $(CFLAGS)
-override CFLAGS =
-ELDFLAGS := $(LDFLAGS)
-override LDFLAGS =
-EQMAKEFLAGS := $(QMAKEFLAGS)
-override QMAKEFLAGS =
-
 # Relative and absolute path where things will be built.
 BUILD = build
 BUILD_ABS = $(PWD)/$(BUILD)
@@ -53,62 +34,68 @@ BUILD_ABS = $(PWD)/$(BUILD)
 # What platform we're running on.
 UNAME = $(shell uname)
 
-# Set up variables for submodules to build -- order is important!
-SRC_AUDIO = libaudio
-BUILD_AUDIO = $(BUILD)/$(SRC_AUDIO)
-STATICLIB_AUDIO = $(BUILD)/libaudio.a
-STATICLIB_AUDIO_BUILD = $(BUILD_AUDIO)/libaudio.a
-STATICLIBS += $(STATICLIB_AUDIO)
-PKG_CONFIGS += $(BUILD_AUDIO)/libaudio.pc
-
-SRC_PORTAUDIO = libportaudio
-BUILD_PORTAUDIO = $(BUILD)/$(SRC_PORTAUDIO)
-STATICLIB_PORTAUDIO = $(BUILD)/libportaudio.a
-STATICLIB_PORTAUDIO_BUILD = $(BUILD_PORTAUDIO)/lib/.libs/libportaudio.a
-STATICLIBS += $(STATICLIB_PORTAUDIO)
-PKG_CONFIGS += $(BUILD_PORTAUDIO)/portaudio-2.0.pc
-
-SRC_FORMANT = libformant
-BUILD_FORMANT = $(BUILD)/$(SRC_FORMANT)
-STATICLIB_FORMANT = $(BUILD)/libformant.a
-STATICLIB_FORMANT_BUILD = $(BUILD_FORMANT)/libformant.a
-STATICLIBS += $(STATICLIB_FORMANT)
-PKG_CONFIGS += $(BUILD_FORMANT)/libformant.pc
-
-SRC_QTGUI = qtGui
-BUILD_QTGUI = $(BUILD)/$(SRC_QTGUI)
-
 ifeq ($(UNAME), Linux)
-APP_QTGUI = $(BUILD_QTGUI)/qtGui
+QTGUI = $(BUILD)/qtGui/qtGui
 else ifeq ($(UNAME), Darwin)
-APP_QTGUI = $(BUILD_QTGUI)/qtGui.app
+QTGUI = $(BUILD)/qtGui/qtGui.app
 endif
 
-APPS += $(APP_QTGUI)
+# Set up apps to build
+APPS += $(QTGUI)
+
+# Build directories.
+BUILD_PORTAUDIO = $(BUILD)/libportaudio
+BUILD_FORMANT = $(BUILD)/libformant
+BUILD_AUDIO = $(BUILD)/libaudio
+
+# Final paths of static libraries.
+STATICLIB_PORTAUDIO = $(BUILD)/libportaudio.a
+STATICLIB_FORMANT = $(BUILD)/libformant.a
+STATICLIB_AUDIO = $(BUILD)/libaudio.a
+
+# Collect all the static libs here.
+STATICLIBS = \
+    $(STATICLIB_PORTAUDIO) \
+    $(STATICLIB_FORMANT) \
+    $(STATICLIB_AUDIO) \
+
+# Source paths of static libraries.
+STATICLIB_PORTAUDIO_BUILD = $(BUILD_PORTAUDIO)/lib/.libs/libportaudio.a
+STATICLIB_FORMANT_BUILD = $(BUILD_FORMANT)/libformant.a
+STATICLIB_AUDIO_BUILD = $(BUILD_AUDIO)/libaudio.a
+
+# Pkg-config files to use.
+PKG_CONFIGS = \
+    $(BUILD_AUDIO)/libaudio.pc \
+    $(BUILD_PORTAUDIO)/portaudio-2.0.pc \
+    $(BUILD_FORMANT)/libformant.pc \
 
 # If on any stage, set up CFLAGS.
 ifneq ($(STAGE), )
-    override CFLAGS += -I$(BUILD_ABS)/libportaudio/include
-    override CFLAGS += -I$(BUILD_ABS)/libaudio
-    override CFLAGS += -I$(BUILD_ABS)/libformant
-    override CFLAGS += $(ECFLAGS)
+    CFLAGS += -I$(BUILD_ABS)/libportaudio/include
+    CFLAGS += -I$(BUILD_ABS)/libaudio
+    CFLAGS += -I$(BUILD_ABS)/libformant
 
+    # Turn on optimizations and LTO?
     ifeq ($(OPTIMIZE), 1)
 	CFLAGS += -O2 -flto -DNDEBUG
 	LDFLAGS += -O2 -flto
 	QMAKEFLAGS += CONFIG+=release
     endif
 
+    # Compile for the build computer?
     ifeq ($(NATIVE), 1)
 	CFLAGS += -march=native
 	LDFLAGS += -march=native
     endif
 
+    # Enable debug symbols?
     ifeq ($(DEBUG), 1)
 	CFLAGS += -O0 -g
 	QMAKEFLAGS += CONFIG+=debug
     endif
 
+    # Enable profiling instrumentation?
     ifeq ($(PROFILE), 1)
 	CFLAGS += -pg
 	LDFLAGS += -pg
@@ -118,10 +105,9 @@ endif
 # If on stage 2, set up LDFLAGS.
 ifeq ($(STAGE), 2)
     # Tell the compiler to search the build dir for libs.
-    override LDFLAGS += -L$(BUILD_ABS)
+    LDFLAGS += -L$(BUILD_ABS)
     # Include the LDFLAGS required by libs.
-    override LDFLAGS += $(shell pkg-config --libs $(PKG_CONFIGS))
-    override LDFLAGS += $(ELDFLAGS)
+    LDFLAGS += $(shell pkg-config --libs $(PKG_CONFIGS))
 endif
 
 ifeq ($(STAGE), )
@@ -129,42 +115,50 @@ all: stage-2
 else ifeq ($(STAGE), 1)
 all: $(STATICLIBS)
 else ifeq ($(STAGE), 2)
-all: $(APP_QTGUI)
+all: $(APPS)
 endif
 
 # Create the build directory.
 $(BUILD):
 	-mkdir -p $@
 
-$(STATICLIBS) $(APPS): | $(BUILD)
-
 # Build the portaudio static library.
-$(STATICLIB_PORTAUDIO):
-	cp -ru $(SRC_PORTAUDIO) $(BUILD)
-	cd $(BUILD_PORTAUDIO) && ./configure --enable-static
-	$(MAKE) -C $(BUILD_PORTAUDIO)
-	cp $(STATICLIB_PORTAUDIO_BUILD) $@
+$(BUILD_PORTAUDIO): libportaudio | $(BUILD)
+	cp -ru $< $|
+
+$(STATICLIB_PORTAUDIO_BUILD): | $(BUILD_PORTAUDIO)
+	cd $| && autoreconf -fi && ./configure --enable-static
+	$(MAKE) -C $|
+
+$(STATICLIB_PORTAUDIO): $(STATICLIB_PORTAUDIO_BUILD)
+	cp $< $@
 
 # Build the formant static library.
-$(STATICLIB_FORMANT):
-	cp -ru $(SRC_FORMANT) $(BUILD)
-	echo $(CFLAGS)
-	$(MAKE) -C $(BUILD_FORMANT)
-	cp $(STATICLIB_FORMANT_BUILD) $@
+$(BUILD_FORMANT): libformant | $(BUILD)
+	cp -ru $< $|
+
+$(STATICLIB_FORMANT_BUILD): $(BUILD_FORMANT)
+	$(MAKE) -C $< clean all
+
+$(STATICLIB_FORMANT): $(STATICLIB_FORMANT_BUILD)
+	cp $< $@
 
 # Build the audio static library.
-$(STATICLIB_AUDIO):
-	cp -ru $(SRC_AUDIO) $(BUILD)
-	$(MAKE) -C $(BUILD_AUDIO)
-	cp $(STATICLIB_AUDIO_BUILD) $@
+$(BUILD_AUDIO): libaudio | $(BUILD)
+	cp -ru $< $|
+
+$(STATICLIB_AUDIO_BUILD): $(BUILD_AUDIO)
+	$(MAKE) -C $<
+
+$(STATICLIB_AUDIO): $(STATICLIB_AUDIO_BUILD)
+	cp $< $@
 
 # Build the main app.
-$(APP_QTGUI):
-	cp -ru $(SRC_QTGUI) $(BUILD)
-	$(MAKE) -C $(BUILD_QTGUI)
+$(BUILD)/qtGui: qtGui | $(BUILD)
+	cp -ru $< $|
 
-# Force these to be remade every time.
-.PHONY: $(STATICLIB_FORMANT) $(STATICLIB_AUDIO) $(APP_QTGUI)
+$(QTGUI): $(BUILD)/qtGui
+	$(MAKE) -C $<
 
 stage-1:
 	$(MAKE) STAGE=1
@@ -183,6 +177,7 @@ compile:
 	$(MAKE) STAGE=1 compile
 endif
 
+# Build linked binaries.
 ifeq ($(DIR), )
 link:
 	@echo error: specify a directory to link with DIR=
@@ -195,10 +190,10 @@ link: stage-1
 endif
 
 ifeq ($(UNAME), Darwin)
-deploy: $(APP_QTGUI)
+deploy: $(QTGUI)
 	macdeployqt $<
 else
-deploy: $(APP_QTGUI)
+deploy: $(QTGUI)
 endif
 
 clean:
