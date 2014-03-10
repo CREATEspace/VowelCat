@@ -97,6 +97,11 @@ ifneq ($(STAGE), )
     override CFLAGS += -I$(BUILD_ABS)/libformant
     override CFLAGS += $(ECFLAGS)
 
+    ifeq ($(UNAME), Darwin)
+      override CFLAGS += -mmacosx-version-min=10.7 -stdlib=libc++
+      override QMAKEFLAGS += QMAKE_CXX=$(shell which clang++)
+    endif
+
     ifeq ($(OPTIMIZE), 1)
 	CFLAGS += -O2 -flto -DNDEBUG
 	LDFLAGS += -O2 -flto
