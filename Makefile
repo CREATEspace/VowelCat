@@ -103,24 +103,24 @@ ifneq ($(STAGE), )
     endif
 
     ifeq ($(OPTIMIZE), 1)
-	CFLAGS += -O2 -flto -DNDEBUG
-	LDFLAGS += -O2 -flto
-	QMAKEFLAGS += CONFIG+=release
+	override CFLAGS += -O2 -flto -DNDEBUG
+	override LDFLAGS += -O2 -flto
+	override QMAKEFLAGS += CONFIG+=release
     endif
 
     ifeq ($(NATIVE), 1)
-	CFLAGS += -march=native
-	LDFLAGS += -march=native
+	override CFLAGS += -march=native
+	override LDFLAGS += -march=native
     endif
 
     ifeq ($(DEBUG), 1)
-	CFLAGS += -O0 -g
-	QMAKEFLAGS += CONFIG+=debug
+	override CFLAGS += -O0 -g
+	override QMAKEFLAGS += CONFIG+=debug
     endif
 
     ifeq ($(PROFILE), 1)
-	CFLAGS += -pg
-	LDFLAGS += -pg
+	override CFLAGS += -pg
+	override LDFLAGS += -pg
     endif
 endif
 
