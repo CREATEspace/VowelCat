@@ -219,6 +219,8 @@ void MainWindow::plotFormant() {
 
     // Just leave the tracers at the last position if there are no more pairs.
     if (pair >= pair_count) {
+        timer.setInterval(100);
+
         if (tracer == Tracer::COUNT) {
             pthread_mutex_unlock(&plot_lock);
             return;
@@ -231,6 +233,8 @@ void MainWindow::plotFormant() {
 
         return;
     }
+
+    timer.setInterval(TIMER_INTERVAL);
 
     to = &pairs[pair];
 
