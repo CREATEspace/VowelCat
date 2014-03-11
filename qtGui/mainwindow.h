@@ -57,54 +57,54 @@ private:
 
 class MainWindow : public QMainWindow
 {
-  Q_OBJECT
+    Q_OBJECT
 
 private:
-  enum { TIMER_INTERVAL = 0 };
+    enum { TIMER_INTERVAL = 0 };
 
-  typedef struct {
-    formant_sample_t x, y;
-  } pair_t;
+    typedef struct {
+        formant_sample_t x, y;
+    } pair_t;
 
-  pair_t from;
-  pair_t cur;
-  pair_t *pairs;
-  size_t pair_count;
-  size_t from_pair;
+    pair_t from;
+    pair_t cur;
+    pair_t *pairs;
+    size_t pair_count;
+    size_t from_pair;
 
-  uintmax_t nsec_per_pair;
-  timespec_t start;
+    uintmax_t nsec_per_pair;
+    timespec_t start;
 
-  double slope;
-  double x_range;
+    double slope;
+    double x_range;
 
-  Ui::MainWindow *ui;
-  QCustomPlot *plot;
-  QCPGraph *graph;
+    Ui::MainWindow *ui;
+    QCustomPlot *plot;
+    QCPGraph *graph;
 
-  Tracer *tracers[Tracer::COUNT];
-  size_t tracer;
+    Tracer *tracers[Tracer::COUNT];
+    size_t tracer;
 
-  pthread_mutex_t plot_lock;
-  QTimer timer;
+    pthread_mutex_t plot_lock;
+    QTimer timer;
 
 public:
-  explicit MainWindow(QWidget *parent = NULL);
-  ~MainWindow();
+    explicit MainWindow(QWidget *parent = NULL);
+    ~MainWindow();
 
-  void handleFormants(const sound_t *formants, uintmax_t nsec);
+    void handleFormants(const sound_t *formants, uintmax_t nsec);
 
 private slots:
-  void plotFormant();
+    void plotFormant();
 
 private:
-  void setupPlot();
-  void setupParams(const pair_t *pair);
+    void setupPlot();
+    void setupParams(const pair_t *pair);
 
-  void updateTracers(formant_sample_t x, formant_sample_t y);
-  void clearTracer();
+    void updateTracers(formant_sample_t x, formant_sample_t y);
+    void clearTracer();
 
-  void updateFPS();
+    void updateFPS();
 };
 
 #endif // MAINWINDOW_H
