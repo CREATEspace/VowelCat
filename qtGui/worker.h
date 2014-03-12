@@ -10,7 +10,7 @@
 // Some audio constants for now.
 enum { SAMPLE_RATE = 11025 };
 enum { CHANNELS = 2 };
-enum { SAMPLES = 5000 };
+enum { SAMPLES = 2048 };
 
 // Number of samples to take into account when checking for noise.
 enum { NOISE_SAMPLES = SAMPLES / 500 };
