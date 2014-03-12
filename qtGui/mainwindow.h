@@ -66,13 +66,10 @@ private:
         formant_sample_t x, y;
     } pair_t;
 
-    pair_t from;
+    pair_t from, to;
     pair_t cur;
-    pair_t *pairs;
-    size_t pair_count;
-    size_t from_pair;
 
-    uintmax_t nsec_per_pair;
+    uintmax_t dur;
     timespec_t start;
 
     double slope;
@@ -92,14 +89,13 @@ public:
     explicit MainWindow(QWidget *parent = NULL);
     ~MainWindow();
 
-    void handleFormants(const sound_t *formants, uintmax_t nsec);
+    void plotFormant(formant_sample_t f1, formant_sample_t f2, uintmax_t dur);
 
 private slots:
-    void plotFormant();
+    void plotNext();
 
 private:
     void setupPlot();
-    void setupParams(const pair_t *pair);
 
     void updateTracers(formant_sample_t x, formant_sample_t y);
     void clearTracer();

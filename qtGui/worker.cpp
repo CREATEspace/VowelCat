@@ -44,6 +44,7 @@ static void worker_run(worker_t *w) {
 
     bool ret;
     uintmax_t avg;
+    uintmax_t f1, f2;
 
     timespec_t before, after;
     uintmax_t dur = 0, count = 0;
@@ -60,10 +61,6 @@ static void worker_run(worker_t *w) {
         sound_reset(&w->sound, SAMPLE_RATE, CHANNELS);
         sound_resize(&w->sound, SAMPLES);
         record_read(&w->rec, w->sound.samples);
-        timespec_init(&after);
-
-        dur = (timespec_diff(&before, &after) + count * dur) / (count + 1);
-        count += 1;
 
         avg = 0;
 
@@ -76,7 +73,25 @@ static void worker_run(worker_t *w) {
         ret = sound_calc_formants(&w->sound, &w->opts);
         assert(ret);
 
-        w->window->handleFormants(&w->sound, dur);
+        f1 = 0;
+
+        for (size_t i = 0; i < w->sound.n_samples; i += 1)
+            f1 += sound_get_f1(&w->sound, i);
+
+        f2 = 0;
+
+        for (size_t i = 0; i < w->sound.n_samples; i += 1)
+            f2 += sound_get_f2(&w->sound, i);
+
+        f1 /= w->sound.n_samples;
+        f2 /= w->sound.n_samples;
+
+        timespec_init(&after);
+
+        dur = (timespec_diff(&before, &after) + count * dur) / (count + 1);
+        count += 1;
+
+        w->window->plotFormant(f1, f2, dur);
     }
 
     record_stop(&w->rec);

@@ -43,9 +43,6 @@ Tracer::Tracer(QCustomPlot *plot, QCPGraph *graph, size_t i):
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
-    pairs(NULL),
-    pair_count(0),
-    nsec_per_pair(UINTMAX_MAX),
     ui(new Ui::MainWindow),
     tracer(Tracer::COUNT),
     plot_lock(PTHREAD_MUTEX_INITIALIZER)
@@ -63,7 +60,7 @@ MainWindow::MainWindow(QWidget *parent) :
     graph = plot->addGraph();
 
     QObject::connect(&timer, &QTimer::timeout,
-                     this, &MainWindow::plotFormant);
+                     this, &MainWindow::plotNext);
     timer.start(TIMER_INTERVAL);
 
     setupPlot();
@@ -167,32 +164,24 @@ void MainWindow::setupPlot()
         tracers[i] = new Tracer(plot, graph, i);
 }
 
-void MainWindow::handleFormants(const sound_t *formants, uintmax_t nsec) {
+void MainWindow::plotFormant(formant_sample_t f1, formant_sample_t f2,
+                             uintmax_t dur)
+{
     pthread_mutex_lock(&plot_lock);
 
-    // This array should never need to be reallocated after the first
-    // allocation, but better safe than sorry I guess.
-    pair_count = formants->n_samples;
-    pairs = (pair_t *) realloc(pairs, pair_count * sizeof(pair_t));
-
     // Copy the raw formants into our pairs structure.
-    for (size_t i = 0; i < pair_count; i += 1) {
-        pairs[i] = (pair_t) {
-            .x = sound_get_f2(formants, i),
-            .y = sound_get_f1(formants, i),
-        };
-    }
+    to = (pair_t) {
+        .x = f2,
+        .y = f1,
+    };
 
-    // Calculate how long a pair should be tweened between before moving on to
-    // the next.
-    nsec_per_pair = nsec / pair_count;
+    this->dur = dur;
 
-    // Set the initial point as the last-drawn point.
+    // Set the last-drawn point as the initial point.
     from = cur;
-    // Start from the first formant pair.
-    from_pair = 0;
-    // Set up initial graph params.
-    setupParams(&pairs[0]);
+
+    x_range = to.x - from.x;
+    slope = (to.y - from.y) / x_range;
 
     tracer = 0;
     timespec_init(&start);
@@ -200,54 +189,37 @@ void MainWindow::handleFormants(const sound_t *formants, uintmax_t nsec) {
     pthread_mutex_unlock(&plot_lock);
 }
 
-void MainWindow::setupParams(const pair_t *pair) {
-    x_range = pair->x - from.x;
-    slope = (pair->y - from.y) / x_range;
-}
-
-void MainWindow::plotFormant() {
+void MainWindow::plotNext() {
     timespec_t now;
     uintmax_t diff;
-    size_t pair;
-    const pair_t *to;
 
     pthread_mutex_lock(&plot_lock);
 
     timespec_init(&now);
     diff = timespec_diff(&start, &now);
-    pair = diff / nsec_per_pair;
 
-    // Just leave the tracers at the last position if there are no more pairs.
-    if (pair >= pair_count) {
-        timer.setInterval(100);
+    if (diff > dur) {
+        timer.setInterval(50);
 
         if (tracer == Tracer::COUNT) {
             pthread_mutex_unlock(&plot_lock);
             return;
         }
 
-        tracer += 1;
-        pthread_mutex_unlock(&plot_lock);
-
         clearTracer();
+        tracer += 1;
+
+        pthread_mutex_unlock(&plot_lock);
 
         return;
     }
 
-    timer.setInterval(TIMER_INTERVAL);
-
-    to = &pairs[pair];
-
-    if (pair != from_pair) {
-        from = pairs[from_pair];
-        from_pair = pair;
-        setupParams(to);
-    }
+    cur.x = from.x + x_range * diff / dur;
+    cur.y = from.y + slope * (cur.x - from.x);
 
     pthread_mutex_unlock(&plot_lock);
 
-    cur.x = from.x + x_range * (diff - nsec_per_pair * pair) / nsec_per_pair;
-    cur.y = from.y + slope * (cur.x - from.x);
+    timer.setInterval(TIMER_INTERVAL);
 
     updateTracers(cur.x, cur.y);
     updateFPS();
@@ -308,6 +280,4 @@ MainWindow::~MainWindow() {
 
     for (size_t i = 0; i < Tracer::COUNT; i += 1)
         delete tracers[i];
-
-    free(pairs);
 }
