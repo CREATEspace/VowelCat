@@ -20,7 +20,7 @@
 #
 #  - DEBUG=1
 #       disable optimizations and enable debugging symbols
-#  - OPTIMIZE=1
+#  - RELEASE=1
 #       enable compiler and link-time optimizations
 #  - NATIVE=1
 #       compile for the native instruction set of the host computer
@@ -102,7 +102,7 @@ ifneq ($(STAGE), )
       override QMAKEFLAGS += QMAKE_CXX=$(shell which clang++)
     endif
 
-    ifeq ($(OPTIMIZE), 1)
+    ifeq ($(RELEASE), 1)
 	override CFLAGS += -O2 -flto -DNDEBUG
 	override LDFLAGS += -O2 -flto
 	override QMAKEFLAGS += CONFIG+=release
