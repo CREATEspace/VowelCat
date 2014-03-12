@@ -96,29 +96,29 @@ ifneq ($(STAGE), )
     override CFLAGS += $(ECFLAGS)
 
     ifeq ($(UNAME), Darwin)
-      override CFLAGS += -mmacosx-version-min=10.7 -stdlib=libc++
-      override QMAKEFLAGS += QMAKE_CXX=$(shell which clang++)
+        override CFLAGS += -mmacosx-version-min=10.7 -stdlib=libc++
+        override QMAKEFLAGS += QMAKE_CXX=$(shell which clang++)
     endif
 
     ifeq ($(RELEASE), 1)
-	override CFLAGS += -O2 -flto -DNDEBUG
-	override LDFLAGS += -O2 -flto
-	override QMAKEFLAGS += CONFIG+=release
+        override CFLAGS += -O2 -flto -DNDEBUG
+        override LDFLAGS += -O2 -flto
+        override QMAKEFLAGS += CONFIG+=release
     endif
 
     ifeq ($(NATIVE), 1)
-	override CFLAGS += -march=native
-	override LDFLAGS += -march=native
+        override CFLAGS += -march=native
+        override LDFLAGS += -march=native
     endif
 
     ifeq ($(DEBUG), 1)
-	override CFLAGS += -O0 -g
-	override QMAKEFLAGS += CONFIG+=debug
+        override CFLAGS += -O0 -g
+        override QMAKEFLAGS += CONFIG+=debug
     endif
 
     ifeq ($(PROFILE), 1)
-	override CFLAGS += -pg
-	override LDFLAGS += -pg
+        override CFLAGS += -pg
+        override LDFLAGS += -pg
     endif
 endif
 
