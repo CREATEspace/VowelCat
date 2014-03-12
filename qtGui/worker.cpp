@@ -23,7 +23,8 @@ void worker_init(worker_t *w, MainWindow *window) {
     assert(ret);
 
     formant_opts_init(&w->opts);
-
+    w->opts.pre_emph_factor = 1;
+    w->opts.downsample_rate = SAMPLE_RATE;
     ret = formant_opts_process(&w->opts);
     assert(ret);
 

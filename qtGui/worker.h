@@ -8,7 +8,7 @@
 #include "mainwindow.h"
 
 // Some audio constants for now.
-enum { SAMPLE_RATE = 44100 };
+enum { SAMPLE_RATE = 11025 };
 enum { CHANNELS = 2 };
 enum { SAMPLES = 5000 };
 
