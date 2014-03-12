@@ -6,7 +6,7 @@
 #  	force rebuild all libraries and gui
 #  - rm -r build/libformant build/qtGui; make
 #  	force rebuild/relink of libformant and the gui
-#  - make deploy
+#  - make release
 #  	on mac, package binary into standalone app
 #  - make compile DIR=scratch/dir
 #  	compile (but don't link) code in scratch/dir using the Makefile in that
@@ -20,8 +20,6 @@
 #
 #  - DEBUG=1
 #       disable optimizations and enable debugging symbols
-#  - RELEASE=1
-#       enable compiler and link-time optimizations
 #  - NATIVE=1
 #       compile for the native instruction set of the host computer
 #  - PROFILE=1
@@ -204,14 +202,17 @@ link: stage-1
 	$(MAKE) STAGE=3 link
 endif
 
-ifeq ($(UNAME), Darwin)
-deploy: $(APP_QTGUI)
-	macdeployqt $<
+ifeq ($(RELEASE), )
+release:
+	$(MAKE) RELEASE=1 $@
+else ifeq ($(UNAME), Darwin)
+release: stage-3
+	macdeployqt $(APP_QTGUI)
 else
-deploy: $(APP_QTGUI)
+release: stage-3
 endif
 
 clean:
 	-rm -r $(BUILD)
 
-.PHONY: all stage-1 stage-2 stage-3 compile link deploy clean
+.PHONY: all stage-1 stage-2 stage-3 compile link release clean
