@@ -81,10 +81,10 @@ SRC_QTGUI = qtGui
 BUILD_QTGUI = $(BUILD)/$(SRC_QTGUI)
 DIRS += $(SRC_QTGUI)
 
-ifeq ($(UNAME), Linux)
-APP_QTGUI = $(BUILD_QTGUI)/qtGui
-else ifeq ($(UNAME), Darwin)
+ifeq ($(UNAME), Darwin)
 APP_QTGUI = $(BUILD_QTGUI)/qtGui.app
+else
+APP_QTGUI = $(BUILD_QTGUI)/qtGui
 endif
 
 APPS += $(APP_QTGUI)
@@ -98,6 +98,9 @@ ifneq ($(STAGE), )
     ifeq ($(UNAME), Darwin)
         override CFLAGS += -mmacosx-version-min=10.7 -stdlib=libc++
         override QMAKEFLAGS += QMAKE_CXX=$(shell which clang++)
+    else ifeq ($(OS), Windows_NT)
+        override LDFLAGS += -static
+        override QMAKEFLAGS += CONFIG-=debug_and_release
     endif
 
     ifeq ($(RELEASE), 1)
