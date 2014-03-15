@@ -8,6 +8,7 @@
 
 #include <QMainWindow>
 #include <QTimer>
+#include <QPushButton>
 
 #include "formant.h"
 #include "qcustomplot.h"
@@ -24,7 +25,7 @@ private:
     enum { DIAM_MIN = 14 };
     enum { DIAM_RANGE = DIAM_MAX - DIAM_MIN };
 
-    // Red.
+    // Red.tree
     enum { COLOR_BASE = 0xff0000 };
 
     enum { ALPHA_MAX = 255 };
@@ -85,6 +86,9 @@ private:
     pthread_mutex_t plot_lock;
     QTimer timer;
 
+    QPushButton *aButton;
+    bool reversed;
+
 public:
     explicit MainWindow(QWidget *parent = NULL);
     ~MainWindow();
@@ -93,6 +97,7 @@ public:
 
 private slots:
     void plotNext();
+    void axesButtonPushed();
 
 private:
     void setupPlot();
