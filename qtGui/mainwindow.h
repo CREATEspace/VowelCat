@@ -86,7 +86,7 @@ private:
     pthread_mutex_t plot_lock;
     QTimer timer;
 
-    QPushButton *aButton;
+    QPushButton *axisButton;
     bool reversed;
 
 public:
@@ -97,7 +97,7 @@ public:
 
 private slots:
     void plotNext();
-    void axesButtonPushed();
+    void axisButtonPushed();
 
 private:
     void setupPlot();

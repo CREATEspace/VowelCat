@@ -16,7 +16,7 @@
      <widget class="QCustomPlot" name="customPlot" native="true"/>
     </item>
     <item alignment="Qt::AlignLeft">
-     <widget class="QPushButton" name="axesButton">
+     <widget class="QPushButton" name="axisButton">
       <property name="text">
        <string>Invert Axes</string>
       </property>
