@@ -2,7 +2,6 @@
 #include <inttypes.h>
 #include <math.h>
 #include <time.h>
-#include <iostream>
 
 #ifdef __MACH__
 #include <mach/clock.h>
@@ -288,14 +287,9 @@ void MainWindow::axisButtonPushed(){
 }
 
 void MainWindow::mousePress(QMouseEvent *event){
-    //QList<QCPAbstractItem*> selectedVowel = plot->selectedItems();
-    //selectedVowel[0]->position->setCoords(1500,600);
     QPoint point = event->pos();
-    //std::cout<<"x: " << point.x() << " y: " << point.y() << std::endl;
-    //std::cout<<"pixelToCoord values: " << "x: " << plot->xAxis->pixelToCoord(point.x()) << " y: " << plot->yAxis->pixelToCoord(point.y()) << endl;
     for (int i = 0; i < vowelSymbols.size(); i++){
         if (vowelSymbols[i]->selected()){
-            //std::cout << "  Setting vowel at 750, " << point.y()+230 << std::endl;  
             vowelSymbols[i]->position->setCoords(plot->xAxis->pixelToCoord(point.x()), plot->yAxis->pixelToCoord(point.y()));
             vowelSymbols[i]->setSelected(false);
         }
