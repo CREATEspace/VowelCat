@@ -89,6 +89,8 @@ private:
     QPushButton *axisButton;
     bool reversed;
 
+    QVector<QCPItemText*> vowelSymbols;
+
 public:
     explicit MainWindow(QWidget *parent = NULL);
     ~MainWindow();
@@ -98,6 +100,7 @@ public:
 private slots:
     void plotNext();
     void axisButtonPushed();
+    void mousePress(QMouseEvent*);
 
 private:
     void setupPlot();

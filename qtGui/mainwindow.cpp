@@ -2,6 +2,7 @@
 #include <inttypes.h>
 #include <math.h>
 #include <time.h>
+#include <iostream>
 
 #ifdef __MACH__
 #include <mach/clock.h>
@@ -64,6 +65,7 @@ MainWindow::MainWindow(QWidget *parent) :
     plot = ui->customPlot;
     graph = plot->addGraph();
 
+    connect(plot, SIGNAL(mousePress(QMouseEvent*)), this, SLOT(mousePress(QMouseEvent*)));
     connect(axisButton, SIGNAL(released()), this, SLOT(axisButtonPushed()));
     QObject::connect(&timer, &QTimer::timeout,
                      this, &MainWindow::plotNext);
@@ -88,7 +90,7 @@ void MainWindow::setupPlot()
     plot->yAxis->setRangeReversed(true);
     plot->yAxis->setLabel("F1 (Hz)");
 
-    QVector<QCPItemText*> vowelSymbols(13);
+    //QVector<QCPItemText*> vowelSymbols(13);
 
     QCPItemText *upperHighBackRounded = new QCPItemText(ui->customPlot);
     upperHighBackRounded->position->setCoords(750, 295);
@@ -142,6 +144,7 @@ void MainWindow::setupPlot()
     upperHighFrontUnrounded->position->setCoords(2343, 294);
     upperHighFrontUnrounded->setText("i");
 
+    vowelSymbols.resize(13);
     vowelSymbols[0] = upperHighBackRounded;
     vowelSymbols[1] = lowerHighBackRounded;
     vowelSymbols[2] = upperMidBackRounded;
@@ -282,6 +285,21 @@ void MainWindow::axisButtonPushed(){
     reversed = !reversed;
     plot->yAxis->setRangeReversed(reversed);
     plot->replot();
+}
+
+void MainWindow::mousePress(QMouseEvent *event){
+    //QList<QCPAbstractItem*> selectedVowel = plot->selectedItems();
+    //selectedVowel[0]->position->setCoords(1500,600);
+    QPoint point = event->pos();
+    //std::cout<<"x: " << point.x() << " y: " << point.y() << std::endl;
+    //std::cout<<"pixelToCoord values: " << "x: " << plot->xAxis->pixelToCoord(point.x()) << " y: " << plot->yAxis->pixelToCoord(point.y()) << endl;
+    for (int i = 0; i < vowelSymbols.size(); i++){
+        if (vowelSymbols[i]->selected()){
+            //std::cout << "  Setting vowel at 750, " << point.y()+230 << std::endl;  
+            vowelSymbols[i]->position->setCoords(plot->xAxis->pixelToCoord(point.x()), plot->yAxis->pixelToCoord(point.y()));
+            vowelSymbols[i]->setSelected(false);
+        }
+    }
 }
 
 MainWindow::~MainWindow() {
