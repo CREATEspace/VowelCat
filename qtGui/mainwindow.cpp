@@ -11,6 +11,7 @@
 #include <QColor>
 #include <QObject>
 #include <QWidget>
+#include <QColorDialog>
 
 #include "formant.h"
 #include "mainwindow.h"
@@ -75,7 +76,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
 void MainWindow::setupPlot()
 {
-    plot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectItems);
+    //QCP::iRangeDrag | 
+    plot->setInteractions(QCP::iRangeZoom | QCP::iSelectItems);
+    plot->axisRect()->setBackground(QColor(100, 100, 100));
     graph->setPen(Qt::NoPen);
     graph->addData(DBL_MAX, DBL_MAX);
 
@@ -88,8 +91,6 @@ void MainWindow::setupPlot()
     plot->yAxis->setRange(900, 250);
     plot->yAxis->setRangeReversed(true);
     plot->yAxis->setLabel("F1 (Hz)");
-
-    //QVector<QCPItemText*> vowelSymbols(13);
 
     QCPItemText *upperHighBackRounded = new QCPItemText(ui->customPlot);
     upperHighBackRounded->position->setCoords(750, 295);
@@ -160,7 +161,8 @@ void MainWindow::setupPlot()
 
     for (int i = 0; i < 13; i++){
         ui->customPlot->addItem(vowelSymbols[i]);
-        vowelSymbols[i]->setFont(QFont(font().family(), 30));
+        vowelSymbols[i]->setFont(QFont(font().family(), 40));
+        vowelSymbols[i]->setColor(QColor(34, 34, 34));
         vowelSymbols[i]->setSelectedColor(Qt::blue);
         vowelSymbols[i]->setSelectedFont(QFont(font().family(), 30));
     }
