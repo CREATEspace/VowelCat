@@ -11,7 +11,6 @@
 #include <QColor>
 #include <QObject>
 #include <QWidget>
-#include <QColorDialog>
 
 #include "formant.h"
 #include "mainwindow.h"
@@ -58,6 +57,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->setupUi(this);
     setGeometry(400, 250, 1000, 800);
+    ui->groupBox->setStyleSheet("QPushButton {font-size:18pt;}");
 
     reversed = true;
     
@@ -71,6 +71,7 @@ MainWindow::MainWindow(QWidget *parent) :
                      this, &MainWindow::plotNext);
     timer.start(TIMER_INTERVAL);
 
+    // setupButtons();
     setupPlot();
 }
 
@@ -170,6 +171,46 @@ void MainWindow::setupPlot()
     for (size_t i = 0; i < Tracer::COUNT; i += 1)
         tracers[i] = new Tracer(plot, graph, i);
 }
+
+// void MainWindow::setupButtons(){
+//     vowelButtons.resize(36);
+//     vowelButtons[0] = ui->pushButton;
+//     vowelButtons[1] = ui->pushButton_2;
+//     vowelButtons[2] = ui->pushButton_3;
+//     vowelButtons[3] = ui->pushButton_4;
+//     vowelButtons[4] = ui->pushButton_5;
+//     vowelButtons[5] = ui->pushButton_6;
+//     vowelButtons[6] = ui->pushButton_7;
+//     vowelButtons[7] = ui->pushButton_8;
+//     vowelButtons[8] = ui->pushButton_9;
+//     vowelButtons[9] = ui->pushButton_10;
+//     vowelButtons[10] = ui->pushButton_11;
+//     vowelButtons[11] = ui->pushButton_12;
+//     vowelButtons[12] = ui->pushButton_13;
+//     vowelButtons[13] = ui->pushButton_14;
+//     vowelButtons[14] = ui->pushButton_15;
+//     vowelButtons[15] = ui->pushButton_16;
+//     vowelButtons[16] = ui->pushButton_17;
+//     vowelButtons[17] = ui->pushButton_18;
+//     vowelButtons[18] = ui->pushButton_19;
+//     vowelButtons[19] = ui->pushButton_20;
+//     vowelButtons[20] = ui->pushButton_21;
+//     vowelButtons[21] = ui->pushButton_22;
+//     vowelButtons[22] = ui->pushButton_23;
+//     vowelButtons[23] = ui->pushButton_24;
+//     vowelButtons[24] = ui->pushButton_25;
+//     vowelButtons[25] = ui->pushButton_26;
+//     vowelButtons[26] = ui->pushButton_27;
+//     vowelButtons[27] = ui->pushButton_28;
+//     vowelButtons[28] = ui->pushButton_29;
+//     vowelButtons[29] = ui->pushButton_30;
+//     vowelButtons[30] = ui->pushButton_31;
+//     vowelButtons[31] = ui->pushButton_32;
+//     vowelButtons[32] = ui->pushButton_33;
+//     vowelButtons[33] = ui->pushButton_34;
+//     vowelButtons[34] = ui->pushButton_35;
+//     vowelButtons[35] = ui->pushButton_36;
+// }
 
 void MainWindow::plotFormant(formant_sample_t f1, formant_sample_t f2,
                              uintmax_t dur)

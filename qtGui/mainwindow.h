@@ -90,6 +90,7 @@ private:
     bool reversed;
 
     QVector<QCPItemText*> vowelSymbols;
+    // QVector<QPushButton*> vowelButtons;
 
 public:
     explicit MainWindow(QWidget *parent = NULL);
@@ -104,6 +105,7 @@ private slots:
 
 private:
     void setupPlot();
+    // void setupButtons();
 
     void updateTracers(formant_sample_t x, formant_sample_t y);
     void clearTracer();
