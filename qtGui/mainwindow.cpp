@@ -11,6 +11,7 @@
 #include <QColor>
 #include <QObject>
 #include <QWidget>
+#include <QSignalMapper>
 
 #include "formant.h"
 #include "mainwindow.h"
@@ -165,7 +166,7 @@ void MainWindow::setupPlot()
         vowelSymbols[i]->setFont(QFont(font().family(), 40));
         vowelSymbols[i]->setColor(QColor(34, 34, 34));
         vowelSymbols[i]->setSelectedColor(Qt::blue);
-        vowelSymbols[i]->setSelectedFont(QFont(font().family(), 30));
+        vowelSymbols[i]->setSelectedFont(QFont(font().family(), 40));
     }
 
     for (size_t i = 0; i < Tracer::COUNT; i += 1)
@@ -211,6 +212,7 @@ void MainWindow::setupButtons(){
     vowelButtons[34] = ui->pushButton_35;
     vowelButtons[35] = ui->pushButton_36;
 
+    // Disable portions of the chart that have no vowel symbol
     vowelButtons[8]->setEnabled(false);
     vowelButtons[9]->setEnabled(false);
     vowelButtons[10]->setEnabled(false);
@@ -219,6 +221,55 @@ void MainWindow::setupButtons(){
     vowelButtons[28]->setEnabled(false);
     vowelButtons[29]->setEnabled(false);
     vowelButtons[33]->setEnabled(false);
+
+    // Add tooltips for vowel symbols
+    // Code blocks are split up into rows of vowels
+    vowelButtons[0]->setToolTip("close front unrounded");
+    vowelButtons[1]->setToolTip("close front rounded");
+    vowelButtons[2]->setToolTip("close central unrounded");
+    vowelButtons[3]->setToolTip("close central rounded");
+    vowelButtons[4]->setToolTip("close back unrounded");
+    vowelButtons[5]->setToolTip("close back rounded");
+
+    vowelButtons[6]->setToolTip("near-close near-front unrounded");
+    vowelButtons[7]->setToolTip("near-close near-front rounded");
+    vowelButtons[11]->setToolTip("near-close near-back rounded");
+
+    vowelButtons[12]->setToolTip("close-mid front unrounded");
+    vowelButtons[13]->setToolTip("close-mid front rounded");
+    vowelButtons[14]->setToolTip("close-mid central unrounded");
+    vowelButtons[15]->setToolTip("close-mid central rounded");
+    vowelButtons[16]->setToolTip("close-mid back unrounded");
+    vowelButtons[17]->setToolTip("close-mid back rounded");
+
+    vowelButtons[18]->setToolTip("open-mid front unrounded");
+    vowelButtons[19]->setToolTip("open-mid front rounded");
+    vowelButtons[20]->setToolTip("open-mid central unrounded");
+    vowelButtons[21]->setToolTip("open-mid central rounded");
+    vowelButtons[22]->setToolTip("open-mid back unrounded");
+    vowelButtons[23]->setToolTip("open-mid back rounded");
+
+    vowelButtons[24]->setToolTip("near-open front unrounded");
+    vowelButtons[26]->setToolTip("near-open central unrounded");
+
+    vowelButtons[30]->setToolTip("open front unrounded");
+    vowelButtons[31]->setToolTip("open front rounded");
+    vowelButtons[32]->setToolTip("open central unrounded");
+    vowelButtons[34]->setToolTip("open back unrounded");
+    vowelButtons[35]->setToolTip("open back rounded");
+
+    // Connect every button to a single function using a QSignalMapper
+    // Rather than define unique functions for every button, we use the
+    // mapper to pass in an integer argument that refers to the pushed
+    // button's place in the vowelButtons array.
+    QSignalMapper* signalMapper = new QSignalMapper (this) ;
+
+    for (int i = 0; i < vowelButtons.size(); i++){
+        connect(vowelButtons[i], SIGNAL(released()), signalMapper, SLOT(map()));
+        signalMapper->setMapping(vowelButtons[i], i);
+    }
+    connect (signalMapper, SIGNAL(mapped(int)), this, SLOT(vowelButtonPushed(int))) ;
+
 }
 
 void MainWindow::plotFormant(formant_sample_t f1, formant_sample_t f2,
@@ -335,6 +386,23 @@ void MainWindow::clearTracer() {
 void MainWindow::axisButtonPushed(){
     reversed = !reversed;
     plot->yAxis->setRangeReversed(reversed);
+    plot->replot();
+}
+
+// When a vowel Button is pushed, we want to create a new
+// item text, set its attributes, add it to the vector
+// of vowelSymbols and the plot, and replot everything
+void MainWindow::vowelButtonPushed(int pushedVowelButton){
+    QCPItemText *userVowel = new QCPItemText(ui->customPlot);
+    userVowel->position->setCoords(1500, 500);
+    userVowel->setText(vowelButtons[pushedVowelButton]->text());
+    userVowel->setFont(QFont(font().family(), 40));
+    userVowel->setColor(QColor(34, 34, 34));
+    userVowel->setSelectedColor(Qt::blue);
+    userVowel->setSelectedFont(QFont(font().family(), 40));
+
+    vowelSymbols.push_back(userVowel);
+    ui->customPlot->addItem(userVowel);
     plot->replot();
 }
 
