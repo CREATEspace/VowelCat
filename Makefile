@@ -190,7 +190,7 @@ else ifeq ($(STAGE), 2)
 compile:
 	$(MAKE) -C $(DIR)
 else
-compile: stage-2
+compile: stage-1
 	$(MAKE) STAGE=2 compile
 endif
 
@@ -201,7 +201,7 @@ else ifeq ($(STAGE), 3)
 link:
 	$(MAKE) -C $(DIR)
 else
-link: stage-3
+link: stage-2
 	$(MAKE) STAGE=3 link
 endif
 
