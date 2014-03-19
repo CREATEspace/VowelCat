@@ -5,7 +5,7 @@
 #include "play.h"
 
 enum {SAMPLE_RATE = 11025};
-enum {CHANNELS = 1};
+enum {CHANNELS = 2};
 enum {SAMPLES = 2048};
 
 int main()
@@ -13,7 +13,7 @@ int main()
    int random;
    char str[80];
    size_t size = 250000L;
-   audio_sample_t *buf = malloc(sizeof(audio_sample_t) * size);
+   play_sample_t *buf = malloc(sizeof(play_sample_t) * size);
 
    srand(time(NULL));
    for(size_t i = 0; i < size; i++)
