@@ -45,10 +45,6 @@
 #include "portaudio.h"
 //***************************
 
-//***************************
-typedef short audio_sample_t; //Size of recorded sample is 16 bits 
-//***************************
-
 bool audio_init(void);
 void audio_destroy(void);
 

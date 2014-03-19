@@ -13,7 +13,7 @@ static int recordCallback( const void *inputBuffer, void *outputBuffer,
    (void) statusFlags;
 
    record_t *r = userData;               
-   const audio_sample_t *rptr = inputBuffer;  
+   const record_sample_t *rptr = inputBuffer;  
 
    //********Pull samples from input buffer***************************
    PaUtil_WriteRingBuffer(&r->rBufFromRT, &rptr[0], r->n_samples);     
@@ -53,8 +53,8 @@ bool record_init(
    //*****Initialize communication ring buffers******************** 
    //rb_size must be a power of 2
    size_t rb_size = 1 << (sizeof(n_samples) * CHAR_BIT - __builtin_clz(n_samples * RB_MULTIPLIER));
-   r->rBufFromRTData = malloc(sizeof(audio_sample_t) * rb_size); 
-   PaUtil_InitializeRingBuffer(&r->rBufFromRT, sizeof(audio_sample_t), rb_size, r->rBufFromRTData);
+   r->rBufFromRTData = malloc(sizeof(record_sample_t) * rb_size); 
+   PaUtil_InitializeRingBuffer(&r->rBufFromRT, sizeof(record_sample_t), rb_size, r->rBufFromRTData);
    //**************
    
    //******Initialize input device******* 
@@ -106,7 +106,7 @@ bool record_stop(record_t *r)
    //*****************
 }
 
-void record_read(record_t *r, audio_sample_t *samples)
+void record_read(record_t *r, record_sample_t *samples)
 {
    //***************************
    pthread_mutex_lock(&r->mutex);

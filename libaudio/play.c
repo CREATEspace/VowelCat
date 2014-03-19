@@ -15,8 +15,8 @@ static int playCallback( const void *inputBuffer, void *outputBuffer,
 
    //****************
    play_t *p = userData;               
-   audio_sample_t *rptr = &p->pBufData[p->index];
-   audio_sample_t *wptr = outputBuffer;  
+   play_sample_t *rptr = &p->pBufData[p->index];
+   play_sample_t *wptr = outputBuffer;  
    //****************
 
    //****************
@@ -86,7 +86,7 @@ bool play_init(
    return true;
 }
 
-bool play_start(play_t *p, audio_sample_t *samples, size_t index, size_t size)
+bool play_start(play_t *p, play_sample_t *samples, size_t index, size_t size)
 {
    p->pBufData = samples;
    p->index = index;

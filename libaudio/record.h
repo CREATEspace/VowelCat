@@ -14,6 +14,8 @@
 #define RB_MULTIPLIER 2       //Used to calculate ring buffer size      
 //***************************
 
+typedef short record_sample_t;
+
 //***************************
 typedef struct record_t{
 
@@ -71,7 +73,7 @@ bool record_stop(record_t *r);
 // from the input ring buffer and transfers the
 // samples to the samples data array. 
 //*********************************************
-void record_read(record_t *r, audio_sample_t *samples);
+void record_read(record_t *r, record_sample_t *samples);
 
 //*************RECORD_DESTORY******************
 // This function deallocates all allocated memory. 
