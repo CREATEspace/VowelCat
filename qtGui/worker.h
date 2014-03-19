@@ -4,6 +4,8 @@
 #include <pthread.h>
 
 #include "audio.h"
+#include "record.h"
+#include "play.h"
 #include "formant.h"
 #include "mainwindow.h"
 

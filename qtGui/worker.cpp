@@ -5,6 +5,8 @@
 
 extern "C" {
 #include "audio.h"
+#include "record.h"
+#include "play.h"
 #include "formant.h"
 }
 
@@ -19,6 +21,8 @@ void worker_init(worker_t *w, MainWindow *window) {
     (void) ret;
 #endif
 
+    ret = audio_init();
+    assert(ret);
     ret = record_init(&w->rec, SAMPLE_RATE, CHANNELS, SAMPLES);
     assert(ret);
 
@@ -35,6 +39,7 @@ void worker_init(worker_t *w, MainWindow *window) {
 void worker_destroy(worker_t *w) {
     sound_destroy(&w->sound);
     record_destroy(&w->rec);
+    audio_destroy();
 }
 
 #define ABS(x) ((x) > 0 ? (x) : -(x))

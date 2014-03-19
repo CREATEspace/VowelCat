@@ -1,4 +1,4 @@
-SRC = pa_ringbuffer.c audio.c
+SRC = pa_ringbuffer.c audio.c play.c record.c
 OBJ = $(SRC:.c=.o)
 
 ALL_CFLAGS += -std=c11 -Wall -Wextra -pipe
