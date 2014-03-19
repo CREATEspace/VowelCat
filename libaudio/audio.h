@@ -43,7 +43,6 @@
 //***************************
 #include <stdbool.h>
 #include "portaudio.h"
-#include "pa_ringbuffer.h"
 //***************************
 
 //***************************

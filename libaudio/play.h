@@ -5,7 +5,7 @@
 //***************************
 #include <stdlib.h>
 #include <stdbool.h>
-#include "audio.h"
+#include "portaudio.h"
 //***************************
 
 //***************************

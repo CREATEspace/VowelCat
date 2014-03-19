@@ -6,7 +6,8 @@
 #include <stdbool.h>
 #include <limits.h>
 #include <pthread.h>
-#include "audio.h"
+#include "portaudio.h"
+#include "pa_ringbuffer.h"
 //***************************
 
 //***************************
