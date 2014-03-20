@@ -15,20 +15,17 @@ static int playCallback( const void *inputBuffer, void *outputBuffer,
 
    //****************
    play_t *p = userData;               
-   play_sample_t *rptr = &p->pBufData[p->index];
    play_sample_t *wptr = outputBuffer;  
    //****************
 
    //****************
    //A sample set may be lost if I just return
-   //May not be significant though.
-   if((p->size - p->index) < p->n_samples)
+   //May not be significant though. I'll test
+   if((p->size - p->index) < (p->n_samples * p->n_channels))
       return paComplete;
 
-   for(size_t i = 0; i < p->n_samples; i++)
-      *wptr++ = *rptr++;
-
-   p->index += p->n_samples;
+   memcpy(wptr, &p->pBufData[p->index], (p->n_samples * p->n_channels) * sizeof(play_sample_t));
+   p->index += p->n_samples * p->n_channels;
    //****************
 
    return paContinue;  

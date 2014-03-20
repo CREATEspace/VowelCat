@@ -24,12 +24,15 @@ int main()
    play_t p;
    audio_init();
    play_init(&p, SAMPLE_RATE, CHANNELS, SAMPLES);
+
    printf("Enter something to start\n");
    scanf("%s", str);
    play_start(&p, &buf[0], 0, size);
+
    printf("Enter something to stop\n");
    scanf("%s", str);
    play_stop(&p);
+
    printf("Enter something to exit\n");
    scanf("%s", str);
    audio_destroy();
