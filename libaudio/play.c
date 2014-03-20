@@ -14,7 +14,6 @@ static int playCallback( const void *inputBuffer, void *outputBuffer,
 
    //****************
    play_t *p = userData;               
-   play_sample_t *rptr = &p->pBufData[p->index * p->n_channels]; 
    play_sample_t *wptr = outputBuffer;  
    size_t n_samples = framesPerBuffer * p->n_channels;
    //****************
@@ -22,13 +21,17 @@ static int playCallback( const void *inputBuffer, void *outputBuffer,
 
    //****************
    if((p->size - p->index) < n_samples)
+   {
+      //Might put a memcpy in here
+      p->index = p->size;
       return paComplete;
+   }
 
-   memcpy(wptr, rptr, (n_samples * sizeof(play_sample_t)));
+   memcpy(wptr, &p->pBufData[p->index], (n_samples * sizeof(play_sample_t)));
    p->index += n_samples;
-   //****************
 
    return paContinue;  
+   //****************
 }
 
 bool play_init(play_t * p, size_t sample_rate, size_t n_channels) 
@@ -78,11 +81,19 @@ bool play_init(play_t * p, size_t sample_rate, size_t n_channels)
    return true;
 }
 
-bool play_start(play_t *p, play_sample_t *samples, size_t index, size_t size)
+void play_set(play_t *p, play_sample_t *samples, size_t index, size_t size)
 {
    p->pBufData = samples;
    p->index = index;
    p->size = size;
+}
+void play_get(play_t *p, size_t *index)
+{
+   *index = p->index;
+}
+
+bool play_start(play_t *p)
+{
    //*****************
    return Pa_StartStream(p->stream) == paNoError;  
    //*****************
@@ -91,6 +102,6 @@ bool play_start(play_t *p, play_sample_t *samples, size_t index, size_t size)
 bool play_stop(play_t *p)
 {
    //*****************
-   return Pa_StopStream(p->stream) == paNoError; 
+   return Pa_StopStream(p->stream) == paNoError;
    //*****************
 }

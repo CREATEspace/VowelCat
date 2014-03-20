@@ -5,35 +5,38 @@
 #include "play.h"
 
 enum {SAMPLE_RATE = 11025};
-enum {CHANNELS = 2};
+enum {CHANNELS = 1};
 
 int main()
 {
-   int random;
-   char str[80];
-   size_t size = 250000L;
+   size_t index = 0;
+   size_t size = 250000;
    play_sample_t *buf = malloc(sizeof(play_sample_t) * size);
-
    srand(time(NULL));
    for(size_t i = 0; i < size; i++)
    {
       buf[i] = rand() % 20000;
    }
 
+   char str;
+
    play_t p;
+   
    audio_init();
    play_init(&p, SAMPLE_RATE, CHANNELS);
 
-   printf("Enter something to start\n");
-   scanf("%s", str);
-   play_start(&p, &buf[0], 0, size);
+   play_set(&p, &buf[0], index, size);
+   play_start(&p);
 
-   printf("Enter something to stop\n");
-   scanf("%s", str);
+   printf("Wait for the audio to finish or enter something to stop: ");
+   getchar();
+   str = getchar();
+
    play_stop(&p);
+   play_get(&p, &index);
 
-   printf("Enter something to exit\n");
-   scanf("%s", str);
+   printf("Here is the index: %zu\n", index);
+
    audio_destroy();
 
    return 0;
