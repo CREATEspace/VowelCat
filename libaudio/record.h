@@ -31,8 +31,6 @@ typedef struct record_t{
    pthread_mutex_t mutex;
 
    // General audio settings
-   size_t sample_rate; // Sample rate of the audio data in Hz
-   size_t n_channels;  // Number of channels (1 for mono, 2 for stereo, and so on)
    size_t n_samples;   // Number of samples collected at once from input buffer 
 
 } record_t;
@@ -47,12 +45,7 @@ typedef struct record_t{
 // the recorded samples. The record stream is opened
 // and the record callback function is specified 
 //*********************************************
-bool record_init(
-   record_t*           r,
-   size_t              sample_rate,
-   size_t              n_channels,
-   size_t              n_samples
-);
+bool record_init(record_t* r, size_t sample_rate, size_t n_channels, size_t n_samples);
 
 //*************RECORD_START********************
 // This function turns on the user's microphone

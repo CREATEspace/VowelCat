@@ -6,7 +6,6 @@
 
 enum {SAMPLE_RATE = 11025};
 enum {CHANNELS = 2};
-enum {SAMPLES = 2048};
 
 int main()
 {
@@ -23,7 +22,7 @@ int main()
 
    play_t p;
    audio_init();
-   play_init(&p, SAMPLE_RATE, CHANNELS, SAMPLES);
+   play_init(&p, SAMPLE_RATE, CHANNELS);
 
    printf("Enter something to start\n");
    scanf("%s", str);

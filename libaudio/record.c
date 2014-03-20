@@ -26,11 +26,7 @@ static int recordCallback( const void *inputBuffer, void *outputBuffer,
    return paContinue;  
 }
 
-bool record_init( 
-   record_t*            r,
-   size_t               sample_rate,      
-   size_t               n_channels,    
-   size_t	        n_samples )
+bool record_init(record_t *r, size_t sample_rate, size_t n_channels, size_t n_samples)
 {
    //*********************************************
    *r = (record_t) {
@@ -40,8 +36,6 @@ bool record_init(
       .mutex  = PTHREAD_MUTEX_INITIALIZER,
 
       //***Store audio settings******
-      .sample_rate = sample_rate,
-      .n_channels  = n_channels,
       .n_samples   = n_samples
    };
    //*************

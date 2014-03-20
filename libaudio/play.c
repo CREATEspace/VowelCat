@@ -8,42 +8,37 @@ static int playCallback( const void *inputBuffer, void *outputBuffer,
 {
    //****************
    (void) inputBuffer; // Prevent unused variable warnings. 
-   (void) framesPerBuffer;
    (void) timeInfo;
    (void) statusFlags;
    //****************
 
    //****************
    play_t *p = userData;               
+   play_sample_t *rptr = &p->pBufData[p->index * p->n_channels]; 
    play_sample_t *wptr = outputBuffer;  
+   size_t n_samples = framesPerBuffer * p->n_channels;
    //****************
 
+
    //****************
-   //A sample set may be lost if I just return
-   //May not be significant though. I'll test
-   if((p->size - p->index) < (p->n_samples * p->n_channels))
+   if((p->size - p->index) < n_samples)
       return paComplete;
 
-   memcpy(wptr, &p->pBufData[p->index], (p->n_samples * p->n_channels) * sizeof(play_sample_t));
-   p->index += p->n_samples * p->n_channels;
+   memcpy(wptr, rptr, (n_samples * sizeof(play_sample_t)));
+   p->index += n_samples;
    //****************
 
    return paContinue;  
 }
 
-bool play_init( 
-   play_t*              p,
-   size_t               sample_rate,      
-   size_t               n_channels,    
-   size_t	        n_samples )
+bool play_init(play_t * p, size_t sample_rate, size_t n_channels) 
 {
    //*********************************************
    *p = (play_t) {
-
-      //***Store audio settings******
-      .sample_rate = sample_rate,
+      .pBufData = NULL,
+      .index = 0,
+      .size = 0,
       .n_channels  = n_channels,
-      .n_samples   = n_samples
    };
    //*************
 
@@ -73,7 +68,7 @@ bool play_init(
       NULL,
       &outparams,              
       sample_rate,
-      n_samples,
+      paFramesPerBufferUnspecified,
       paClipOff,          
       playCallback,
       p) != paNoError) return false;
