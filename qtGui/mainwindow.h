@@ -102,8 +102,8 @@ private slots:
     void plotNext();
     void axisButtonPushed();
     void vowelButtonPushed(int vowelButtonPushed);
-    void mousePress(QMouseEvent*);
     void mouseMove(QMouseEvent*);
+    void mouseRelease(QMouseEvent*);
 
 private:
     void setupPlot();

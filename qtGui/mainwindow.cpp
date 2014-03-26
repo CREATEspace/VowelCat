@@ -67,8 +67,8 @@ MainWindow::MainWindow(QWidget *parent) :
     plot = ui->customPlot;
     graph = plot->addGraph();
 
-    connect(plot, SIGNAL(mousePress(QMouseEvent*)), this, SLOT(mousePress(QMouseEvent*)));
     connect(plot, SIGNAL(mouseMove(QMouseEvent*)), this, SLOT(mouseMove(QMouseEvent*)));
+    connect(plot, SIGNAL(mouseRelease(QMouseEvent*)), this, SLOT(mouseRelease(QMouseEvent*)));
     connect(axisButton, SIGNAL(released()), this, SLOT(axisButtonPushed()));
     QObject::connect(&timer, &QTimer::timeout,
                      this, &MainWindow::plotNext);
@@ -408,16 +408,6 @@ void MainWindow::vowelButtonPushed(int pushedVowelButton){
     plot->replot();
 }
 
-void MainWindow::mousePress(QMouseEvent *event){
-    QPoint point = event->pos();
-    for (int i = 0; i < vowelSymbols.size(); i++){
-        if (vowelSymbols[i]->selected()){
-            vowelSymbols[i]->position->setCoords(plot->xAxis->pixelToCoord(point.x()), plot->yAxis->pixelToCoord(point.y()));
-            vowelSymbols[i]->setSelected(false);
-        }
-    }
-}
-
 void MainWindow::mouseMove(QMouseEvent *event){
     QPoint point = event->pos();
     for (int i = 0; i < vowelSymbols.size(); i++){
@@ -425,6 +415,13 @@ void MainWindow::mouseMove(QMouseEvent *event){
             vowelSymbols[i]->position->setCoords(plot->xAxis->pixelToCoord(point.x()), plot->yAxis->pixelToCoord(point.y()));
             plot->replot();
         }
+    }
+}
+
+void MainWindow::mouseRelease(QMouseEvent *event){
+    for (int i = 0; i < vowelSymbols.size(); i++){
+        if (vowelSymbols[i]->selected()) std::cout << "selected" << std::endl;
+        vowelSymbols[i]->setSelected(false);
     }
 }
 
