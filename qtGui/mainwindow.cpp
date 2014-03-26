@@ -69,7 +69,7 @@ MainWindow::MainWindow(QWidget *parent) :
     graph = plot->addGraph();
 
     connect(plot, SIGNAL(mouseMove(QMouseEvent*)), this, SLOT(mouseMove(QMouseEvent*)));
-    connect(plot, SIGNAL(mouseRelease(QMouseEvent*)), this, SLOT(mouseRelease(QMouseEvent*)));
+    connect(plot, SIGNAL(mouseRelease(QMouseEvent*)), this, SLOT(mouseRelease()));
     connect(axisButton, SIGNAL(released()), this, SLOT(axisButtonPushed()));
     connect(resetButton, SIGNAL(released()), this, SLOT(resetButtonPushed()));
     QObject::connect(&timer, &QTimer::timeout,
@@ -437,6 +437,7 @@ void MainWindow::resetButtonPushed(){
 
 void MainWindow::mouseMove(QMouseEvent *event){
     QPoint point = event->pos();
+    QList<QCPAbstractItem*> selected = plot->selectedItems();
     for (int i = 0; i < vowelSymbols.size(); i++){
         if (vowelSymbols[i]->selected()){
             vowelSymbols[i]->position->setCoords(plot->xAxis->pixelToCoord(point.x()), plot->yAxis->pixelToCoord(point.y()));
@@ -446,9 +447,11 @@ void MainWindow::mouseMove(QMouseEvent *event){
 }
 
 void MainWindow::mouseRelease(){
-    for (int i = 0; i < vowelSymbols.size(); i++){
-        vowelSymbols[i]->setSelected(false);
+    QList<QCPAbstractItem*> selected = plot->selectedItems();
+    for (int i = 0; i < selected.size(); i++){
+        selected[i]->setSelected(false);
     }
+    plot->replot();
 }
 
 MainWindow::~MainWindow() {
