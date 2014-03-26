@@ -87,6 +87,7 @@ private:
     QTimer timer;
 
     QPushButton *axisButton;
+    QPushButton *resetButton;
     bool reversed;
 
     QVector<QCPItemText*> vowelSymbols;
@@ -102,12 +103,14 @@ private slots:
     void plotNext();
     void axisButtonPushed();
     void vowelButtonPushed(int vowelButtonPushed);
+    void resetButtonPushed();
     void mouseMove(QMouseEvent*);
     void mouseRelease(QMouseEvent*);
 
 private:
     void setupPlot();
     void setupButtons();
+    void setupSymbols();
 
     void updateTracers(formant_sample_t x, formant_sample_t y);
     void clearTracer();

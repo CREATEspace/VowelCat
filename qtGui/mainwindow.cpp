@@ -64,12 +64,14 @@ MainWindow::MainWindow(QWidget *parent) :
     reversed = true;
     
     axisButton = ui->axisButton;
+    resetButton = ui->resetButton;
     plot = ui->customPlot;
     graph = plot->addGraph();
 
     connect(plot, SIGNAL(mouseMove(QMouseEvent*)), this, SLOT(mouseMove(QMouseEvent*)));
     connect(plot, SIGNAL(mouseRelease(QMouseEvent*)), this, SLOT(mouseRelease(QMouseEvent*)));
     connect(axisButton, SIGNAL(released()), this, SLOT(axisButtonPushed()));
+    connect(resetButton, SIGNAL(released()), this, SLOT(resetButtonPushed()));
     QObject::connect(&timer, &QTimer::timeout,
                      this, &MainWindow::plotNext);
     timer.start(TIMER_INTERVAL);
@@ -96,6 +98,13 @@ void MainWindow::setupPlot()
     plot->yAxis->setRangeReversed(true);
     plot->yAxis->setLabel("F1 (Hz)");
 
+    setupSymbols();
+
+    for (size_t i = 0; i < Tracer::COUNT; i += 1)
+        tracers[i] = new Tracer(plot, graph, i);
+}
+
+void MainWindow::setupSymbols(){
     QCPItemText *upperHighBackRounded = new QCPItemText(ui->customPlot);
     upperHighBackRounded->position->setCoords(750, 295);
     upperHighBackRounded->setText("u");
@@ -170,9 +179,6 @@ void MainWindow::setupPlot()
         vowelSymbols[i]->setSelectedColor(Qt::blue);
         vowelSymbols[i]->setSelectedFont(QFont(font().family(), 40));
     }
-
-    for (size_t i = 0; i < Tracer::COUNT; i += 1)
-        tracers[i] = new Tracer(plot, graph, i);
 }
 
 void MainWindow::setupButtons(){
@@ -408,6 +414,27 @@ void MainWindow::vowelButtonPushed(int pushedVowelButton){
     plot->replot();
 }
 
+void MainWindow::resetButtonPushed(){
+    vowelSymbols[0]->position->setCoords(750, 295);
+    vowelSymbols[1]->position->setCoords(910, 334);
+    vowelSymbols[2]->position->setCoords(727, 406);
+    vowelSymbols[3]->position->setCoords(830, 541);
+    vowelSymbols[4]->position->setCoords(843, 652);
+    vowelSymbols[5]->position->setCoords(1065, 781);
+    vowelSymbols[6]->position->setCoords(1211, 784);
+    vowelSymbols[7]->position->setCoords(1632, 806);
+    vowelSymbols[8]->position->setCoords(1782, 766);
+    vowelSymbols[9]->position->setCoords(1840, 541);
+    vowelSymbols[10]->position->setCoords(2148, 434);
+    vowelSymbols[11]->position->setCoords(2187, 360);
+    vowelSymbols[12]->position->setCoords(2343, 294);
+    for (int i = 13; i < vowelSymbols.size(); i++){
+        ui->customPlot->removeItem(vowelSymbols[i]);
+    }
+    vowelSymbols.resize(13);
+    plot->replot();
+}
+
 void MainWindow::mouseMove(QMouseEvent *event){
     QPoint point = event->pos();
     for (int i = 0; i < vowelSymbols.size(); i++){
@@ -420,7 +447,6 @@ void MainWindow::mouseMove(QMouseEvent *event){
 
 void MainWindow::mouseRelease(QMouseEvent *event){
     for (int i = 0; i < vowelSymbols.size(); i++){
-        if (vowelSymbols[i]->selected()) std::cout << "selected" << std::endl;
         vowelSymbols[i]->setSelected(false);
     }
 }

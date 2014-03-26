@@ -505,6 +505,13 @@
         </property>
        </widget>
       </item>
+      <item>
+       <widget class="QPushButton" name="resetButton">
+        <property name="text">
+         <string>Reset Symbols</string>
+        </property>
+       </widget>
+      </item>
      </layout>
     </item>
    </layout>
