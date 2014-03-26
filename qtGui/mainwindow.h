@@ -103,6 +103,7 @@ private slots:
     void axisButtonPushed();
     void vowelButtonPushed(int vowelButtonPushed);
     void mousePress(QMouseEvent*);
+    void mouseMove(QMouseEvent*);
 
 private:
     void setupPlot();

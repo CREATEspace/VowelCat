@@ -2,6 +2,7 @@
 #include <inttypes.h>
 #include <math.h>
 #include <time.h>
+#include <iostream>
 
 #ifdef __MACH__
 #include <mach/clock.h>
@@ -57,7 +58,7 @@ MainWindow::MainWindow(QWidget *parent) :
     };
 
     ui->setupUi(this);
-    setGeometry(400, 250, 1000, 800);
+    setGeometry(400, 250, 1000, 1000);
     ui->groupBox->setStyleSheet("QPushButton {font-size:18pt;}");
 
     reversed = true;
@@ -67,6 +68,7 @@ MainWindow::MainWindow(QWidget *parent) :
     graph = plot->addGraph();
 
     connect(plot, SIGNAL(mousePress(QMouseEvent*)), this, SLOT(mousePress(QMouseEvent*)));
+    connect(plot, SIGNAL(mouseMove(QMouseEvent*)), this, SLOT(mouseMove(QMouseEvent*)));
     connect(axisButton, SIGNAL(released()), this, SLOT(axisButtonPushed()));
     QObject::connect(&timer, &QTimer::timeout,
                      this, &MainWindow::plotNext);
@@ -412,6 +414,16 @@ void MainWindow::mousePress(QMouseEvent *event){
         if (vowelSymbols[i]->selected()){
             vowelSymbols[i]->position->setCoords(plot->xAxis->pixelToCoord(point.x()), plot->yAxis->pixelToCoord(point.y()));
             vowelSymbols[i]->setSelected(false);
+        }
+    }
+}
+
+void MainWindow::mouseMove(QMouseEvent *event){
+    QPoint point = event->pos();
+    for (int i = 0; i < vowelSymbols.size(); i++){
+        if (vowelSymbols[i]->selected()){
+            vowelSymbols[i]->position->setCoords(plot->xAxis->pixelToCoord(point.x()), plot->yAxis->pixelToCoord(point.y()));
+            plot->replot();
         }
     }
 }
