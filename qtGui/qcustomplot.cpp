@@ -10479,53 +10479,8 @@ void QCustomPlot::mousePressEvent(QMouseEvent *event)
 {
   emit mousePress(event);
   mMousePressPos = event->pos(); // need this to determine in releaseEvent whether it was a click (no position change between press and release)
-  
-  // call event of affected layout element:
-  mMouseEventElement = layoutElementAt(event->pos());
-  if (mMouseEventElement)
-    mMouseEventElement->mousePressEvent(event);
-  
-  QWidget::mousePressEvent(event);
-}
 
-/*! \internal
-  
-  Event handler for when the cursor is moved. Emits the \ref mouseMove signal.
-
-  If a layout element has mouse capture focus (a mousePressEvent happened on top of the layout
-  element before), the mouseMoveEvent is forwarded to that element.
-  
-  \see mousePressEvent, mouseReleaseEvent
-*/
-void QCustomPlot::mouseMoveEvent(QMouseEvent *event)
-{
-  emit mouseMove(event);
-
-  // call event of affected layout element:
-  if (mMouseEventElement)
-    mMouseEventElement->mouseMoveEvent(event);
-  
-  QWidget::mouseMoveEvent(event);
-}
-
-/*! \internal
-  
-  Event handler for when a mouse button is released. Emits the \ref mouseRelease signal.
-  
-  If the mouse was moved less than a certain threshold in any direction since the \ref
-  mousePressEvent, it is considered a click which causes the selection mechanism (if activated via
-  \ref setInteractions) to possibly change selection states accordingly. Further, specialized mouse
-  click signals are emitted (e.g. \ref plottableClick, \ref axisClick, etc.)
-  
-  If a layout element has mouse capture focus (a \ref mousePressEvent happened on top of the layout
-  element before), the \ref mouseReleaseEvent is forwarded to that element.
-  
-  \see mousePressEvent, mouseMoveEvent
-*/
-void QCustomPlot::mouseReleaseEvent(QMouseEvent *event)
-{
-  emit mouseRelease(event);
-  bool doReplot = false;
+    bool doReplot = false;
   
   if ((mMousePressPos-event->pos()).manhattanLength() < 5) // determine whether it was a click operation
   {
@@ -10583,14 +10538,119 @@ void QCustomPlot::mouseReleaseEvent(QMouseEvent *event)
   }
   
   // call event of affected layout element:
+  mMouseEventElement = layoutElementAt(event->pos());
+  if (mMouseEventElement)
+    mMouseEventElement->mousePressEvent(event);
+
+    if (doReplot || noAntialiasingOnDrag())
+    replot();
+  
+  QWidget::mousePressEvent(event);
+}
+
+/*! \internal
+  
+  Event handler for when the cursor is moved. Emits the \ref mouseMove signal.
+
+  If a layout element has mouse capture focus (a mousePressEvent happened on top of the layout
+  element before), the mouseMoveEvent is forwarded to that element.
+  
+  \see mousePressEvent, mouseReleaseEvent
+*/
+void QCustomPlot::mouseMoveEvent(QMouseEvent *event)
+{
+  emit mouseMove(event);
+
+  // call event of affected layout element:
+  if (mMouseEventElement)
+    mMouseEventElement->mouseMoveEvent(event);
+  
+  QWidget::mouseMoveEvent(event);
+}
+
+/*! \internal
+  
+  Event handler for when a mouse button is released. Emits the \ref mouseRelease signal.
+  
+  If the mouse was moved less than a certain threshold in any direction since the \ref
+  mousePressEvent, it is considered a click which causes the selection mechanism (if activated via
+  \ref setInteractions) to possibly change selection states accordingly. Further, specialized mouse
+  click signals are emitted (e.g. \ref plottableClick, \ref axisClick, etc.)
+  
+  If a layout element has mouse capture focus (a \ref mousePressEvent happened on top of the layout
+  element before), the \ref mouseReleaseEvent is forwarded to that element.
+  
+  \see mousePressEvent, mouseMoveEvent
+*/
+void QCustomPlot::mouseReleaseEvent(QMouseEvent *event)
+{
+  emit mouseRelease(event);
+  // bool doReplot = false;
+  
+  // if ((mMousePressPos-event->pos()).manhattanLength() < 5) // determine whether it was a click operation
+  // {
+  //   if (event->button() == Qt::LeftButton)
+  //   {
+  //     // handle selection mechanism:
+  //     QVariant details;
+  //     QCPLayerable *clickedLayerable = layerableAt(event->pos(), true, &details);
+  //     bool selectionStateChanged = false;
+  //     bool additive = mInteractions.testFlag(QCP::iMultiSelect) && event->modifiers().testFlag(mMultiSelectModifier);
+  //     if (clickedLayerable && mInteractions.testFlag(clickedLayerable->selectionCategory()))
+  //     {
+  //       // a layerable was actually clicked, call its selectEvent:
+  //       bool selChanged = false;
+  //       clickedLayerable->selectEvent(event, additive, details, &selChanged);
+  //       selectionStateChanged |= selChanged;
+  //     }
+  //     // deselect all other layerables if not additive selection:
+  //     if (!additive)
+  //     {
+  //       for (int i=0; i<mLayers.size(); ++i)
+  //       {
+  //         QList<QCPLayerable*> layerables = mLayers.at(i)->children();
+  //         for (int k=0; k<layerables.size(); ++k)
+  //         {
+  //           if (layerables.at(k) != clickedLayerable && mInteractions.testFlag(layerables.at(k)->selectionCategory()))
+  //           {
+  //             bool selChanged = false;
+  //             layerables.at(k)->deselectEvent(&selChanged);
+  //             selectionStateChanged |= selChanged;
+  //           }
+  //         }
+  //       }
+  //     }
+  //     doReplot = true;
+  //     if (selectionStateChanged)
+  //       emit selectionChangedByUser();
+  //   }
+    
+  //   // emit specialized object click signals:
+  //   QVariant details;
+  //   QCPLayerable *clickedLayerable = layerableAt(event->pos(), false, &details); // for these signals, selectability is ignored, that's why we call this again with onlySelectable set to false
+  //   if (QCPAbstractPlottable *ap = qobject_cast<QCPAbstractPlottable*>(clickedLayerable))
+  //     emit plottableClick(ap, event);
+  //   else if (QCPAxis *ax = qobject_cast<QCPAxis*>(clickedLayerable))
+  //     emit axisClick(ax, details.value<QCPAxis::SelectablePart>(), event);
+  //   else if (QCPAbstractItem *ai = qobject_cast<QCPAbstractItem*>(clickedLayerable))
+  //     emit itemClick(ai, event);
+  //   else if (QCPLegend *lg = qobject_cast<QCPLegend*>(clickedLayerable))
+  //     emit legendClick(lg, 0, event);
+  //   else if (QCPAbstractLegendItem *li = qobject_cast<QCPAbstractLegendItem*>(clickedLayerable))
+  //     emit legendClick(li->parentLegend(), li, event);
+  //   else if (QCPPlotTitle *pt = qobject_cast<QCPPlotTitle*>(clickedLayerable))
+  //     emit titleClick(event, pt);
+  // }
+  
+  // call event of affected layout element:
   if (mMouseEventElement)
   {
     mMouseEventElement->mouseReleaseEvent(event);
     mMouseEventElement = 0;
   }
   
-  if (doReplot || noAntialiasingOnDrag())
-    replot();
+  // if (doReplot || noAntialiasingOnDrag())
+  //   replot();
   
   QWidget::mouseReleaseEvent(event);
 }
