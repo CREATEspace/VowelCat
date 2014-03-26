@@ -445,7 +445,7 @@ void MainWindow::mouseMove(QMouseEvent *event){
     }
 }
 
-void MainWindow::mouseRelease(QMouseEvent *event){
+void MainWindow::mouseRelease(){
     for (int i = 0; i < vowelSymbols.size(); i++){
         vowelSymbols[i]->setSelected(false);
     }

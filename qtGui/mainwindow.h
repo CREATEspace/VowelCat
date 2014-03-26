@@ -105,7 +105,7 @@ private slots:
     void vowelButtonPushed(int vowelButtonPushed);
     void resetButtonPushed();
     void mouseMove(QMouseEvent*);
-    void mouseRelease(QMouseEvent*);
+    void mouseRelease();
 
 private:
     void setupPlot();
