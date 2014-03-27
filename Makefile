@@ -76,6 +76,14 @@ DIRS += $(SRC_PORTAUDIO)
 STATICLIBS += $(STATICLIB_PORTAUDIO)
 PKG_CONFIGS += $(BUILD_PORTAUDIO)/portaudio-2.0.pc
 
+SRC_FFTW = libfftw
+BUILD_FFTW = $(BUILD)/$(SRC_FFTW)
+STATICLIB_FFTW = $(BUILD)/libfftwf.a
+STATICLIB_FFTW_BUILD = $(BUILD_FFTW)/.libs/libfftw3f.a
+DIRS += $(SRC_FFTW)
+STATICLIBS += $(STATICLIB_FFTW)
+PKG_CONFIGS += $(BUILD_FFTW)/fftw3f.pc
+
 SRC_FORMANT = libformant
 BUILD_FORMANT = $(BUILD)/$(SRC_FORMANT)
 STATICLIB_FORMANT = $(BUILD)/libformant.a
@@ -98,6 +106,7 @@ APPS += $(APP_QTGUI)
 
 ifneq ($(STAGE), )
     CFLAGS += -I$(BUILD_ABS)/libportaudio/include
+    CFLAGS += -I$(BUILD_ABS)/libfftw/api
     CFLAGS += -I$(BUILD_ABS)/libaudio
     CFLAGS += -I$(BUILD_ABS)/libformant
     CFLAGS += $(ECFLAGS)
@@ -162,6 +171,13 @@ $(STATICLIB_PORTAUDIO):
 	cd $(BUILD_PORTAUDIO) && ./configure --enable-static
 	$(MAKE) -C $(BUILD_PORTAUDIO)
 	cp $(STATICLIB_PORTAUDIO_BUILD) $@
+
+# Build the fftw static library.
+$(STATICLIB_FFTW):
+	cd $(BUILD_FFTW) && ./configure --enable-float --enable-sse \
+	    --disable-fortran --enable-static --enable-fast-install
+	$(MAKE) -C $(BUILD_FFTW)
+	cp $(STATICLIB_FFTW_BUILD) $@
 
 # Build the formant static library.
 $(STATICLIB_FORMANT):
