@@ -148,7 +148,7 @@ $(BUILD):
 	-mkdir -p $@
 
 $(DIRS): | $(BUILD)
-	cp -ru $@ $(BUILD)
+	cp -ruf $@ $(BUILD)
 
 # Build the portaudio static library.
 $(STATICLIB_PORTAUDIO):
