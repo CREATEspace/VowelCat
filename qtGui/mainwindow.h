@@ -25,7 +25,7 @@ private:
     enum { DIAM_MIN = 14 };
     enum { DIAM_RANGE = DIAM_MAX - DIAM_MIN };
 
-    // Red.tree
+    // Red.
     enum { COLOR_BASE = 0xff0000 };
 
     enum { ALPHA_MAX = 255 };

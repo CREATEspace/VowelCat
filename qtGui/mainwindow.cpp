@@ -47,8 +47,6 @@ MainWindow::MainWindow(QWidget *parent) :
     tracer(Tracer::COUNT),
     plot_lock(PTHREAD_MUTEX_INITIALIZER)
 {
-
-
     // Start at the origin for lack of a better place.
     cur = (pair_t) {
         .x = 0,
@@ -59,14 +57,14 @@ MainWindow::MainWindow(QWidget *parent) :
     setGeometry(400, 250, 1000, 800);
 
     reversed = true;
-    
+
     aButton = ui->axesButton;
     plot = ui->customPlot;
     graph = plot->addGraph();
 
     connect(aButton, SIGNAL(released()), this, SLOT(axesButtonPushed()));
-    QObject::connect(&timer, &QTimer::timeout,
-                     this, &MainWindow::plotNext);
+    connect(&timer, SIGNAL(timeout()), this, SLOT(plotNext()));
+
     timer.start(TIMER_INTERVAL);
 
     setupPlot();
