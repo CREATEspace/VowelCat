@@ -1,3 +1,6 @@
+// Copyright 2014 Formant Industries. See the Copying file at the top-level
+// directory of this project.
+
 #ifndef WORKER_H
 #define WORKER_H
 
