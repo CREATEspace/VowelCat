@@ -40,10 +40,6 @@ bool record_init(record_t *r, size_t sample_rate, size_t n_channels, size_t n_sa
    };
    //*************
 
-   //***Initialize PA internal data structures******
-   if(Pa_Initialize() != paNoError) return false;
-   //*************
-
    //*****Initialize communication ring buffers******************** 
    //rb_size must be a power of 2
    size_t rb_size = 1 << (sizeof(n_samples) * CHAR_BIT - __builtin_clz(n_samples * RB_MULTIPLIER));
@@ -116,7 +112,7 @@ void record_read(record_t *r, record_sample_t *samples)
 void record_destroy(record_t *r)
 {
    //*******************
-   Pa_Terminate(); 
+   Pa_CloseStream(r->stream);
    //*******************
    free(r->rBufFromRTData);
    //*******************
