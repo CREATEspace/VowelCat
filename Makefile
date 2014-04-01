@@ -97,7 +97,7 @@ ifneq ($(STAGE), )
 
     ifeq ($(UNAME), Darwin)
         override CFLAGS += -mmacosx-version-min=10.7 -stdlib=libc++
-        override QMAKEFLAGS += QMAKE_CXX=$(shell which clang++)
+        override QMAKEFLAGS += QMAKE_CXX=$(shell command -v clang++)
     else ifeq ($(OS), Windows_NT)
         override LDFLAGS += -static
         override QMAKEFLAGS += CONFIG-=debug_and_release
