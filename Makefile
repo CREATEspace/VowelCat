@@ -37,16 +37,20 @@
 # The stage to run is specified by the STAGE environmental variable. If no stage
 # is given, all stages are ran.
 
+# Save overriden variables.
+ECFLAGS := $(CFLAGS)
+CFLAGS =
+ELDFLAGS := $(LDFLAGS)
+LDFLAGS =
+EQMAKEFLAGS := $(QMAKEFLAGS)
+QMAKEFLAGS =
+
+# Disable user overrides. This is safe because the relevant ones are saved
+# above. It's necessary so variables aren't overridden when passed to submakes.
+MAKEOVERRIDES =
+
 # Variables to export to submakes.
 export CFLAGS LDFLAGS QMAKEFLAGS
-
-# Capture variables from the enviromnent.
-ECFLAGS := $(CFLAGS)
-override CFLAGS =
-ELDFLAGS := $(LDFLAGS)
-override LDFLAGS =
-EQMAKEFLAGS := $(QMAKEFLAGS)
-override QMAKEFLAGS =
 
 # Relative and absolute path where things will be built.
 BUILD = build
@@ -93,47 +97,47 @@ endif
 APPS += $(APP_QTGUI)
 
 ifneq ($(STAGE), )
-    override CFLAGS += -I$(BUILD_ABS)/libportaudio/include
-    override CFLAGS += -I$(BUILD_ABS)/libaudio
-    override CFLAGS += -I$(BUILD_ABS)/libformant
-    override CFLAGS += $(ECFLAGS)
+    CFLAGS += -I$(BUILD_ABS)/libportaudio/include
+    CFLAGS += -I$(BUILD_ABS)/libaudio
+    CFLAGS += -I$(BUILD_ABS)/libformant
+    CFLAGS += $(ECFLAGS)
 
     ifeq ($(UNAME), Darwin)
-        override CFLAGS += -mmacosx-version-min=10.7 -stdlib=libc++
-        override QMAKEFLAGS += QMAKE_CXX=$(shell command -v clang++)
+        CFLAGS += -mmacosx-version-min=10.7 -stdlib=libc++
+        QMAKEFLAGS += QMAKE_CXX=$(shell command -v clang++)
     else ifeq ($(OS), Windows_NT)
-        override LDFLAGS += -static
-        override QMAKEFLAGS += CONFIG-=debug_and_release
+        LDFLAGS += -static
+        QMAKEFLAGS += CONFIG-=debug_and_release
     endif
 
     ifeq ($(RELEASE), 1)
-        override CFLAGS += -O2 -flto -DNDEBUG
-        override LDFLAGS += -O2 -flto
-        override QMAKEFLAGS += CONFIG+=release
+        CFLAGS += -O2 -flto -DNDEBUG
+        LDFLAGS += -O2 -flto
+        QMAKEFLAGS += CONFIG+=release
     endif
 
     ifeq ($(NATIVE), 1)
-        override CFLAGS += -march=native
-        override LDFLAGS += -march=native
+        CFLAGS += -march=native
+        LDFLAGS += -march=native
     endif
 
     ifeq ($(DEBUG), 1)
-        override CFLAGS += -O0 -g
-        override QMAKEFLAGS += CONFIG+=debug
+        CFLAGS += -O0 -g
+        QMAKEFLAGS += CONFIG+=debug
     endif
 
     ifeq ($(PROFILE), 1)
-        override CFLAGS += -pg
-        override LDFLAGS += -pg
+        CFLAGS += -pg
+        LDFLAGS += -pg
     endif
 endif
 
 ifeq ($(STAGE), 3)
     # Tell the compiler to search the build dir for libs.
-    override LDFLAGS += -L$(BUILD_ABS)
+    LDFLAGS += -L$(BUILD_ABS)
     # Include the LDFLAGS required by libs.
-    override LDFLAGS += $(shell pkg-config --libs $(PKG_CONFIGS))
-    override LDFLAGS += $(ELDFLAGS)
+    LDFLAGS += $(shell pkg-config --libs $(PKG_CONFIGS))
+    LDFLAGS += $(ELDFLAGS)
 endif
 
 ifeq ($(STAGE), )

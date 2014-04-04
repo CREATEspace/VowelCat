@@ -3,15 +3,18 @@ OBJ = $(SRC:.c=.o)
 LIB = libformant.a
 
 ECFLAGS := $(CFLAGS)
-override CFLAGS =
+CFLAGS =
 ELDFLAGS := $(LDFLAGS)
-override LDFLAGS =
+LDFLAGS =
 
-override CFLAGS += -std=c11 -Wall -Wextra -pipe
-override CFLAGS += $(ECFLAGS)
+# This is OK because overridden variables are explicitely taken into account.
+MAKEOVERRIDES =
 
-override LDFLAGS += $(shell pkg-config --libs libformant.pc)
-override LDFLAGS += $(ELDFLAGS)
+CFLAGS += -std=c11 -Wall -Wextra -pipe
+CFLAGS += $(ECFLAGS)
+
+LDFLAGS += $(shell pkg-config --libs libformant.pc)
+LDFLAGS += $(ELDFLAGS)
 
 all: $(LIB)
 test: test-libformant
