@@ -13,15 +13,15 @@ TEMPLATE = app
 SOURCES += \
     main.cpp \
     mainwindow.cpp \
+    plotter.cpp \
     qcustomplot.cpp \
     timespec.cpp \
-    worker.cpp \
 
 HEADERS += \
     mainwindow.h \
+    plotter.h \
     qcustomplot.h \
     timespec.h \
-    worker.h \
 
 FORMS += \
     mainwindow.ui \

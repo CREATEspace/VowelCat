@@ -1,8 +1,8 @@
 // Copyright 2014 Formant Industries. See the Copying file at the top-level
 // directory of this project.
 
-#ifndef WORKER_H
-#define WORKER_H
+#ifndef PLOTTER_H
+#define PLOTTER_H
 
 #include <pthread.h>
 
@@ -37,18 +37,18 @@ typedef struct {
 
     // Window to update.
     MainWindow *window;
-} worker_t;
+} plotter_t;
 
-// Initialize the given worker.
-void worker_init(worker_t *w, MainWindow *window);
+// Initialize the given plotter.
+void plotter_init(plotter_t *p, MainWindow *window);
 
-// Free memory held by the given worker.
-void worker_destroy(worker_t *w);
+// Free memory held by the given plotter.
+void plotter_destroy(plotter_t *p);
 
-// Start the worker in a new thread.
-void worker_start(worker_t *w);
+// Start the plotter in a new thread.
+void plotter_start(plotter_t *p);
 
-// Stop the worker and wait for it to finish processing.
-void worker_stop(worker_t *w);
+// Stop the plotter and wait for it to finish processing.
+void plotter_stop(plotter_t *p);
 
 #endif
