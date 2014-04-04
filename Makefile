@@ -171,7 +171,6 @@ $(STATICLIB_AUDIO):
 
 # Build the main app.
 $(APP_QTGUI):
-	cp -ru $(SRC_QTGUI) $(BUILD)
 	$(MAKE) -C $(BUILD_QTGUI)
 
 # Force these to be remade every time.
