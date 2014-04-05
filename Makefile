@@ -14,7 +14,7 @@
 #  - make compile DIR=scratch/dir
 #  	compile (but don't link) code in scratch/dir using the Makefile in that
 #  	directory
-#  - make link DIR=qtGui
+#  - make link DIR=scratch/dir
 #  	link the code in qtGui using the Makefile in that directory
 #  - make clean
 #  	remove build directory
@@ -150,6 +150,7 @@ ifeq ($(STAGE), 3)
     LDFLAGS += $(ELDFLAGS)
 endif
 
+# Take some default action based on the stage.
 ifeq ($(STAGE), )
 all: stage-3
 else ifeq ($(STAGE), 1)
@@ -164,6 +165,8 @@ endif
 $(BUILD):
 	-mkdir -p $@
 
+# Copy source directories into the build directory, updating only outdated
+# files.
 $(DIRS): | $(BUILD)
 	cp -ruf $@ $(BUILD)
 
