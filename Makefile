@@ -66,6 +66,7 @@ STATICLIB_AUDIO = $(BUILD)/libaudio.a
 STATICLIB_AUDIO_BUILD = $(BUILD_AUDIO)/libaudio.a
 DIRS += $(SRC_AUDIO)
 STATICLIBS += $(STATICLIB_AUDIO)
+INCLUDE += -I$(BUILD_ABS)/$(SRC_AUDIO)
 PKG_CONFIGS += $(BUILD_AUDIO)/libaudio.pc
 
 SRC_PORTAUDIO = libportaudio
@@ -74,6 +75,7 @@ STATICLIB_PORTAUDIO = $(BUILD)/libportaudio.a
 STATICLIB_PORTAUDIO_BUILD = $(BUILD_PORTAUDIO)/lib/.libs/libportaudio.a
 DIRS += $(SRC_PORTAUDIO)
 STATICLIBS += $(STATICLIB_PORTAUDIO)
+INCLUDE += -I$(BUILD_ABS)/$(SRC_PORTAUDIO)/include
 PKG_CONFIGS += $(BUILD_PORTAUDIO)/portaudio-2.0.pc
 
 SRC_FFTW = libfftw
@@ -82,6 +84,7 @@ STATICLIB_FFTW = $(BUILD)/libfftwf.a
 STATICLIB_FFTW_BUILD = $(BUILD_FFTW)/.libs/libfftw3f.a
 DIRS += $(SRC_FFTW)
 STATICLIBS += $(STATICLIB_FFTW)
+INCLUDE += -I$(BUILD_ABS)/$(SRC_FFTW)/api
 PKG_CONFIGS += $(BUILD_FFTW)/fftw3f.pc
 
 SRC_FORMANT = libformant
@@ -90,6 +93,7 @@ STATICLIB_FORMANT = $(BUILD)/libformant.a
 STATICLIB_FORMANT_BUILD = $(BUILD_FORMANT)/libformant.a
 DIRS += $(SRC_FORMANT)
 STATICLIBS += $(STATICLIB_FORMANT)
+INCLUDE += -I$(BUILD_ABS)/$(SRC_FORMANT)
 PKG_CONFIGS += $(BUILD_FORMANT)/libformant.pc
 
 SRC_QTGUI = qtGui
@@ -105,10 +109,7 @@ endif
 APPS += $(APP_QTGUI)
 
 ifneq ($(STAGE), )
-    CFLAGS += -I$(BUILD_ABS)/libportaudio/include
-    CFLAGS += -I$(BUILD_ABS)/libfftw/api
-    CFLAGS += -I$(BUILD_ABS)/libaudio
-    CFLAGS += -I$(BUILD_ABS)/libformant
+    CFLAGS += $(INCLUDE)
     CFLAGS += $(ECFLAGS)
 
     ifeq ($(UNAME), Darwin)
