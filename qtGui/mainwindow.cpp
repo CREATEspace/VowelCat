@@ -58,16 +58,6 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->groupBox->setStyleSheet("QPushButton {font-size:18pt;}");
 
     reversed = true;
-//<<<<<<< HEAD
-
-    //aButton = ui->axesButton;
-    //plot = ui->customPlot;
-    //graph = plot->addGraph();
-
-    //connect(aButton, SIGNAL(released()), this, SLOT(axesButtonPushed()));
-    // connect(&timer, SIGNAL(timeout()), this, SLOT(plotNext()));
-
-//=======
     
     axisButton = ui->axisButton;
     resetButton = ui->resetButton;
@@ -79,9 +69,6 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(axisButton, SIGNAL(released()), this, SLOT(axisButtonPushed()));
     connect(resetButton, SIGNAL(released()), this, SLOT(resetButtonPushed()));
     connect(&timer, SIGNAL(timeout()), this, SLOT(plotNext()));
-    // QObject::connect(&timer, &QTimer::timeout,
-    //                  this, &MainWindow::plotNext);
-//>>>>>>> qtGui2.0
     timer.start(TIMER_INTERVAL);
 
     setupButtons();
@@ -92,7 +79,7 @@ void MainWindow::setupPlot()
 {
     //QCP::iRangeDrag | 
     plot->setInteractions(QCP::iRangeZoom | QCP::iSelectItems);
-    plot->axisRect()->setBackground(QColor(100, 100, 100));
+    //plot->axisRect()->setBackground(QColor(100, 100, 100));
     graph->setPen(Qt::NoPen);
     graph->addData(DBL_MAX, DBL_MAX);
 
