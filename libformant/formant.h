@@ -23,12 +23,8 @@ typedef short formant_sample_t;
 typedef struct {
     // Number of formants to calculate.
     size_t n_formants;
-
     // Sample rate to downsample to.
     double downsample_rate;
-    // Preemphasis to perform on sound.
-    double pre_emph_factor;
-
     // XXX: not sure what these do.
     size_t lpc_order;
     double nom_freq;

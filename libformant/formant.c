@@ -60,10 +60,7 @@ typedef struct { /* structure of a DP lattice node for formant tracking */
 void formant_opts_init(formant_opts_t *opts) {
     *opts = (formant_opts_t) {
         .n_formants = 4,
-
         .downsample_rate = 10000,
-        .pre_emph_factor = 0.7,
-
         .lpc_order = 12,
         .nom_freq = -10,
     };
@@ -738,47 +735,9 @@ static void Fdownsample(sound_t *s, double freq2) {
     free(bufin);
 }
 
-static void highpass(sound_t *s) {
-    /* This assumes the sampling frequency is 10kHz and that the FIR
-       is a Hanning function of (LCSIZ/10)ms duration. */
-    enum { LCSIZ = 101 };
-
-    short *datain, *dataout;
-    short *lcf;
-    size_t len;
-    double scale, fn;
-
-    datain = malloc(sizeof(short) * s->n_samples);
-    dataout = malloc(sizeof(short) * s->n_samples);
-    for (size_t i = 0; i < s->n_samples; i++) {
-        datain[i] = (short) sound_get_sample(s, 0, i);
-    }
-
-    lcf = malloc(sizeof(short) * LCSIZ);
-    len = 1 + (LCSIZ/2);
-    fn = PI * 2.0 / (LCSIZ - 1);
-    scale = 32767.0/(.5 * LCSIZ);
-    for(size_t i=0; i < len; i++)
-        lcf[i] = (short) (scale * (.5 + (.4 * cos(fn * ((double)i)))));
-
-    do_fir(datain,s->n_samples,dataout,len,lcf,1); /* in downsample.c */
-
-    for (size_t i = 0; i < s->n_samples; i++) {
-        sound_set_sample(s, 0, i, dataout[i]);
-    }
-
-    free(lcf);
-    free(dataout);
-    free(datain);
-}
-
 void sound_calc_formants(sound_t *s, const formant_opts_t *opts) {
     if (opts->downsample_rate < s->sample_rate)
         Fdownsample(s, opts->downsample_rate);
-
-    /* be sure DC and rumble are gone! */
-    if (opts->pre_emph_factor < 1.0)
-        highpass(s);
 
     lpc_poles(s, opts);
     dpform(s, opts->n_formants, opts->nom_freq);
