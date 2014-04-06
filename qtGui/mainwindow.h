@@ -91,7 +91,13 @@ private:
 
     QPushButton *axisButton;
     QPushButton *resetButton;
-    bool reversed;
+    QPushButton *chineseButton;
+    QPushButton *defaultSymbolsButton;
+    QGroupBox *englishGroupBox;
+    QGroupBox *chineseGroupBox;
+    bool axisReversed;
+    bool vowelToggle;
+    bool symbolToggle;
 
     QVector<QCPItemText*> vowelSymbols;
     QVector<QPushButton*> vowelButtons;
@@ -105,15 +111,20 @@ public:
 private slots:
     void plotNext();
     void axisButtonPushed();
-    void vowelButtonPushed(int vowelButtonPushed);
+    void englishVowelButtonPushed(int vowelButtonPushed);
+    void chineseVowelButtonPushed(int vowelButtonPushed);
     void resetButtonPushed();
+    void chineseButtonPushed();
+    void defaultSymbolsButtonPushed();
     void mouseMove(QMouseEvent*);
     void mouseRelease();
 
 private:
     void setupPlot();
-    void setupButtons();
-    void setupSymbols();
+    void setupEnglishButtons();
+    void setupEnglishSymbols();
+    void setupChineseButtons();
+    void setupChineseSymbols();
 
     void updateTracers(formant_sample_t x, formant_sample_t y);
     void clearTracer();

@@ -55,12 +55,20 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->setupUi(this);
     setGeometry(400, 250, 1000, 1000);
-    ui->groupBox->setStyleSheet("QPushButton {font-size:18pt;}");
+    ui->englishGroupBox->setStyleSheet("QPushButton {font-size:18pt;}");
+    ui->chineseGroupBox->setStyleSheet("QPushButton {font-size:18pt;}");
 
-    reversed = true;
+    axisReversed = true;
+    vowelToggle = true;
+    symbolToggle = true;
     
     axisButton = ui->axisButton;
     resetButton = ui->resetButton;
+    chineseButton = ui->chineseButton;
+    defaultSymbolsButton = ui->defaultSymbolsButton;
+    englishGroupBox = ui->englishGroupBox;
+    chineseGroupBox = ui->chineseGroupBox;
+    chineseGroupBox->setVisible(false);
     plot = ui->customPlot;
     graph = plot->addGraph();
 
@@ -68,10 +76,13 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(plot, SIGNAL(mouseRelease(QMouseEvent*)), this, SLOT(mouseRelease()));
     connect(axisButton, SIGNAL(released()), this, SLOT(axisButtonPushed()));
     connect(resetButton, SIGNAL(released()), this, SLOT(resetButtonPushed()));
+    connect(chineseButton, SIGNAL(released()), this, SLOT(chineseButtonPushed()));
+    connect(defaultSymbolsButton, SIGNAL(released()), this, SLOT(defaultSymbolsButtonPushed()));
     connect(&timer, SIGNAL(timeout()), this, SLOT(plotNext()));
     timer.start(TIMER_INTERVAL);
 
-    setupButtons();
+    setupEnglishButtons();
+    setupChineseButtons();
     setupPlot();
 }
 
@@ -89,17 +100,54 @@ void MainWindow::setupPlot()
     plot->xAxis->setLabel("F2 (Hz)");
 
     plot->yAxis->grid()->setZeroLinePen(Qt::NoPen);
-    plot->yAxis->setRange(900, 250);
+    plot->yAxis->setRange(900, 150);
     plot->yAxis->setRangeReversed(true);
     plot->yAxis->setLabel("F1 (Hz)");
 
-    setupSymbols();
+    setupEnglishSymbols();
 
     for (size_t i = 0; i < Tracer::COUNT; i += 1)
         tracers[i] = new Tracer(plot, graph, i);
 }
 
-void MainWindow::setupSymbols(){
+void MainWindow::setupChineseSymbols(){
+    QCPItemText *closeFront = new QCPItemText(ui->customPlot);
+    closeFront->position->setCoords(2200, 240);
+    closeFront->setText("i");
+
+    QCPItemText *closeFront2 = new QCPItemText(ui->customPlot);
+    closeFront2->position->setCoords(2000, 235);
+    closeFront2->setText("y");
+
+    QCPItemText *closeBack = new QCPItemText(ui->customPlot);
+    closeBack->position->setCoords(850, 300);
+    closeBack->setText("u");
+
+    QCPItemText *closeMidBack = new QCPItemText(ui->customPlot);
+    closeMidBack->position->setCoords(1350, 425);
+    closeMidBack->setText("ɤ");
+
+    QCPItemText *openFront = new QCPItemText(ui->customPlot);
+    openFront->position->setCoords(1400, 750);
+    openFront->setText("a");
+
+    vowelSymbols.resize(5);
+    vowelSymbols[0] = closeFront;
+    vowelSymbols[1] = closeFront2;
+    vowelSymbols[2] = closeBack;
+    vowelSymbols[3] = closeMidBack;
+    vowelSymbols[4] = openFront;
+
+    for (int i = 0; i < 5; i++){
+        ui->customPlot->addItem(vowelSymbols[i]);
+        vowelSymbols[i]->setFont(QFont(font().family(), 40));
+        vowelSymbols[i]->setColor(QColor(34, 34, 34));
+        vowelSymbols[i]->setSelectedColor(Qt::blue);
+        vowelSymbols[i]->setSelectedFont(QFont(font().family(), 40));
+    }
+}
+
+void MainWindow::setupEnglishSymbols(){
     QCPItemText *upperHighBackRounded = new QCPItemText(ui->customPlot);
     upperHighBackRounded->position->setCoords(750, 295);
     upperHighBackRounded->setText("u");
@@ -176,7 +224,39 @@ void MainWindow::setupSymbols(){
     }
 }
 
-void MainWindow::setupButtons(){
+void MainWindow::setupChineseButtons(){
+    vowelButtons.resize(9);
+    vowelButtons[0] = ui->pushButton_37;
+    vowelButtons[1] = ui->pushButton_38;
+    vowelButtons[2] = ui->pushButton_39;
+    vowelButtons[3] = ui->pushButton_40;
+    vowelButtons[4] = ui->pushButton_41;
+    vowelButtons[5] = ui->pushButton_42;
+    vowelButtons[6] = ui->pushButton_43;
+    vowelButtons[7] = ui->pushButton_44;
+    vowelButtons[8] = ui->pushButton_45;
+
+    vowelButtons[2]->setEnabled(false);
+    vowelButtons[4]->setEnabled(false);
+    vowelButtons[7]->setEnabled(false);
+    vowelButtons[8]->setEnabled(false);
+
+    vowelButtons[0]->setToolTip("close front");
+    vowelButtons[1]->setToolTip("close front");
+    vowelButtons[3]->setToolTip("close back");
+    vowelButtons[5]->setToolTip("close-mid back");
+    vowelButtons[6]->setToolTip("open front");
+
+    QSignalMapper* signalMapper = new QSignalMapper (this) ;
+
+    for (int i = 0; i < vowelButtons.size(); i++){
+        connect(vowelButtons[i], SIGNAL(released()), signalMapper, SLOT(map()));
+        signalMapper->setMapping(vowelButtons[i], i);
+    }
+    connect (signalMapper, SIGNAL(mapped(int)), this, SLOT(chineseVowelButtonPushed(int)));
+}
+
+void MainWindow::setupEnglishButtons(){
     vowelButtons.resize(36);
     vowelButtons[0] = ui->pushButton;
     vowelButtons[1] = ui->pushButton_2;
@@ -271,7 +351,7 @@ void MainWindow::setupButtons(){
         connect(vowelButtons[i], SIGNAL(released()), signalMapper, SLOT(map()));
         signalMapper->setMapping(vowelButtons[i], i);
     }
-    connect (signalMapper, SIGNAL(mapped(int)), this, SLOT(vowelButtonPushed(int))) ;
+    connect (signalMapper, SIGNAL(mapped(int)), this, SLOT(englishVowelButtonPushed(int)));
 
 }
 
@@ -387,15 +467,29 @@ void MainWindow::clearTracer() {
 }
 
 void MainWindow::axisButtonPushed(){
-    reversed = !reversed;
-    plot->yAxis->setRangeReversed(reversed);
+    axisReversed = !axisReversed;
+    plot->yAxis->setRangeReversed(axisReversed);
     plot->replot();
 }
 
 // When a vowel Button is pushed, we want to create a new
 // item text, set its attributes, add it to the vector
 // of vowelSymbols and the plot, and replot everything
-void MainWindow::vowelButtonPushed(int pushedVowelButton){
+void MainWindow::englishVowelButtonPushed(int pushedVowelButton){
+    QCPItemText *userVowel = new QCPItemText(ui->customPlot);
+    userVowel->position->setCoords(1500, 500);
+    userVowel->setText(vowelButtons[pushedVowelButton]->text());
+    userVowel->setFont(QFont(font().family(), 40));
+    userVowel->setColor(QColor(34, 34, 34));
+    userVowel->setSelectedColor(Qt::blue);
+    userVowel->setSelectedFont(QFont(font().family(), 40));
+
+    vowelSymbols.push_back(userVowel);
+    ui->customPlot->addItem(userVowel);
+    plot->replot();
+}
+
+void MainWindow::chineseVowelButtonPushed(int pushedVowelButton){
     QCPItemText *userVowel = new QCPItemText(ui->customPlot);
     userVowel->position->setCoords(1500, 500);
     userVowel->setText(vowelButtons[pushedVowelButton]->text());
@@ -410,23 +504,60 @@ void MainWindow::vowelButtonPushed(int pushedVowelButton){
 }
 
 void MainWindow::resetButtonPushed(){
-    vowelSymbols[0]->position->setCoords(750, 295);
-    vowelSymbols[1]->position->setCoords(910, 334);
-    vowelSymbols[2]->position->setCoords(727, 406);
-    vowelSymbols[3]->position->setCoords(830, 541);
-    vowelSymbols[4]->position->setCoords(843, 652);
-    vowelSymbols[5]->position->setCoords(1065, 781);
-    vowelSymbols[6]->position->setCoords(1211, 784);
-    vowelSymbols[7]->position->setCoords(1632, 806);
-    vowelSymbols[8]->position->setCoords(1782, 766);
-    vowelSymbols[9]->position->setCoords(1840, 541);
-    vowelSymbols[10]->position->setCoords(2148, 434);
-    vowelSymbols[11]->position->setCoords(2187, 360);
-    vowelSymbols[12]->position->setCoords(2343, 294);
-    for (int i = 13; i < vowelSymbols.size(); i++){
-        ui->customPlot->removeItem(vowelSymbols[i]);
+    if (symbolToggle){
+        vowelSymbols[0]->position->setCoords(750, 295);
+        vowelSymbols[1]->position->setCoords(910, 334);
+        vowelSymbols[2]->position->setCoords(727, 406);
+        vowelSymbols[3]->position->setCoords(830, 541);
+        vowelSymbols[4]->position->setCoords(843, 652);
+        vowelSymbols[5]->position->setCoords(1065, 781);
+        vowelSymbols[6]->position->setCoords(1211, 784);
+        vowelSymbols[7]->position->setCoords(1632, 806);
+        vowelSymbols[8]->position->setCoords(1782, 766);
+        vowelSymbols[9]->position->setCoords(1840, 541);
+        vowelSymbols[10]->position->setCoords(2148, 434);
+        vowelSymbols[11]->position->setCoords(2187, 360);
+        vowelSymbols[12]->position->setCoords(2343, 294);
+        for (int i = 13; i < vowelSymbols.size(); i++){
+            ui->customPlot->removeItem(vowelSymbols[i]);
+        }
+        vowelSymbols.resize(13);   
     }
-    vowelSymbols.resize(13);
+    else{
+        vowelSymbols[0]->position->setCoords(2200, 240);
+        vowelSymbols[1]->position->setCoords(2000, 235);
+        vowelSymbols[2]->position->setCoords(850, 300);
+        vowelSymbols[3]->position->setCoords(1350, 425);
+        vowelSymbols[4]->position->setCoords(1400, 750);
+        for (int i = 5; i < vowelSymbols.size(); i++){
+            ui->customPlot->removeItem(vowelSymbols[i]);
+        }
+        vowelSymbols.resize(5);  
+    }
+    
+    plot->replot();
+}
+
+void MainWindow::chineseButtonPushed(){
+    vowelToggle = !vowelToggle;
+    chineseGroupBox->setVisible(!vowelToggle);
+    englishGroupBox->setVisible(vowelToggle);
+}
+
+void MainWindow::defaultSymbolsButtonPushed(){
+    symbolToggle = !symbolToggle;
+    if (!symbolToggle){
+        for (int i = 0; i < vowelSymbols.size(); i++){
+            ui->customPlot->removeItem(vowelSymbols[i]);
+        }
+        setupChineseSymbols();
+    }
+    else {
+        for (int i = 0; i < vowelSymbols.size(); i++){
+            ui->customPlot->removeItem(vowelSymbols[i]);
+        }
+        setupEnglishSymbols();
+    }
     plot->replot();
 }
 
