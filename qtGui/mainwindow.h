@@ -89,8 +89,12 @@ private:
     pthread_mutex_t plot_lock;
     QTimer timer;
 
-    QPushButton *aButton;
+    QPushButton *axisButton;
+    QPushButton *resetButton;
     bool reversed;
+
+    QVector<QCPItemText*> vowelSymbols;
+    QVector<QPushButton*> vowelButtons;
 
 public:
     explicit MainWindow(QWidget *parent = NULL);
@@ -100,10 +104,16 @@ public:
 
 private slots:
     void plotNext();
-    void axesButtonPushed();
+    void axisButtonPushed();
+    void vowelButtonPushed(int vowelButtonPushed);
+    void resetButtonPushed();
+    void mouseMove(QMouseEvent*);
+    void mouseRelease();
 
 private:
     void setupPlot();
+    void setupButtons();
+    void setupSymbols();
 
     void updateTracers(formant_sample_t x, formant_sample_t y);
     void clearTracer();
