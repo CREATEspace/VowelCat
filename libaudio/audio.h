@@ -1,39 +1,5 @@
 //************************************************************************
-// * PortAudio Portable Real-Time Audio Library
-// * PortAudio API Header File
-// * Latest version available at: http://www.portaudio.com
-// *
-// * Copyright (c) 2014-     Formant Industries, Inc.
-// * Copyright (c) 1999-2006 Ross Bencina and Phil Burk
-// *
-// * Permission is hereby granted, free of charge, to any person obtaining
-// * a copy of this software and associated documentation files
-// * (the "Software"), to deal in the Software without restriction,
-// * including without limitation the rights to use, copy, modify, merge,
-// * publish, distribute, sublicense, and/or sell copies of the Software,
-// * and to permit persons to whom the Software is furnished to do so,
-// * subject to the following conditions:
-// *
-// * The above copyright notice and this permission notice shall be
-// * included in all copies or substantial portions of the Software.
-// *
-// * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-// * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-// * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-// * IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR
-// * ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
-// * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
-// * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-// *
-// *
-// * The text above constitutes the entire PortAudio license; however, 
-// * the PortAudio community also makes the following non-binding requests:
-// *
-// * Any person wishing to distribute modifications to the Software is
-// * requested to send the modifications to the original developer so that
-// * they can be incorporated into the canonical version. It is also 
-// * requested that these non-binding requests be included along with the 
-// * license above.
+//
 //***************************************************************************** 
 
 //*************
@@ -41,12 +7,71 @@
 #define AUDIO_H
 
 //***************************
+#include <stdlib.h>
 #include <stdbool.h>
+#include <string.h>
+#include <sys/mman.h>
+#include <limits.h>
+#include <unistd.h> 
+#include <pthread.h>
 #include "portaudio.h"
+#include "pa_ringbuffer.h"
 //***************************
 
-bool audio_init(void);
-void audio_destroy(void);
+
+//***************************
+#define RB_MULTIPLIER 2       //Used to calculate ring buffer size      
+//***************************
+
+typedef short audio_sample_t;
+
+typedef struct audio_t 
+{
+   size_t sample_rate;
+   size_t n_channels;
+   size_t frames_per_buffer;
+
+   PaStream *pstream;
+   PaStream *rstream;
+
+   bool wakeup_sig;
+   pthread_cond_t  wakeup_cond;
+   pthread_mutex_t wakeup_mutex;
+
+   enum {
+      SOURCE_DISK = 1 << 0,
+   }flags;
+
+   audio_sample_t *prbuf;
+   size_t prbuf_size;
+   size_t prbuf_offset;
+
+   PaUtilRingBuffer rb;
+   void *rb_data;
+
+}audio_t;
+
+
+bool audio_init(audio_t *a, size_t sample_rate, size_t n_channels, size_t frames_per_buffer);
+void audio_destroy(audio_t *a);
+void audio_reset(audio_t *a);
+
+void audio_open(audio_t *a, audio_sample_t *m_data, size_t m_size);
+bool audio_save(audio_t *a, int fd);
+
+bool audio_resize(audio_t *a, size_t n_samples);
+
+bool audio_play(audio_t *a);
+bool audio_record(audio_t *a);
+void audio_stop(audio_t *a);
+
+void audio_sig_read(audio_t *a);
+void audio_sig_write(audio_t *a);
+
+bool audio_play_read(audio_t *a, audio_sample_t *samples);
+bool audio_record_read(audio_t *a, audio_sample_t *samples);
+bool audio_listen_read(audio_t *a, audio_sample_t *samples);
+void audio_seek(audio_t *a, size_t index);
 
 #endif
 //END HEADER

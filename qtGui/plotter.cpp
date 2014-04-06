@@ -8,8 +8,6 @@
 
 extern "C" {
 #include "audio.h"
-#include "record.h"
-#include "play.h"
 #include "formant.h"
 }
 
@@ -24,9 +22,7 @@ void plotter_init(plotter_t *p, MainWindow *window) {
     (void) ret;
 #endif
 
-    ret = audio_init();
-    assert(ret);
-    ret = record_init(&p->rec, SAMPLE_RATE, CHANNELS, SAMPLES);
+    ret = audio_init(&p->aud, SAMPLE_RATE, CHANNELS, SAMPLES);
     assert(ret);
 
     formant_opts_init(&p->opts);
@@ -41,8 +37,7 @@ void plotter_init(plotter_t *p, MainWindow *window) {
 
 void plotter_destroy(plotter_t *p) {
     sound_destroy(&p->sound);
-    record_destroy(&p->rec);
-    audio_destroy();
+    audio_destroy(&p->aud);
 }
 
 #define ABS(x) ((x) > 0 ? (x) : -(x))
@@ -62,14 +57,14 @@ static void plotter_run(plotter_t *p) {
     (void) ret;
 #endif
 
-    ret = record_start(&p->rec);
+    ret = audio_record(&p->aud);
     assert(ret);
 
     while (p->run) {
         timespec_init(&before);
         sound_reset(&p->sound, SAMPLE_RATE, CHANNELS);
         sound_resize(&p->sound, SAMPLES);
-        record_read(&p->rec, p->sound.samples);
+        audio_listen_read(&p->aud, p->sound.samples);
 
         avg = 0;
 
@@ -103,7 +98,7 @@ static void plotter_run(plotter_t *p) {
         p->window->plotFormant(f1, f2, dur);
     }
 
-    record_stop(&p->rec);
+    audio_stop(&p->aud);
 }
 
 void plotter_start(plotter_t *p) {

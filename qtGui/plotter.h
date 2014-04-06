@@ -7,14 +7,12 @@
 #include <pthread.h>
 
 #include "audio.h"
-#include "record.h"
-#include "play.h"
 #include "formant.h"
 #include "mainwindow.h"
 
 // Some audio constants for now.
 enum { SAMPLE_RATE = 11025 };
-enum { CHANNELS = 2 };
+enum { CHANNELS = 1 };
 enum { SAMPLES = 2048 };
 
 // Number of samples to take into account when checking for noise.
@@ -31,7 +29,7 @@ typedef struct {
     bool run;
 
     // Relevant structures.
-    record_t rec;
+    audio_t aud;
     formant_opts_t opts;
     sound_t sound;
 
