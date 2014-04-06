@@ -6,12 +6,6 @@
 //     Copyright (c) 1995 Entropic Research Laboratory, Inc.
 //     Copyright (c) 1987 AT&T All Rights Reserved
 
-#include <math.h>
-#include <stdbool.h>
-#include <string.h>
-
-#include "processing.h"
-
 /*
  *
  *	An implementation of the Le Roux - Gueguen PARCOR computation.
@@ -21,19 +15,24 @@
  *
  */
 
+#include <fcntl.h>
+#include <math.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <math.h>
-#include <fcntl.h>
+#include <string.h>
+
+#include "processing.h"
+
 #ifndef DBL_MAX
 #define DBL_MAX 1.7976931348623157E+308
 #endif
 
-#define MAXORDER	60	/* maximum permissible LPC order */
-
 #ifndef M_PI
 #define M_PI    3.14159265358979323846
 #endif
+
+#define MAXORDER	60	/* maximum permissible LPC order */
 
 /*
  * Compute the pp+1 autocorrelation lags of the windowsize samples in s.
