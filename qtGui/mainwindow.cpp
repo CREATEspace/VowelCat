@@ -86,6 +86,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(&timer, SIGNAL(timeout()), this, SLOT(plotNext()));
     timer.start(TIMER_INTERVAL);
 
+    vowelButtons.resize(45);
     setupEnglishButtons();
     setupChineseButtons();
     setupPlot();
@@ -230,27 +231,26 @@ void MainWindow::setupEnglishSymbols(){
 }
 
 void MainWindow::setupChineseButtons(){
-    vowelButtons.resize(9);
-    vowelButtons[0] = ui->pushButton_37;
-    vowelButtons[1] = ui->pushButton_38;
-    vowelButtons[2] = ui->pushButton_39;
-    vowelButtons[3] = ui->pushButton_40;
-    vowelButtons[4] = ui->pushButton_41;
-    vowelButtons[5] = ui->pushButton_42;
-    vowelButtons[6] = ui->pushButton_43;
-    vowelButtons[7] = ui->pushButton_44;
-    vowelButtons[8] = ui->pushButton_45;
+    vowelButtons[36] = ui->pushButton_37;
+    vowelButtons[37] = ui->pushButton_38;
+    vowelButtons[38] = ui->pushButton_39;
+    vowelButtons[39] = ui->pushButton_40;
+    vowelButtons[40] = ui->pushButton_41;
+    vowelButtons[41] = ui->pushButton_42;
+    vowelButtons[42] = ui->pushButton_43;
+    vowelButtons[43] = ui->pushButton_44;
+    vowelButtons[44] = ui->pushButton_45;
 
-    vowelButtons[2]->setEnabled(false);
-    vowelButtons[4]->setEnabled(false);
-    vowelButtons[7]->setEnabled(false);
-    vowelButtons[8]->setEnabled(false);
+    vowelButtons[38]->setEnabled(false);
+    vowelButtons[40]->setEnabled(false);
+    vowelButtons[43]->setEnabled(false);
+    vowelButtons[44]->setEnabled(false);
 
-    vowelButtons[0]->setToolTip("close front");
-    vowelButtons[1]->setToolTip("close front");
-    vowelButtons[3]->setToolTip("close back");
-    vowelButtons[5]->setToolTip("close-mid back");
-    vowelButtons[6]->setToolTip("open front");
+    vowelButtons[36]->setToolTip("close front");
+    vowelButtons[37]->setToolTip("close front");
+    vowelButtons[39]->setToolTip("close back");
+    vowelButtons[41]->setToolTip("close-mid back");
+    vowelButtons[42]->setToolTip("open front");
 
     QSignalMapper* signalMapper = new QSignalMapper (this) ;
 
@@ -258,11 +258,10 @@ void MainWindow::setupChineseButtons(){
         connect(vowelButtons[i], SIGNAL(released()), signalMapper, SLOT(map()));
         signalMapper->setMapping(vowelButtons[i], i);
     }
-    connect (signalMapper, SIGNAL(mapped(int)), this, SLOT(chineseVowelButtonPushed(int)));
+    connect (signalMapper, SIGNAL(mapped(int)), this, SLOT(vowelButtonPushed(int)));
 }
 
 void MainWindow::setupEnglishButtons(){
-    vowelButtons.resize(36);
     vowelButtons[0] = ui->pushButton;
     vowelButtons[1] = ui->pushButton_2;
     vowelButtons[2] = ui->pushButton_3;
@@ -356,7 +355,7 @@ void MainWindow::setupEnglishButtons(){
         connect(vowelButtons[i], SIGNAL(released()), signalMapper, SLOT(map()));
         signalMapper->setMapping(vowelButtons[i], i);
     }
-    connect (signalMapper, SIGNAL(mapped(int)), this, SLOT(englishVowelButtonPushed(int)));
+    connect (signalMapper, SIGNAL(mapped(int)), this, SLOT(vowelButtonPushed(int)));
 
 }
 
@@ -480,32 +479,8 @@ void MainWindow::axisButtonPushed(){
 // When a vowel Button is pushed, we want to create a new
 // item text, set its attributes, add it to the vector
 // of vowelSymbols and the plot, and replot everything
-void MainWindow::englishVowelButtonPushed(int pushedVowelButton){
-    QCPItemText *userVowel = new QCPItemText(ui->customPlot);
-    userVowel->position->setCoords(1500, 500);
-    userVowel->setText(vowelButtons[pushedVowelButton]->text());
-    userVowel->setFont(QFont(font().family(), 40));
-    userVowel->setColor(QColor(34, 34, 34));
-    userVowel->setSelectedColor(Qt::blue);
-    userVowel->setSelectedFont(QFont(font().family(), 40));
-
-    vowelSymbols.push_back(userVowel);
-    ui->customPlot->addItem(userVowel);
-    plot->replot();
-}
-
-void MainWindow::chineseVowelButtonPushed(int pushedVowelButton){
-    QCPItemText *userVowel = new QCPItemText(ui->customPlot);
-    userVowel->position->setCoords(1500, 500);
-    userVowel->setText(vowelButtons[pushedVowelButton]->text());
-    userVowel->setFont(QFont(font().family(), 40));
-    userVowel->setColor(QColor(34, 34, 34));
-    userVowel->setSelectedColor(Qt::blue);
-    userVowel->setSelectedFont(QFont(font().family(), 40));
-
-    vowelSymbols.push_back(userVowel);
-    ui->customPlot->addItem(userVowel);
-    plot->replot();
+void MainWindow::vowelButtonPushed(int pushedVowelButton){
+    addSymbol(vowelButtons[pushedVowelButton]->text());
 }
 
 void MainWindow::resetButtonPushed(){
@@ -567,9 +542,13 @@ void MainWindow::defaultSymbolsButtonPushed(){
 }
 
 void MainWindow::addSymbolButtonPushed(){
+    addSymbol(plainTextEdit->toPlainText());
+}
+
+void MainWindow::addSymbol(QString symbol){
     QCPItemText *userVowel = new QCPItemText(ui->customPlot);
     userVowel->position->setCoords(1500, 500);
-    userVowel->setText(plainTextEdit->toPlainText());
+    userVowel->setText(symbol);
     userVowel->setFont(QFont(font().family(), 40));
     userVowel->setColor(QColor(34, 34, 34));
     userVowel->setSelectedColor(Qt::blue);

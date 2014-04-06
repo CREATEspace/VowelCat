@@ -113,8 +113,7 @@ public:
 private slots:
     void plotNext();
     void axisButtonPushed();
-    void englishVowelButtonPushed(int vowelButtonPushed);
-    void chineseVowelButtonPushed(int vowelButtonPushed);
+    void vowelButtonPushed(int vowelButtonPushed);
     void resetButtonPushed();
     void chineseButtonPushed();
     void defaultSymbolsButtonPushed();
@@ -128,6 +127,7 @@ private:
     void setupEnglishSymbols();
     void setupChineseButtons();
     void setupChineseSymbols();
+    void addSymbol(QString symbol);
 
     void updateTracers(formant_sample_t x, formant_sample_t y);
     void clearTracer();
