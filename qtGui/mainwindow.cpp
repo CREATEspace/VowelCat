@@ -66,9 +66,13 @@ MainWindow::MainWindow(QWidget *parent) :
     resetButton = ui->resetButton;
     chineseButton = ui->chineseButton;
     defaultSymbolsButton = ui->defaultSymbolsButton;
+    addSymbolButton = ui->addSymbolButton;
+    plainTextEdit = ui->plainTextEdit;
+
     englishGroupBox = ui->englishGroupBox;
     chineseGroupBox = ui->chineseGroupBox;
     chineseGroupBox->setVisible(false);
+
     plot = ui->customPlot;
     graph = plot->addGraph();
 
@@ -78,6 +82,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(resetButton, SIGNAL(released()), this, SLOT(resetButtonPushed()));
     connect(chineseButton, SIGNAL(released()), this, SLOT(chineseButtonPushed()));
     connect(defaultSymbolsButton, SIGNAL(released()), this, SLOT(defaultSymbolsButtonPushed()));
+    connect(addSymbolButton, SIGNAL(released()), this, SLOT(addSymbolButtonPushed()));
     connect(&timer, SIGNAL(timeout()), this, SLOT(plotNext()));
     timer.start(TIMER_INTERVAL);
 
@@ -558,6 +563,20 @@ void MainWindow::defaultSymbolsButtonPushed(){
         }
         setupEnglishSymbols();
     }
+    plot->replot();
+}
+
+void MainWindow::addSymbolButtonPushed(){
+    QCPItemText *userVowel = new QCPItemText(ui->customPlot);
+    userVowel->position->setCoords(1500, 500);
+    userVowel->setText(plainTextEdit->toPlainText());
+    userVowel->setFont(QFont(font().family(), 40));
+    userVowel->setColor(QColor(34, 34, 34));
+    userVowel->setSelectedColor(Qt::blue);
+    userVowel->setSelectedFont(QFont(font().family(), 40));
+
+    vowelSymbols.push_back(userVowel);
+    ui->customPlot->addItem(userVowel);
     plot->replot();
 }
 

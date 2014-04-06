@@ -93,6 +93,8 @@ private:
     QPushButton *resetButton;
     QPushButton *chineseButton;
     QPushButton *defaultSymbolsButton;
+    QPushButton *addSymbolButton;
+    QPlainTextEdit *plainTextEdit;
     QGroupBox *englishGroupBox;
     QGroupBox *chineseGroupBox;
     bool axisReversed;
@@ -116,6 +118,7 @@ private slots:
     void resetButtonPushed();
     void chineseButtonPushed();
     void defaultSymbolsButtonPushed();
+    void addSymbolButtonPushed();
     void mouseMove(QMouseEvent*);
     void mouseRelease();
 
