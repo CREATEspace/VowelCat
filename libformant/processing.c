@@ -39,10 +39,10 @@
  * Return the normalized autocorrelation coefficients in r.
  * The rms is returned in e.
  */
-static void autoc(size_t windowsize, short *s, size_t p, double *r, double *e) {
+static void autoc(size_t windowsize, const short *s, size_t p, double *r, double *e) {
     size_t i, j;
     double sum, sum0;
-    short *q, *t;
+    const short *q, *t;
 
     for ( i=0, q=s, sum0=0.; i< windowsize; q++, i++){
         sum0 += (*q) * (*q);
@@ -70,7 +70,7 @@ static void autoc(size_t windowsize, short *s, size_t p, double *r, double *e) {
  * Note: Durbin returns the coefficients in normal sign format.
  *	(i.e. a[0] is assumed to be = +1.)
  */
-static void durbin (double *r, double *k, double *a, int p, double *ex) {
+static void durbin (const double *r, double *k, double *a, int p, double *ex) {
     double b[MAXORDER];
     int i, j;
     double e, s;
@@ -97,8 +97,8 @@ static void durbin (double *r, double *k, double *a, int p, double *ex) {
     *ex = e;
 }
 
-void lpc(size_t lpc_ord, double lpc_stabl, size_t wsize, short *data, double *lpca,
-         double *normerr, double *rms)
+void lpc(size_t lpc_ord, double lpc_stabl, size_t wsize, const short *data,
+         double *lpca, double *normerr, double *rms)
 {
     double rho[MAXORDER+1], k[MAXORDER],en,er;
 

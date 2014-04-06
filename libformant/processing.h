@@ -14,7 +14,7 @@
 int formant(int lpc_order, double s_freq, double *lpca, int *n_form,
             double *freq, double *band, double *rr, double *ri);
 
-void lpc(size_t lpc_ord, double lpc_stabl, size_t wsize, short *data, double *lpca,
-         double *normerr, double *rms);
+void lpc(size_t lpc_ord, double lpc_stabl, size_t wsize, const short *data,
+         double *lpca, double *normerr, double *rms);
 
 #endif
