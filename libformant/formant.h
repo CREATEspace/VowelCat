@@ -37,15 +37,6 @@ typedef struct {
     // Duration of the window frame in seconds.
     double frame_dur;
 
-    // The type of LPC function to use.
-    enum {
-        LPC_TYPE_NORMAL,
-        LPC_TYPE_BSA,
-        LPC_TYPE_COVAR,
-
-        LPC_TYPE_INVALID,
-    } lpc_type;
-
     // XXX: not sure what these do.
     size_t lpc_order;
     double nom_freq;

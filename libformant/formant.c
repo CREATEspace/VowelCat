@@ -79,7 +79,6 @@ void formant_opts_init(formant_opts_t *opts) {
         .window_dur = 0.049,
         .frame_dur = 0.01,
 
-        .lpc_type = LPC_TYPE_NORMAL,
         .lpc_order = 12,
         .nom_freq = -10,
     };
@@ -94,13 +93,6 @@ bool formant_opts_process(formant_opts_t *opts) {
 
     if (opts->n_formants > MAX_FORMANTS)
         return false;
-
-    /* force "standard" stabilized covariance (ala bsa) */
-    if (opts->lpc_type == LPC_TYPE_BSA) {
-        opts->window_dur = 0.025;
-        /* exp(-1800*pi*T) */
-        opts->pre_emph_factor = exp(-62.831853 * 90 / opts->downsample_rate);
-    }
 
     return true;
 }
@@ -490,45 +482,6 @@ static void dpform(sound_t *ps, pole_t **poles, size_t nform, double nom_f1) {
     free(fr);
 }
 
-/* computation and I/O routines for dealing with LPC poles */
-static double frand() {
-    return (((double)rand())/(double)RAND_MAX);
-}
-
-/* a quick and dirty interface to bsa's stabilized covariance LPC */
-static int lpcbsa(int np, int wind, short *data, double *lpc, double *energy,
-                  double preemp)
-{
-    int i, owind=0, wind1;
-    double w[1000];
-    double rc[LPC_ORDER_MAX],phi[LPC_ORDER_MAX*LPC_ORDER_MAX],shi[LPC_ORDER_MAX],sig[1000];
-    double xl = .09, fham, amax;
-    double *psp1, *psp3, *pspl;
-
-    if(owind != wind) {		/* need to compute a new window? */
-        fham = 6.28318506 / wind;
-        for(psp1=w,i=0;i<wind;i++,psp1++)
-            *psp1 = .54 - .46 * cos(i * fham);
-        owind = wind;
-    }
-    wind += np + 1;
-    wind1 = wind-1;
-
-    for(psp3=sig,pspl=sig+wind; psp3 < pspl; )
-        *psp3++ = (double)(*data++) + .016 * frand() - .008;
-    for(psp3=sig+1,pspl=sig+wind;psp3<pspl;psp3++)
-        *(psp3-1) = *psp3 - preemp * *(psp3-1);
-    for(amax = 0.,psp3=sig+np,pspl=sig+wind1;psp3<pspl;psp3++)
-        amax += *psp3 * *psp3;
-    *energy = sqrt(amax / (double)owind);
-    amax = 1.0/(*energy);
-
-    for(psp3=sig,pspl=sig+wind1;psp3<pspl;psp3++)
-        *psp3 *= amax;
-
-    return dlpcwtd(sig,&wind1,lpc,&np,rc,phi,shi,&xl,w) == np;
-}
-
 static pole_t **lpc_poles(sound_t *sp, const formant_opts_t *opts) {
     enum { LPC_STABLE = 70 };
 
@@ -538,8 +491,6 @@ static pole_t **lpc_poles(sound_t *sp, const formant_opts_t *opts) {
     double energy, lpca[LPC_ORDER_MAX], normerr, *bap, *frp, *rhp;
     double rr[LPC_ORDER_MAX], ri[LPC_ORDER_MAX];
     short *datap, *dporg;
-    int ord;
-    double alpha, r0;
     double flo;
     double x;
 
@@ -574,25 +525,9 @@ static pole_t **lpc_poles(sound_t *sp, const formant_opts_t *opts) {
         poles[j]->freq = frp = malloc(sizeof(double)*opts->lpc_order);
         poles[j]->band = bap = malloc(sizeof(double)*opts->lpc_order);
 
-        switch(opts->lpc_type) {
-        case LPC_TYPE_NORMAL:
-            lpc(opts->lpc_order, LPC_STABLE, size, datap, lpca, rhp, NULL, &normerr,
-                &energy, opts->pre_emph_factor, opts->window_type);
-        break;
+        lpc(opts->lpc_order, LPC_STABLE, size, datap, lpca, rhp, NULL, &normerr,
+            &energy, opts->pre_emph_factor, opts->window_type);
 
-        case LPC_TYPE_BSA:
-            lpcbsa(opts->lpc_order, size, datap, lpca, &energy, opts->pre_emph_factor);
-        break;
-
-        case LPC_TYPE_COVAR:
-            ord = opts->lpc_order;
-            w_covar(datap, &ord, size, 0, lpca, &alpha, &r0, opts->pre_emph_factor, 0);
-            energy = sqrt(r0 / (size - ord));
-        break;
-
-        case LPC_TYPE_INVALID:
-        break;
-        }
         poles[j]->change = 0.0;
 
         /* set up starting points for the root search near unit circle */
