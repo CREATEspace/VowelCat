@@ -29,14 +29,6 @@ typedef struct {
     // Preemphasis to perform on sound.
     double pre_emph_factor;
 
-    // The type of window function to use.
-    window_type_t window_type;
-
-    // Duration of the window function in seconds.
-    double window_dur;
-    // Duration of the window frame in seconds.
-    double frame_dur;
-
     // XXX: not sure what these do.
     size_t lpc_order;
     double nom_freq;
@@ -49,6 +41,17 @@ void formant_opts_init(formant_opts_t *opts);
 // function before being passed into sound_calc_formants.
 bool formant_opts_process(formant_opts_t *opts);
 
+typedef struct {   /* structure to hold raw LPC analysis data */
+    double rms;    /* rms for current LPC analysis frame */
+    double rms2;    /* rms for current F0 analysis frame */
+    double f0;     /* fundamental frequency estimate for this frame */
+    double pv;		/* probability that frame is voiced */
+    double change; /* spec. distance between current and prev. frames */
+    size_t npoles; /* # of complex poles from roots of LPC polynomial */
+    double *freq;  /* array of complex pole frequencies (Hz) */
+    double *band;  /* array of complex pole bandwidths (Hz) */
+} pole_t;
+
 // A raw audio segment.
 typedef struct sound_t {
     // Sample rate of the audio data in Hz.
@@ -59,6 +62,7 @@ typedef struct sound_t {
     size_t n_samples;
     // The audio data itself.
     formant_sample_t *samples;
+    pole_t pole;
 } sound_t;
 
 // Initialize the given sound to a default state.
@@ -85,7 +89,7 @@ void sound_load_samples(sound_t *s, const formant_sample_t *samples, size_t n_sa
 //  - n_samples is set to the number of formants calculated
 //  - n_channels is set to 2 * n_samples
 //
-bool sound_calc_formants(sound_t *s, const formant_opts_t *opts);
+void sound_calc_formants(sound_t *s, const formant_opts_t *opts);
 
 // Get the i'th sample in the given channel.
 static inline formant_sample_t sound_get_sample(const sound_t *s, size_t chan, size_t i) {

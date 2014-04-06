@@ -35,136 +35,15 @@
 #define M_PI    3.14159265358979323846
 #endif
 
-static void rwindow(short *din, double *dout, int n, double preemp) {
-    short *p;
-
-    /* If preemphasis is to be performed,  this assumes that there are n+1 valid
-       samples in the input buffer (din). */
-    if(preemp != 0.0) {
-        for( p=din+1; n-- > 0; )
-            *dout++ = (double)(*p++) - (preemp * *din++);
-    } else {
-        for( ; n-- > 0; )
-            *dout++ =  *din++;
-    }
-}
-
-static void cwindow(short *din, double *dout, int n, double preemp) {
-    int i;
-    short *p;
-    int wsize = 0;
-    double *wind=NULL;
-    double *q, co;
-
-    if(wsize != n) {		/* Need to create a new cos**4 window? */
-        double arg, half=0.5;
-
-        if(wind) wind = realloc((void *)wind,n*sizeof(double));
-        else wind = malloc(n*sizeof(double));
-        wsize = n;
-        for(i=0, arg=3.1415927*2.0/(wsize), q=wind; i < n; ) {
-            co = half*(1.0 - cos((half + (double)i++) * arg));
-            *q++ = co * co * co * co;
-        }
-    }
-    /* If preemphasis is to be performed,  this assumes that there are n+1 valid
-       samples in the input buffer (din). */
-    if(preemp != 0.0) {
-        for(i=n, p=din+1, q=wind; i-- > 0; )
-            *dout++ = *q++ * ((double)(*p++) - (preemp * *din++));
-    } else {
-        for(i=n, q=wind; i-- > 0; )
-            *dout++ = *q++ * *din++;
-    }
-}
-
-static void hwindow(short *din, double *dout, int n, double preemp) {
-    int i;
-    short *p;
-    int wsize = 0;
-    double *wind=NULL;
-    double *q;
-
-    if(wsize != n) {		/* Need to create a new Hamming window? */
-        double arg, half=0.5;
-
-        if(wind) wind = realloc((void *)wind,n*sizeof(double));
-        else wind = malloc(n*sizeof(double));
-        wsize = n;
-        for(i=0, arg=3.1415927*2.0/(wsize), q=wind; i < n; )
-            *q++ = (.54 - .46 * cos((half + (double)i++) * arg));
-    }
-    /* If preemphasis is to be performed,  this assumes that there are n+1 valid
-       samples in the input buffer (din). */
-    if(preemp != 0.0) {
-        for(i=n, p=din+1, q=wind; i-- > 0; )
-            *dout++ = *q++ * ((double)(*p++) - (preemp * *din++));
-    } else {
-        for(i=n, q=wind; i-- > 0; )
-            *dout++ = *q++ * *din++;
-    }
-}
-
-static void hnwindow(short *din, double *dout, int n, double preemp) {
-    int i;
-    short *p;
-    int wsize = 0;
-    double *wind=NULL;
-    double *q;
-
-    if(wsize != n) {		/* Need to create a new Hamming window? */
-        double arg, half=0.5;
-
-        if(wind) wind = realloc((void *)wind,n*sizeof(double));
-        else wind = malloc(n*sizeof(double));
-        wsize = n;
-        for(i=0, arg=3.1415927*2.0/(wsize), q=wind; i < n; )
-            *q++ = (half - half * cos((half + (double)i++) * arg));
-    }
-    /* If preemphasis is to be performed,  this assumes that there are n+1 valid
-       samples in the input buffer (din). */
-    if(preemp != 0.0) {
-        for(i=n, p=din+1, q=wind; i-- > 0; )
-            *dout++ = *q++ * ((double)(*p++) - (preemp * *din++));
-    } else {
-        for(i=n, q=wind; i-- > 0; )
-            *dout++ = *q++ * *din++;
-    }
-}
-
-static void w_window(short *din, double *dout, int n, double preemp,
-                     window_type_t type)
-{
-    switch (type) {
-    case WINDOW_TYPE_RECTANGULAR:
-        rwindow(din, dout, n, preemp);
-    break;
-
-    case WINDOW_TYPE_HAMMING:
-        hwindow(din, dout, n, preemp);
-    break;
-
-    case WINDOW_TYPE_COS:
-        cwindow(din, dout, n, preemp);
-    break;
-
-    case WINDOW_TYPE_HANNING:
-        hnwindow(din, dout, n, preemp);
-    break;
-
-    case WINDOW_TYPE_INVALID:
-    break;
-    }
-}
-
 /*
  * Compute the pp+1 autocorrelation lags of the windowsize samples in s.
  * Return the normalized autocorrelation coefficients in r.
  * The rms is returned in e.
  */
-static void autoc(size_t windowsize, double *s, size_t p, double *r, double *e) {
+static void autoc(size_t windowsize, short *s, size_t p, double *r, double *e) {
     size_t i, j;
-    double *q, *t, sum, sum0;
+    double sum, sum0;
+    short *q, *t;
 
     for ( i=0, q=s, sum0=0.; i< windowsize; q++, i++){
         sum0 += (*q) * (*q);
@@ -220,37 +99,22 @@ static void durbin (double *r, double *k, double *a, int p, double *ex) {
 }
 
 void lpc(size_t lpc_ord, double lpc_stabl, size_t wsize, short *data, double *lpca,
-         double *ar, double *lpck, double *normerr, double *rms, double preemp,
-         window_type_t type)
+         double *normerr, double *rms)
 {
-    double *dwind;
-    double rho[MAXORDER+1], k[MAXORDER], a[MAXORDER+1],*r,*kp,*ap,en,er;
-    double wfact = 1.0;
+    double rho[MAXORDER+1], k[MAXORDER],en,er;
 
-    dwind = malloc(wsize*sizeof(double));
-
-    w_window(data, dwind, wsize, preemp, type);
-    if(!(r = ar)) r = rho;
-    if(!(kp = lpck)) kp = k;
-    if(!(ap = lpca)) ap = a;
-    autoc( wsize, dwind, lpc_ord, r, &en );
+    autoc( wsize, data, lpc_ord, rho, &en );
     if(lpc_stabl > 1.0) { /* add a little to the diagonal for stability */
         size_t i;
         double ffact;
         ffact =1.0/(1.0 + exp((-lpc_stabl/20.0) * log(10.0)));
-        for(i=1; i <= lpc_ord; i++) rho[i] = ffact * r[i];
-        *rho = *r;
-        r = rho;
-        if(ar)
-            for(i=0;i<=lpc_ord; i++) ar[i] = r[i]; /* copy out for possible use later */
+        for(i=1; i <= lpc_ord; i++) rho[i] = ffact * rho[i];
     }
-    durbin ( r, kp, &ap[1], lpc_ord, &er);
+    durbin ( rho, k, &lpca[1], lpc_ord, &er);
 
-    *ap = 1.0;
-    if(rms) *rms = en/wfact;
-    if(normerr) *normerr = er;
-
-    free(dwind);
+    *lpca = 1.0;
+    *rms = en;
+    *normerr = er;
 }
 
 /*		lbpoly.c		*/

@@ -57,27 +57,12 @@ typedef struct { /* structure of a DP lattice node for formant tracking */
     double *cumerr; 	 /* cum. errors associated with each cand. */
 } form_t;
 
-typedef struct {   /* structure to hold raw LPC analysis data */
-    double rms;    /* rms for current LPC analysis frame */
-    double rms2;    /* rms for current F0 analysis frame */
-    double f0;     /* fundamental frequency estimate for this frame */
-    double pv;		/* probability that frame is voiced */
-    double change; /* spec. distance between current and prev. frames */
-    size_t npoles; /* # of complex poles from roots of LPC polynomial */
-    double *freq;  /* array of complex pole frequencies (Hz) */
-    double *band;  /* array of complex pole bandwidths (Hz) */
-} pole_t;
-
 void formant_opts_init(formant_opts_t *opts) {
     *opts = (formant_opts_t) {
         .n_formants = 4,
 
         .downsample_rate = 10000,
         .pre_emph_factor = 0.7,
-
-        .window_type = WINDOW_TYPE_RECTANGULAR,
-        .window_dur = 0.049,
-        .frame_dur = 0.01,
 
         .lpc_order = 12,
         .nom_freq = -10,
@@ -250,24 +235,12 @@ static int get_fcand(int npole, double *freq, int nform, short **pcan,
     return candy(pcan, freq, npole, nform, domerge, 0, 0, 0, 0, fmins, fmaxs) + 1;
 }
 
-/* find the maximum in the "stationarity" function (stored in rms) */
-static double get_stat_max(pole_t **poles, int nframes) {
-    int i;
-    double amax, t;
-
-    for(i=1, amax = (*poles++)->rms; i++ < nframes; )
-        if((t = (*poles++)->rms) > amax) amax = t;
-
-    return(amax);
-}
-
-static void dpform(sound_t *ps, pole_t **poles, size_t nform, double nom_f1) {
-    double pferr, conerr, minerr, dffact, ftemp, berr, ferr, bfact, ffact,
+static void dpform(sound_t *ps, size_t nform, double nom_f1) {
+    double minerr, dffact, ftemp, berr, ferr, bfact, ffact,
            rmsmax, fbias, **fr, **ba, rmsdffact, merger=0.0, merge_cost,
            FBIAS;
-    int	ic, ip, mincan=0;
+    int	ic, mincan=0;
     short	**pcan;
-    form_t	**fl;
     int dmaxc,dminc,dcountf;
     bool domerge;
 
@@ -282,7 +255,7 @@ static void dpform(sound_t *ps, pole_t **poles, size_t nform, double nom_f1) {
             fmaxs[i] = fnom[i] + (i * nom_f1) + 1000.0;
         }
     }
-    rmsmax = get_stat_max(poles, ps->n_samples);
+    rmsmax = ps->pole.rms;
     FBIAS = F_BIAS /(.01 * ps->sample_rate);
     /* Setup working values of the cost weights. */
     dffact = (DF_FACT * .01) * ps->sample_rate; /* keep dffact scaled to frame rate */
@@ -304,97 +277,67 @@ static void dpform(sound_t *ps, pole_t **poles, size_t nform, double nom_f1) {
         pcan[i] = malloc(sizeof(short) * nform);
 
     /* Allocate space for the dp lattice */
-    fl = malloc(sizeof(form_t*) * ps->n_samples);
-    for(size_t i=0;i < ps->n_samples; i++)
-        fl[i] = malloc(sizeof(form_t));
+    form_t fl;
 
     /* main formant tracking loop */
-    for(size_t i = 0; i < ps->n_samples; i++) {	/* for all analysis frames... */
-        size_t ncan = 0;		/* initialize candidate mapping count to 0 */
+    size_t ncan = 0;		/* initialize candidate mapping count to 0 */
 
-        /* moderate the cost of frequency jumps by the relative amplitude */
-        rmsdffact = poles[i]->rms;
-        rmsdffact = rmsdffact/rmsmax;
-        rmsdffact = rmsdffact * dffact;
+    /* moderate the cost of frequency jumps by the relative amplitude */
+    rmsdffact = ps->pole.rms;
+    rmsdffact = rmsdffact/rmsmax;
+    rmsdffact = rmsdffact * dffact;
 
-        /* Get all likely mappings of the poles onto formants for this frame. */
-        if(poles[i]->npoles){	/* if there ARE pole frequencies available... */
-            ncan = get_fcand(poles[i]->npoles,poles[i]->freq,nform,pcan, domerge,
-                             fmins, fmaxs);
+    /* Get all likely mappings of the poles onto formants for this frame. */
+    if(ps->pole.npoles){	/* if there ARE pole frequencies available... */
+        ncan = get_fcand(ps->pole.npoles,ps->pole.freq,nform,pcan, domerge,
+                         fmins, fmaxs);
 
-            /* Allocate space for this frame's candidates in the dp lattice. */
-            fl[i]->prept =  malloc(sizeof(short) * ncan);
-            fl[i]->cumerr = malloc(sizeof(double) * ncan);
-            fl[i]->cand =   malloc(sizeof(short*) * ncan);
+        /* Allocate space for this frame's candidates in the dp lattice. */
+        fl.prept =  malloc(sizeof(short) * ncan);
+        fl.cumerr = malloc(sizeof(double) * ncan);
+        fl.cand =   malloc(sizeof(short*) * ncan);
 
-            for(size_t j = 0; j < ncan; j++){	/* allocate cand. slots and install candidates */
-                fl[i]->cand[j] = malloc(sizeof(short) * nform);
+        for(size_t j = 0; j < ncan; j++){	/* allocate cand. slots and install candidates */
+            fl.cand[j] = malloc(sizeof(short) * nform);
 
-                for(size_t k = 0; k < nform; k++)
-                    fl[i]->cand[j][k] = pcan[j][k];
+            for(size_t k = 0; k < nform; k++)
+                fl.cand[j][k] = pcan[j][k];
+        }
+    }
+    fl.ncand = ncan;
+    /* compute the distance between the current and previous mappings */
+    for(size_t j = 0; j < ncan; j++) {	/* for each CURRENT mapping... */
+            minerr = 0;
+
+        fl.prept[j] = mincan; /* point to best previous mapping */
+        /* (Note that mincan=-1 if there were no candidates in prev. fr.) */
+        /* Compute the local costs for this current mapping. */
+        berr = 0;
+        ferr = 0;
+        fbias = 0;
+        for(size_t k = 0; k < nform; k++){
+            ic = fl.cand[j][k];
+            if(ic >= 0){
+                if( !k ){		/* F1 candidate? */
+                    ftemp = ps->pole.freq[ic];
+                    merger = (domerge &&
+                            (ftemp == ps->pole.freq[fl.cand[j][1]]))?
+                        merge_cost: 0.0;
+                }
+                berr += ps->pole.band[ic];
+                ferr += (fabs(ps->pole.freq[ic]-fnom[k])/fnom[k]);
+                fbias += ps->pole.freq[ic];
+            } else {		/* if there was no freq. for this formant */
+                fbias += fnom[k];
+                berr += NOBAND;
+                ferr += MISSING;
             }
         }
-        fl[i]->ncand = ncan;
-        /* compute the distance between the current and previous mappings */
-        for(size_t j = 0; j < ncan; j++) {	/* for each CURRENT mapping... */
-            if( i ){		/* past the first frame? */
-                minerr = 0;
-                if(fl[i-1]->ncand) minerr = 2.0e30;
-                mincan = -1;
-                for(size_t k = 0; k < fl[i-1]->ncand; k++){ /* for each PREVIOUS map... */
-                    pferr = 0.0;
-                    for(size_t l = 0; l < nform; l++){
-                        ic = fl[i]->cand[j][l];
-                        ip = fl[i-1]->cand[k][l];
-                        if((ic >= 0)	&& (ip >= 0)){
-                            ftemp = 2.0 * fabs(poles[i]->freq[ic] - poles[i-1]->freq[ip])/
-                                (poles[i]->freq[ic] + poles[i-1]->freq[ip]);
-                            /* cost prop. to SQUARE of deviation to discourage large jumps */
-                            pferr += ftemp * ftemp;
-                        }
-                        else pferr += MISSING;
-                    }
-                    /* scale delta-frequency cost and add in prev. cum. cost */
-                    conerr = (rmsdffact * pferr) + fl[i-1]->cumerr[k];
-                    if(conerr < minerr){
-                        minerr = conerr;
-                        mincan = k;
-                    }
-                }			/* end for each PREVIOUS mapping... */
-            }	else {		/* (i.e. if this is the first frame... ) */
-                minerr = 0;
-            }
 
-            fl[i]->prept[j] = mincan; /* point to best previous mapping */
-            /* (Note that mincan=-1 if there were no candidates in prev. fr.) */
-            /* Compute the local costs for this current mapping. */
-            berr = 0;
-            ferr = 0;
-            fbias = 0;
-            for(size_t k = 0; k < nform; k++){
-                ic = fl[i]->cand[j][k];
-                if(ic >= 0){
-                    if( !k ){		/* F1 candidate? */
-                        ftemp = poles[i]->freq[ic];
-                        merger = (domerge &&
-                                (ftemp == poles[i]->freq[fl[i]->cand[j][1]]))?
-                            merge_cost: 0.0;
-                    }
-                    berr += poles[i]->band[ic];
-                    ferr += (fabs(poles[i]->freq[ic]-fnom[k])/fnom[k]);
-                    fbias += poles[i]->freq[ic];
-                } else {		/* if there was no freq. for this formant */
-                    fbias += fnom[k];
-                    berr += NOBAND;
-                    ferr += MISSING;
-                }
-            }
-
-            /* Compute the total cost of this mapping and best previous. */
-            fl[i]->cumerr[j] = (FBIAS * fbias) + (bfact * berr) + merger +
-                (ffact * ferr) + minerr;
-        }			/* end for each CURRENT mapping... */
-    }				/* end for all analysis frames... */
+        /* Compute the total cost of this mapping and best previous. */
+        fl.cumerr[j] = (FBIAS * fbias) + (bfact * berr) + merger +
+            (ffact * ferr) + minerr;
+    }			/* end for each CURRENT mapping... */
 
     /* Pick the candidate in the final frame with the lowest cost. */
     /* Starting with that min.-cost cand., work back thru the lattice. */
@@ -405,26 +348,26 @@ static void dpform(sound_t *ps, pole_t **poles, size_t nform, double nom_f1) {
     for (size_t m = 1; m <= ps->n_samples; m += 1) {
         size_t i = ps->n_samples - m;
         if(mincan < 0)		/* need to find best starting candidate? */
-            if(fl[i]->ncand){	/* have candidates at this frame? */
-                minerr = fl[i]->cumerr[0];
+            if(fl.ncand){	/* have candidates at this frame? */
+                minerr = fl.cumerr[0];
                 mincan = 0;
-                for(size_t j=1; j<fl[i]->ncand; j++)
-                    if( fl[i]->cumerr[j] < minerr ){
-                        minerr = fl[i]->cumerr[j];
+                for(size_t j=1; j<fl.ncand; j++)
+                    if( fl.cumerr[j] < minerr ){
+                        minerr = fl.cumerr[j];
                         mincan = j;
                     }
             }
         if(mincan >= 0){	/* if there is a "best" candidate at this frame */
             int j;
-            if((j = fl[i]->ncand) > dmaxc) dmaxc = j;
+            if((j = fl.ncand) > dmaxc) dmaxc = j;
             else
                 if( j < dminc) dminc = j;
             dcountf++;
             for(size_t j=0; j<nform; j++){
-                int k = fl[i]->cand[mincan][j];
+                int k = fl.cand[mincan][j];
                 if(k >= 0){
-                    fr[j][i] = poles[i]->freq[k];
-                    ba[j][i] = poles[i]->band[k];
+                    fr[j][i] = ps->pole.freq[k];
+                    ba[j][i] = ps->pole.band[k];
                 } else {		/* IF FORMANT IS MISSING... */
                     if(i < ps->n_samples - 1){
                         fr[j][i] = fr[j][i+1]; /* replicate backwards */
@@ -435,7 +378,7 @@ static void dpform(sound_t *ps, pole_t **poles, size_t nform, double nom_f1) {
                     }
                 }
             }
-            mincan = fl[i]->prept[mincan];
+            mincan = fl.prept[mincan];
         } else {		/* if no candidates, fake with "nominal" frequencies. */
             for(size_t j = 0; j < nform; j++){
                 fr[j][i] = fnom[j];
@@ -445,28 +388,16 @@ static void dpform(sound_t *ps, pole_t **poles, size_t nform, double nom_f1) {
     }				/* end unpacking formant tracks from the dp lattice */
     /* Deallocate all the DP lattice work space. */
     for (size_t m = 1; m <= ps->n_samples; m += 1) {
-        size_t i = ps->n_samples - m;
-        if(fl[i]->ncand){
-            if(fl[i]->cand) {
-                for(size_t j = 0; j < fl[i]->ncand; j++)
-                    free(fl[i]->cand[j]);
-                free(fl[i]->cand);
-                free(fl[i]->cumerr);
-                free(fl[i]->prept);
+        if(fl.ncand){
+            if(fl.cand) {
+                for(size_t j = 0; j < fl.ncand; j++)
+                    free(fl.cand[j]);
+                free(fl.cand);
+                free(fl.cumerr);
+                free(fl.prept);
             }
         }
     }
-    for(size_t i=0; i<ps->n_samples; i++)
-        free(fl[i]);
-    free(fl);
-    fl = 0;
-
-    for(size_t i=0; i<ps->n_samples; i++) {
-        free(poles[i]->freq);
-        free(poles[i]->band);
-        free(poles[i]);
-    }
-    free(poles);
 
     /* Deallocate space for the raw candidate aray. */
     for(size_t i=0;i<MAX_CANDIDATES;i++) free(pcan[i]);
@@ -482,89 +413,57 @@ static void dpform(sound_t *ps, pole_t **poles, size_t nform, double nom_f1) {
     free(fr);
 }
 
-static pole_t **lpc_poles(sound_t *sp, const formant_opts_t *opts) {
+static void lpc_poles(sound_t *sp, const formant_opts_t *opts) {
     enum { LPC_STABLE = 70 };
 
-    int size, step, nform, init;
-    size_t nfrm;
-    pole_t **poles;
-    double energy, lpca[LPC_ORDER_MAX], normerr, *bap, *frp, *rhp;
+    int nform;
+    double energy, lpca[LPC_ORDER_MAX], normerr, *bap, *frp;
     double rr[LPC_ORDER_MAX], ri[LPC_ORDER_MAX];
     short *datap, *dporg;
     double flo;
     double x;
 
-    // Duration of the given samples in seconds.
-    double samples_dur;
-
-    bap = NULL;
-    frp = NULL;
-    rhp = NULL;
-
     x = PI / (opts->lpc_order + 1);
 
-    samples_dur = (double)(sp->n_samples) / sp->sample_rate;
-
-    if (samples_dur < opts->window_dur)
-        return NULL;
-
-    nfrm = 1 + (int)((samples_dur - opts->window_dur) / opts->frame_dur);
-    size = (int)(.5 + opts->window_dur * sp->sample_rate);
-    step = (int)(.5 + opts->frame_dur * sp->sample_rate);
-    poles = malloc(nfrm * sizeof(pole_t *));
     dporg = malloc(sizeof(short) * sp->n_samples);
     datap = dporg;
 
     for (size_t i = 0; i < sp->n_samples; i++)
         datap[i] = (short) sound_get_sample(sp, 0, i);
 
-    init = true;
+    sp->pole.freq = frp = malloc(sizeof(double)*opts->lpc_order);
+    sp->pole.band = bap = malloc(sizeof(double)*opts->lpc_order);
 
-    for (size_t j = 0; j < nfrm; j += 1) {
-        poles[j] = malloc(sizeof(pole_t));
-        poles[j]->freq = frp = malloc(sizeof(double)*opts->lpc_order);
-        poles[j]->band = bap = malloc(sizeof(double)*opts->lpc_order);
+    lpc(opts->lpc_order, LPC_STABLE, sp->n_samples, datap, lpca, &normerr,
+        &energy);
 
-        lpc(opts->lpc_order, LPC_STABLE, size, datap, lpca, rhp, NULL, &normerr,
-            &energy, opts->pre_emph_factor, opts->window_type);
+    sp->pole.change = 0.0;
 
-        poles[j]->change = 0.0;
+    /* set up starting points for the root search near unit circle */
+    for (size_t i = 0; i <= opts->lpc_order; i += 1) {
+        flo = opts->lpc_order - i;
+        rr[i] = 2.0 * cos((flo + 0.5) * x);
+        ri[i] = 2.0 * sin((flo + 0.5) * x);
+    }
 
-        /* set up starting points for the root search near unit circle */
-        if (init) {
-            for (size_t i = 0; i <= opts->lpc_order; i += 1) {
-                flo = opts->lpc_order - i;
-                rr[i] = 2.0 * cos((flo + 0.5) * x);
-                ri[i] = 2.0 * sin((flo + 0.5) * x);
-            }
-        }
+    sp->pole.rms = energy;
 
-        poles[j]->rms = energy;
-
-        /* don't waste time on low energy frames */
-        if (energy > 1.0) {
-            formant(opts->lpc_order, sp->sample_rate, lpca, &nform, frp, bap, rr, ri);
-            poles[j]->npoles = nform;
-            init=false;		/* use old poles to start next search */
-        } else {			/* write out no pole frequencies */
-            poles[j]->npoles = 0;
-            init = true;		/* restart root search in a neutral zone */
-        }
-
-        datap += step;
+    /* don't waste time on low energy frames */
+    if (energy > 1.0) {
+        formant(opts->lpc_order, sp->sample_rate, lpca, &nform, frp, bap, rr, ri);
+        sp->pole.npoles = nform;
+    } else {			/* write out no pole frequencies */
+        sp->pole.npoles = 0;
     }
 
     free(dporg);
 
-    sp->sample_rate = (size_t)(1.0 / opts->frame_dur);
+    sp->sample_rate = sp->n_samples;
     sp->n_channels = opts->lpc_order;
-    sp->n_samples = nfrm;
+    sp->n_samples = 1;
 
-    for (size_t i = 0; i < nfrm; i++)
-        for (size_t j = 0; j < opts->lpc_order; j++)
-            sound_set_sample(sp, j, i, poles[i]->freq[j]);
-
-    return poles;
+    for (size_t j = 0; j < opts->lpc_order; j++)
+        sound_set_sample(sp, j, 0, sp->pole.freq[j]);
 }
 
 /*	Copyright (c) 1987, 1988, 1989 AT&T	*/
@@ -873,9 +772,7 @@ static void highpass(sound_t *s) {
     free(datain);
 }
 
-bool sound_calc_formants(sound_t *s, const formant_opts_t *opts) {
-    pole_t **poles;
-
+void sound_calc_formants(sound_t *s, const formant_opts_t *opts) {
     if (opts->downsample_rate < s->sample_rate)
         Fdownsample(s, opts->downsample_rate);
 
@@ -883,14 +780,11 @@ bool sound_calc_formants(sound_t *s, const formant_opts_t *opts) {
     if (opts->pre_emph_factor < 1.0)
         highpass(s);
 
-    poles = lpc_poles(s, opts);
+    lpc_poles(s, opts);
+    dpform(s, opts->n_formants, opts->nom_freq);
 
-    if (!poles)
-        return false;
-
-    dpform(s, poles, opts->n_formants, opts->nom_freq);
-
-    return true;
+    free(s->pole.freq);
+    free(s->pole.band);
 }
 
 #ifdef LIBFORMANT_TEST
