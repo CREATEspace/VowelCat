@@ -23,16 +23,6 @@ typedef struct {
     formant_sample_t f1, f2;
 } formants_t;
 
-typedef struct {   /* structure to hold raw LPC analysis data */
-    double rms;    /* rms for current LPC analysis frame */
-    double rms2;    /* rms for current F0 analysis frame */
-    double f0;     /* fundamental frequency estimate for this frame */
-    double pv;		/* probability that frame is voiced */
-    size_t npoles; /* # of complex poles from roots of LPC polynomial */
-    double freq[LPC_ORDER];  /* array of complex pole frequencies (Hz) */
-    double band[LPC_ORDER];  /* array of complex pole bandwidths (Hz) */
-} pole_t;
-
 // A raw audio segment.
 typedef struct sound_t {
     // Sample rate of the audio data in Hz.
