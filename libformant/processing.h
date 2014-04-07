@@ -32,7 +32,7 @@ static_assert(FORMANT_COUNT <= MAX_FORMANTS,
 static_assert(FORMANT_COUNT <= (LPC_ORDER - 4) / 2,
     "FORMANT_COUNT too large");
 
-int formant(double s_freq, double *lpca, int *n_form, double *freq,
+int formant(double s_freq, double *lpca, size_t *n_form, double *freq,
             double *band, double *rr, double *ri);
 
 void lpc(size_t wsize, const short *data, double *lpca, double *normerr,

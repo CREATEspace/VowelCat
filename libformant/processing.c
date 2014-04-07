@@ -286,7 +286,7 @@ static int lbpoly(double *a, int order, double *rootr, double *rooti) {
 /* lpca: linear predictor coefficients */
 /* freq: returned array of candidate formant frequencies */
 /* band: returned array of candidate formant bandwidths */
-int formant(double s_freq, double *lpca, int *n_form, double *freq,
+int formant(double s_freq, double *lpca, size_t *n_form, double *freq,
             double *band, double *rr, double *ri)
 {
     double  flo, pi2t, theta;
