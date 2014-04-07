@@ -52,24 +52,6 @@ typedef struct { /* structure of a DP lattice node for formant tracking */
     double *cumerr;	 /* cum. errors associated with each cand. */
 } form_t;
 
-void formant_opts_init(formant_opts_t *opts) {
-    *opts = (formant_opts_t) {
-        .downsample_rate = 10000,
-    };
-}
-
-#ifdef LIBFORMANT_TEST
-TEST test_formant_opts_process() {
-    formant_opts_t opts;
-    formant_opts_init(&opts);
-
-    GREATEST_ASSERTm("default options should validate",
-        formant_opts_process(&opts));
-
-    PASS();
-}
-#endif
-
 void sound_init(sound_t *s) {
     *s = (sound_t) {
         .sample_rate = 0,
@@ -691,7 +673,7 @@ void sound_downsample(sound_t *s, size_t freq2) {
     free(bufin);
 }
 
-void sound_calc_formants(sound_t *s, const formant_opts_t *opts) {
+void sound_calc_formants(sound_t *s) {
     pole_t pole;
     lpc_poles(&pole, s);
     dpform(&pole, s);
@@ -702,7 +684,6 @@ void sound_calc_formants(sound_t *s, const formant_opts_t *opts) {
 
 #ifdef LIBFORMANT_TEST
 SUITE(formant_suite) {
-    RUN_TEST(test_formant_opts_process);
     RUN_TEST(test_sound_load_samples);
 }
 #endif

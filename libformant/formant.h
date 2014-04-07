@@ -19,15 +19,6 @@
 // How input samples are represented.
 typedef short formant_sample_t;
 
-// Parameters for calculating formants.
-typedef struct {
-    // Sample rate to downsample to.
-    double downsample_rate;
-} formant_opts_t;
-
-// Initialize the given options to (wavesurfer) defaults.
-void formant_opts_init(formant_opts_t *opts);
-
 typedef struct {   /* structure to hold raw LPC analysis data */
     double rms;    /* rms for current LPC analysis frame */
     double rms2;    /* rms for current F0 analysis frame */
@@ -77,7 +68,7 @@ void sound_downsample(sound_t *s, size_t freq2);
 //  - sample_count is set to the number of formants calculated
 //  - channel_count is set to 2 * sample_count
 //
-void sound_calc_formants(sound_t *s, const formant_opts_t *opts);
+void sound_calc_formants(sound_t *s);
 
 // Get the i'th F1 formant.
 static inline formant_sample_t sound_f1(const sound_t *s) {
