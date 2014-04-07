@@ -55,7 +55,7 @@ typedef struct sound_t {
     // Number of channels (1 for mono, 2 for stereo, and so on).
     size_t channel_count;
     // The number of samples per channel in the audio data.
-    size_t n_samples;
+    size_t sample_count;
     // The audio data itself.
     formant_sample_t *samples;
     pole_t pole;
@@ -71,19 +71,19 @@ void sound_reset(sound_t *s, size_t sample_rate, size_t channel_count);
 void sound_destroy(sound_t *s);
 
 // Resize the given sound so it can hold the given number of samples.
-void sound_resize(sound_t *s, size_t n_samples);
+void sound_resize(sound_t *s, size_t sample_count);
 
-// Load a buffer of samples into the given sound. Note that n_samples is the
+// Load a buffer of samples into the given sound. Note that sample_count is the
 // total number of samples in the buffer, not per channel.
-void sound_load_samples(sound_t *s, const formant_sample_t *samples, size_t n_samples);
+void sound_load_samples(sound_t *s, const formant_sample_t *samples, size_t sample_count);
 
 // Calculate the formants for the samples in the given sound. Return true if the
 // formants were calculated successfully and false otherwise.
 //
 // The sound is modified in place such that
 //
-//  - n_samples is set to the number of formants calculated
-//  - channel_count is set to 2 * n_samples
+//  - sample_count is set to the number of formants calculated
+//  - channel_count is set to 2 * sample_count
 //
 void sound_calc_formants(sound_t *s, const formant_opts_t *opts);
 

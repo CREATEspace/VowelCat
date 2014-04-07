@@ -95,7 +95,7 @@ void sound_init(sound_t *s) {
     *s = (sound_t) {
         .sample_rate = 0,
         .channel_count = 0,
-        .n_samples = 0,
+        .sample_count = 0,
         .samples = NULL,
     };
 }
@@ -109,18 +109,18 @@ void sound_destroy(sound_t *s) {
     free(s->samples);
 }
 
-void sound_resize(sound_t *s, size_t n_samples) {
-    if (n_samples > s->n_samples * s->channel_count)
-        s->samples = realloc(s->samples, n_samples * sizeof(formant_sample_t));
+void sound_resize(sound_t *s, size_t sample_count) {
+    if (sample_count > s->sample_count * s->channel_count)
+        s->samples = realloc(s->samples, sample_count * sizeof(formant_sample_t));
 
-    // The rest of the processing functions expect n_samples to be the number of
+    // The rest of the processing functions expect sample_count to be the number of
     // samples per channel.
-    s->n_samples = n_samples / s->channel_count;
+    s->sample_count = sample_count / s->channel_count;
 }
 
-void sound_load_samples(sound_t *s, const formant_sample_t *samples, size_t n_samples) {
-    sound_resize(s, n_samples);
-    memcpy(s->samples, samples, n_samples * sizeof(formant_sample_t));
+void sound_load_samples(sound_t *s, const formant_sample_t *samples, size_t sample_count) {
+    sound_resize(s, sample_count);
+    memcpy(s->samples, samples, sample_count * sizeof(formant_sample_t));
 }
 
 #ifdef LIBFORMANT_TEST
@@ -131,11 +131,11 @@ TEST test_sound_load_samples() {
 
     sound_load_samples(&s, NULL, 0);
     GREATEST_ASSERT_EQm("don't allocate with no samples", s.samples, NULL);
-    GREATEST_ASSERT_EQm("don't set n_samples with no samples", s.n_samples, 0);
+    GREATEST_ASSERT_EQm("don't set sample_count with no samples", s.sample_count, 0);
 
     formant_sample_t samples[8] = {0, 0, 0, 0, 0, 0, 0, 42};
     sound_load_samples(&s, samples, 8);
-    GREATEST_ASSERT_EQm("set n_samples correctly", s.n_samples, 4);
+    GREATEST_ASSERT_EQm("set sample_count correctly", s.sample_count, 4);
     GREATEST_ASSERTm("samples allocated", s.samples);
     GREATEST_ASSERT_EQm("copy samples correctly", s.samples[7], 42);
 
@@ -258,11 +258,11 @@ static void dpform(sound_t *ps, size_t nform, double nom_f1) {
         }
     }
     rmsmax = ps->pole.rms;
-    FBIAS = F_BIAS /(.01 * ps->n_samples);
+    FBIAS = F_BIAS /(.01 * ps->sample_count);
     /* Setup working values of the cost weights. */
-    dffact = (DF_FACT * .01) * ps->n_samples; /* keep dffact scaled to frame rate */
-    bfact = BAND_FACT /(.01 * ps->n_samples);
-    ffact = DFN_FACT /(.01 * ps->n_samples);
+    dffact = (DF_FACT * .01) * ps->sample_count; /* keep dffact scaled to frame rate */
+    bfact = BAND_FACT /(.01 * ps->sample_count);
+    ffact = DFN_FACT /(.01 * ps->sample_count);
     merge_cost = F_MERGE;
     if(merge_cost > 1000.0) domerge = false;
 
@@ -411,15 +411,15 @@ static void lpc_poles(sound_t *sp, const formant_opts_t *opts) {
 
     x = M_PI / (opts->lpc_order + 1);
 
-    dporg = malloc(sizeof(short) * sp->n_samples);
+    dporg = malloc(sizeof(short) * sp->sample_count);
 
-    for (size_t i = 0; i < sp->n_samples; i++)
+    for (size_t i = 0; i < sp->sample_count; i++)
         dporg[i] = (short) sound_get_sample(sp, 0, i);
 
     sp->pole.freq = frp = malloc(sizeof(double)*opts->lpc_order);
     sp->pole.band = bap = malloc(sizeof(double)*opts->lpc_order);
 
-    lpc(opts->lpc_order, LPC_STABLE, sp->n_samples, dporg, lpca, &normerr,
+    lpc(opts->lpc_order, LPC_STABLE, sp->sample_count, dporg, lpca, &normerr,
         &energy);
 
     /* set up starting points for the root search near unit circle */
@@ -684,9 +684,9 @@ static void Fdownsample(sound_t *s, double freq2) {
     ncoefft = 0;
 
     bufout = malloc(sizeof(short*));
-    bufin = malloc(sizeof(short) * s->n_samples);
+    bufin = malloc(sizeof(short) * s->sample_count);
 
-    for (size_t i = 0; i < s->n_samples; i++) {
+    for (size_t i = 0; i < s->sample_count; i++) {
         bufin[i] = (short) sound_get_sample(s, 0, i);
     }
 
@@ -704,14 +704,14 @@ static void Fdownsample(sound_t *s, double freq2) {
         }
     }				/*  endif new coefficients need to be computed */
 
-    dwnsamp(bufin, s->n_samples, bufout, &out_samps, insert, decimate, ncoefft, ic,
+    dwnsamp(bufin, s->sample_count, bufout, &out_samps, insert, decimate, ncoefft, ic,
             &smin, &smax);
 
     for (size_t i = 0; i < out_samps; i++) {
         sound_set_sample(s, 0, i, (*bufout)[i]);
     }
 
-    s->n_samples = out_samps;
+    s->sample_count = out_samps;
     s->sample_rate = (int)freq2;
 
     free(*bufout);
