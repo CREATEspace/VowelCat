@@ -43,7 +43,6 @@ typedef struct {   /* structure to hold raw LPC analysis data */
     double rms2;    /* rms for current F0 analysis frame */
     double f0;     /* fundamental frequency estimate for this frame */
     double pv;		/* probability that frame is voiced */
-    double change; /* spec. distance between current and prev. frames */
     size_t npoles; /* # of complex poles from roots of LPC polynomial */
     double *freq;  /* array of complex pole frequencies (Hz) */
     double *band;  /* array of complex pole bandwidths (Hz) */

@@ -422,8 +422,6 @@ static void lpc_poles(sound_t *sp, const formant_opts_t *opts) {
     lpc(opts->lpc_order, LPC_STABLE, sp->n_samples, dporg, lpca, &normerr,
         &energy);
 
-    sp->pole.change = 0.0;
-
     /* set up starting points for the root search near unit circle */
     for (size_t i = 0; i <= opts->lpc_order; i += 1) {
         flo = opts->lpc_order - i;
