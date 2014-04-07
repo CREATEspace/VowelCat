@@ -237,7 +237,8 @@ static int get_fcand(int npole, double *freq, int nform, short **pcan,
     return candy(pcan, freq, npole, nform, domerge, 0, 0, 0, 0, fmins, fmaxs) + 1;
 }
 
-static void dpform(sound_t *ps, size_t nform, double nom_f1) {
+static void dpform(pole_t *pole, const sound_t *ps, size_t nform, double nom_f1)
+{
     double minerr, dffact, ftemp, berr, ferr, bfact, ffact,
            rmsmax, fbias, *fr, *ba, rmsdffact, merger=0.0, merge_cost,
            FBIAS;
@@ -257,7 +258,7 @@ static void dpform(sound_t *ps, size_t nform, double nom_f1) {
             fmaxs[i] = fnom[i] + (i * nom_f1) + 1000.0;
         }
     }
-    rmsmax = ps->pole.rms;
+    rmsmax = pole->rms;
     FBIAS = F_BIAS /(.01 * ps->sample_count);
     /* Setup working values of the cost weights. */
     dffact = (DF_FACT * .01) * ps->sample_count; /* keep dffact scaled to frame rate */
@@ -282,13 +283,13 @@ static void dpform(sound_t *ps, size_t nform, double nom_f1) {
     size_t ncan = 0;		/* initialize candidate mapping count to 0 */
 
     /* moderate the cost of frequency jumps by the relative amplitude */
-    rmsdffact = ps->pole.rms;
+    rmsdffact = pole->rms;
     rmsdffact = rmsdffact/rmsmax;
     rmsdffact = rmsdffact * dffact;
 
     /* Get all likely mappings of the poles onto formants for this frame. */
-    if(ps->pole.npoles){	/* if there ARE pole frequencies available... */
-        ncan = get_fcand(ps->pole.npoles,ps->pole.freq,nform,pcan, domerge,
+    if(pole->npoles){	/* if there ARE pole frequencies available... */
+        ncan = get_fcand(pole->npoles,pole->freq,nform,pcan, domerge,
                          fmins, fmaxs);
 
         /* Allocate space for this frame's candidates in the dp lattice. */
@@ -318,14 +319,14 @@ static void dpform(sound_t *ps, size_t nform, double nom_f1) {
             ic = fl.cand[j][k];
             if(ic >= 0){
                 if( !k ){		/* F1 candidate? */
-                    ftemp = ps->pole.freq[ic];
+                    ftemp = pole->freq[ic];
                     merger = (domerge &&
-                            (ftemp == ps->pole.freq[fl.cand[j][1]]))?
+                            (ftemp == pole->freq[fl.cand[j][1]]))?
                         merge_cost: 0.0;
                 }
-                berr += ps->pole.band[ic];
-                ferr += (fabs(ps->pole.freq[ic]-fnom[k])/fnom[k]);
-                fbias += ps->pole.freq[ic];
+                berr += pole->band[ic];
+                ferr += (fabs(pole->freq[ic]-fnom[k])/fnom[k]);
+                fbias += pole->freq[ic];
             } else {		/* if there was no freq. for this formant */
                 fbias += fnom[k];
                 berr += NOBAND;
@@ -364,8 +365,8 @@ static void dpform(sound_t *ps, size_t nform, double nom_f1) {
         for(size_t j=0; j<nform; j++){
             int k = fl.cand[mincan][j];
             if(k >= 0){
-                fr[j] = ps->pole.freq[k];
-                ba[j] = ps->pole.band[k];
+                fr[j] = pole->freq[k];
+                ba[j] = pole->band[k];
             } else {		/* IF FORMANT IS MISSING... */
                 fr[j] = fnom[j]; /* or insert neutral values */
                 ba[j] = NOBAND;
@@ -399,7 +400,9 @@ static void dpform(sound_t *ps, size_t nform, double nom_f1) {
     free(fr);
 }
 
-static void lpc_poles(sound_t *sp, const formant_opts_t *opts) {
+static void lpc_poles(pole_t *pole, const sound_t *sp,
+                      const formant_opts_t *opts)
+{
     enum { LPC_STABLE = 70 };
 
     int nform;
@@ -416,8 +419,8 @@ static void lpc_poles(sound_t *sp, const formant_opts_t *opts) {
     for (size_t i = 0; i < sp->sample_count; i++)
         dporg[i] = (short) sound_get_sample(sp, 0, i);
 
-    sp->pole.freq = frp = malloc(sizeof(double)*opts->lpc_order);
-    sp->pole.band = bap = malloc(sizeof(double)*opts->lpc_order);
+    pole->freq = frp = malloc(sizeof(double)*opts->lpc_order);
+    pole->band = bap = malloc(sizeof(double)*opts->lpc_order);
 
     lpc(opts->lpc_order, LPC_STABLE, sp->sample_count, dporg, lpca, &normerr,
         &energy);
@@ -429,14 +432,14 @@ static void lpc_poles(sound_t *sp, const formant_opts_t *opts) {
         ri[i] = 2.0 * sin((flo + 0.5) * x);
     }
 
-    sp->pole.rms = energy;
+    pole->rms = energy;
 
     /* don't waste time on low energy frames */
     if (energy > 1.0) {
         formant(opts->lpc_order, sp->sample_rate, lpca, &nform, frp, bap, rr, ri);
-        sp->pole.npoles = nform;
+        pole->npoles = nform;
     } else {			/* write out no pole frequencies */
-        sp->pole.npoles = 0;
+        pole->npoles = 0;
     }
 
     free(dporg);
@@ -718,11 +721,12 @@ void sound_calc_formants(sound_t *s, const formant_opts_t *opts) {
     if (opts->downsample_rate < s->sample_rate)
         Fdownsample(s, opts->downsample_rate);
 
-    lpc_poles(s, opts);
-    dpform(s, opts->n_formants, opts->nom_freq);
+    pole_t pole;
+    lpc_poles(&pole, s, opts);
+    dpform(&pole, s, opts->n_formants, opts->nom_freq);
 
-    free(s->pole.freq);
-    free(s->pole.band);
+    free(pole.freq);
+    free(pole.band);
 }
 
 #ifdef LIBFORMANT_TEST

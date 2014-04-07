@@ -58,7 +58,6 @@ typedef struct sound_t {
     size_t sample_count;
     // The audio data itself.
     formant_sample_t *samples;
-    pole_t pole;
 } sound_t;
 
 // Initialize the given sound to a default state.
