@@ -591,7 +591,6 @@ static int ratprx(double a, int *k, int *l, int qlim) {
 
     aa = fabs(a);
     ai = (int) aa;
-    /*    af = fmod(aa,1.0); */
     i = (int) aa;
     af = aa - i;
     q = 0;
