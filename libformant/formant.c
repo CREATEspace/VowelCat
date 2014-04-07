@@ -200,7 +200,7 @@ static int get_fcand(int npole, double *freq, int nform, short **pcan,
 
 static void dpform(pole_t *pole, const sound_t *ps, formants_t *f) {
     double minerr, dffact, ftemp, berr, ferr, bfact, ffact,
-           rmsmax, fbias, *fr, *ba, rmsdffact, merger=0.0, merge_cost,
+           rmsmax, fbias, *fr, rmsdffact, merger=0.0, merge_cost,
            FBIAS;
     int	ic, mincan=0;
     short	**pcan;
@@ -228,8 +228,7 @@ static void dpform(pole_t *pole, const sound_t *ps, formants_t *f) {
     if(merge_cost > 1000.0) domerge = false;
 
     /* Allocate space for the formant and bandwidth arrays to be passed back. */
-    fr = malloc(sizeof(double) * FORMANT_COUNT * 2);
-    ba = fr + FORMANT_COUNT;
+    fr = malloc(sizeof(double) * FORMANT_COUNT);
 
     /* Allocate space for the raw candidate array. */
     pcan = malloc(sizeof(short*) * MAX_CANDIDATES);
@@ -326,17 +325,14 @@ static void dpform(pole_t *pole, const sound_t *ps, formants_t *f) {
             int k = fl.cand[mincan][j];
             if(k >= 0){
                 fr[j] = pole->freq[k];
-                ba[j] = pole->band[k];
             } else {		/* IF FORMANT IS MISSING... */
                 fr[j] = fnom[j]; /* or insert neutral values */
-                ba[j] = NOBAND;
             }
         }
         mincan = fl.prept[mincan];
     } else {		/* if no candidates, fake with "nominal" frequencies. */
         for(size_t j = 0; j < FORMANT_COUNT; j++){
             fr[j] = fnom[j];
-            ba[j] = NOBAND;
         }
     }			/* note that mincan will remain =-1 if no candidates */
     /* Deallocate all the DP lattice work space. */
