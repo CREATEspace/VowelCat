@@ -356,7 +356,7 @@ static void dpform(pole_t *pole, const sound_t *ps, formants_t *f) {
     free(fr);
 }
 
-static void lpc_poles(pole_t *pole, const sound_t *sp) {
+static void pole_lpc(pole_t *pole, const sound_t *sp) {
     int nform;
     double energy, lpca[LPC_ORDER_MAX], normerr, *bap, *frp;
     double rr[LPC_ORDER_MAX], ri[LPC_ORDER_MAX];
@@ -671,7 +671,7 @@ void sound_downsample(sound_t *s, size_t freq2) {
 void formants_calc(formants_t *f, const sound_t *s) {
     pole_t pole;
 
-    lpc_poles(&pole, s);
+    pole_lpc(&pole, s);
     dpform(&pole, s, f);
 
     free(pole.freq);
