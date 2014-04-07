@@ -440,11 +440,6 @@ static void lpc_poles(sound_t *sp, const formant_opts_t *opts) {
     }
 
     free(dporg);
-
-    sp->channel_count = opts->lpc_order;
-
-    for (size_t j = 0; j < opts->lpc_order; j++)
-        sound_set_sample(sp, j, 0, sp->pole.freq[j]);
 }
 
 /*	Copyright (c) 1987, 1988, 1989 AT&T	*/
