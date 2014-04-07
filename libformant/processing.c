@@ -16,21 +16,16 @@
  */
 
 #include <fcntl.h>
-#include <math.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <float.h>
+
+#define __USE_XOPEN
+#include <math.h>
 
 #include "processing.h"
-
-#ifndef DBL_MAX
-#define DBL_MAX 1.7976931348623157E+308
-#endif
-
-#ifndef M_PI
-#define M_PI    3.14159265358979323846
-#endif
 
 #define MAXORDER	60	/* maximum permissible LPC order */
 

@@ -12,10 +12,12 @@
 // Revised by: John Shore
 
 #include <assert.h>
-#include <math.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
+
+#define __USE_XOPEN
+#include <math.h>
 
 #include "formant.h"
 #include "processing.h"
@@ -28,8 +30,6 @@ enum { MAX_FORMANTS = 7 };
 
 enum { LPC_ORDER_MIN = 2 };
 enum { LPC_ORDER_MAX = 30 };
-
-#define PI 3.14159265358979323846
 
 /* Here are the major fudge factors for tweaking the formant tracker. */
 /* maximum number of candidate mappings allowed */
@@ -406,7 +406,7 @@ static void lpc_poles(sound_t *sp, const formant_opts_t *opts) {
     double flo;
     double x;
 
-    x = PI / (opts->lpc_order + 1);
+    x = M_PI / (opts->lpc_order + 1);
 
     dporg = malloc(sizeof(short) * sp->n_samples);
 
@@ -467,9 +467,9 @@ static void lc_lin_fir(double fc, int *nf, double *coef) {
     n = (*nf + 1)/2;
 
     /*  compute part of the ideal impulse response */
-    twopi = PI * 2.0;
+    twopi = M_PI * 2.0;
     coef[0] = 2.0 * fc;
-    c = PI;
+    c = M_PI;
     fn = twopi * fc;
     for(i=1;i < n; i++) coef[i] = sin(i * fn)/(c * i);
 
