@@ -9,12 +9,33 @@
 #ifndef PROCESSING_H
 #define PROCESSING_H
 
+#include <assert.h>
 #include <stddef.h>
 
-int formant(int lpc_order, double s_freq, double *lpca, int *n_form,
-            double *freq, double *band, double *rr, double *ri);
+#define FORMANT_COUNT 2
+#define MAX_FORMANTS 7
 
-void lpc(size_t lpc_ord, double lpc_stabl, size_t wsize, const short *data,
-         double *lpca, double *normerr, double *rms);
+#define LPC_STABLE 70
+#define LPC_ORDER 12
+#define LPC_ORDER_MIN 2
+#define LPC_ORDER_MAX 30
+
+// Nominal F1 frequency.
+#define NOM_FREQ 0
+
+static_assert(LPC_ORDER <= LPC_ORDER_MAX && LPC_ORDER >= LPC_ORDER_MIN,
+    "LPC_ORDER out of bounds");
+
+static_assert(FORMANT_COUNT <= MAX_FORMANTS,
+    "FORMANT_COUNT out of bounds");
+
+static_assert(FORMANT_COUNT <= (LPC_ORDER - 4) / 2,
+    "FORMANT_COUNT too large");
+
+int formant(double s_freq, double *lpca, int *n_form, double *freq,
+            double *band, double *rr, double *ri);
+
+void lpc(size_t wsize, const short *data, double *lpca, double *normerr,
+         double *rms);
 
 #endif

@@ -26,11 +26,6 @@
 #include "greatest.h"
 #endif
 
-enum { MAX_FORMANTS = 7 };
-
-enum { LPC_ORDER_MIN = 2 };
-enum { LPC_ORDER_MAX = 30 };
-
 /* Here are the major fudge factors for tweaking the formant tracker. */
 /* maximum number of candidate mappings allowed */
 enum { MAX_CANDIDATES = 300 };
@@ -59,24 +54,8 @@ typedef struct { /* structure of a DP lattice node for formant tracking */
 
 void formant_opts_init(formant_opts_t *opts) {
     *opts = (formant_opts_t) {
-        .n_formants = 4,
         .downsample_rate = 10000,
-        .lpc_order = 12,
-        .nom_freq = -10,
     };
-}
-
-bool formant_opts_process(formant_opts_t *opts) {
-    if (opts->lpc_order > LPC_ORDER_MAX || opts->lpc_order < LPC_ORDER_MIN)
-        return false;
-
-    if (opts->n_formants > (opts->lpc_order - 4) / 2)
-        return false;
-
-    if (opts->n_formants > MAX_FORMANTS)
-        return false;
-
-    return true;
 }
 
 #ifdef LIBFORMANT_TEST
@@ -237,7 +216,7 @@ static int get_fcand(int npole, double *freq, int nform, short **pcan,
     return candy(pcan, freq, npole, nform, domerge, 0, 0, 0, 0, fmins, fmaxs) + 1;
 }
 
-static void dpform(pole_t *pole, const sound_t *ps, size_t nform, double nom_f1)
+static void dpform(pole_t *pole, const sound_t *ps)
 {
     double minerr, dffact, ftemp, berr, ferr, bfact, ffact,
            rmsmax, fbias, *fr, *ba, rmsdffact, merger=0.0, merge_cost,
@@ -251,11 +230,11 @@ static void dpform(pole_t *pole, const sound_t *ps, size_t nform, double nom_f1)
                 fmins[] = {   50,  400, 1000, 2000, 2000, 3000, 3000}, /* frequency bounds */
                 fmaxs[] = { 1500, 3500, 4500, 5000, 6000, 6000, 8000}; /* for 1st 5 formants */
 
-    if(nom_f1 > 0.0) {
+    if(NOM_FREQ > 0.0) {
         for(size_t i=0; i < MAX_FORMANTS; i++) {
-            fnom[i] = ((i * 2) + 1) * nom_f1;
-            fmins[i] = fnom[i] - ((i+1) * nom_f1) + 50.0;
-            fmaxs[i] = fnom[i] + (i * nom_f1) + 1000.0;
+            fnom[i] = ((i * 2) + 1) * NOM_FREQ;
+            fmins[i] = fnom[i] - ((i+1) * NOM_FREQ) + 50.0;
+            fmaxs[i] = fnom[i] + (i * NOM_FREQ) + 1000.0;
         }
     }
     rmsmax = pole->rms;
@@ -268,13 +247,13 @@ static void dpform(pole_t *pole, const sound_t *ps, size_t nform, double nom_f1)
     if(merge_cost > 1000.0) domerge = false;
 
     /* Allocate space for the formant and bandwidth arrays to be passed back. */
-    fr = malloc(sizeof(double) * nform * 2);
-    ba = fr + nform;
+    fr = malloc(sizeof(double) * FORMANT_COUNT * 2);
+    ba = fr + FORMANT_COUNT;
 
     /* Allocate space for the raw candidate array. */
     pcan = malloc(sizeof(short*) * MAX_CANDIDATES);
     for(size_t i=0;i<MAX_CANDIDATES;i++)
-        pcan[i] = malloc(sizeof(short) * nform);
+        pcan[i] = malloc(sizeof(short) * FORMANT_COUNT);
 
     /* Allocate space for the dp lattice */
     form_t fl;
@@ -289,7 +268,7 @@ static void dpform(pole_t *pole, const sound_t *ps, size_t nform, double nom_f1)
 
     /* Get all likely mappings of the poles onto formants for this frame. */
     if(pole->npoles){	/* if there ARE pole frequencies available... */
-        ncan = get_fcand(pole->npoles,pole->freq,nform,pcan, domerge,
+        ncan = get_fcand(pole->npoles,pole->freq,FORMANT_COUNT,pcan, domerge,
                          fmins, fmaxs);
 
         /* Allocate space for this frame's candidates in the dp lattice. */
@@ -298,9 +277,9 @@ static void dpform(pole_t *pole, const sound_t *ps, size_t nform, double nom_f1)
         fl.cand =   malloc(sizeof(short*) * ncan);
 
         for(size_t j = 0; j < ncan; j++){	/* allocate cand. slots and install candidates */
-            fl.cand[j] = malloc(sizeof(short) * nform);
+            fl.cand[j] = malloc(sizeof(short) * FORMANT_COUNT);
 
-            for(size_t k = 0; k < nform; k++)
+            for(size_t k = 0; k < FORMANT_COUNT; k++)
                 fl.cand[j][k] = pcan[j][k];
         }
     }
@@ -315,7 +294,7 @@ static void dpform(pole_t *pole, const sound_t *ps, size_t nform, double nom_f1)
         berr = 0;
         ferr = 0;
         fbias = 0;
-        for(size_t k = 0; k < nform; k++){
+        for(size_t k = 0; k < FORMANT_COUNT; k++){
             ic = fl.cand[j][k];
             if(ic >= 0){
                 if( !k ){		/* F1 candidate? */
@@ -362,7 +341,7 @@ static void dpform(pole_t *pole, const sound_t *ps, size_t nform, double nom_f1)
         else
             if( j < dminc) dminc = j;
         dcountf++;
-        for(size_t j=0; j<nform; j++){
+        for(size_t j=0; j<FORMANT_COUNT; j++){
             int k = fl.cand[mincan][j];
             if(k >= 0){
                 fr[j] = pole->freq[k];
@@ -374,7 +353,7 @@ static void dpform(pole_t *pole, const sound_t *ps, size_t nform, double nom_f1)
         }
         mincan = fl.prept[mincan];
     } else {		/* if no candidates, fake with "nominal" frequencies. */
-        for(size_t j = 0; j < nform; j++){
+        for(size_t j = 0; j < FORMANT_COUNT; j++){
             fr[j] = fnom[j];
             ba[j] = NOBAND;
         }
@@ -400,11 +379,7 @@ static void dpform(pole_t *pole, const sound_t *ps, size_t nform, double nom_f1)
     free(fr);
 }
 
-static void lpc_poles(pole_t *pole, const sound_t *sp,
-                      const formant_opts_t *opts)
-{
-    enum { LPC_STABLE = 70 };
-
+static void lpc_poles(pole_t *pole, const sound_t *sp) {
     int nform;
     double energy, lpca[LPC_ORDER_MAX], normerr, *bap, *frp;
     double rr[LPC_ORDER_MAX], ri[LPC_ORDER_MAX];
@@ -412,22 +387,21 @@ static void lpc_poles(pole_t *pole, const sound_t *sp,
     double flo;
     double x;
 
-    x = M_PI / (opts->lpc_order + 1);
+    x = M_PI / (LPC_ORDER + 1);
 
     dporg = malloc(sizeof(short) * sp->sample_count);
 
     for (size_t i = 0; i < sp->sample_count; i++)
         dporg[i] = (short) sound_get_sample(sp, 0, i);
 
-    pole->freq = frp = malloc(sizeof(double)*opts->lpc_order);
-    pole->band = bap = malloc(sizeof(double)*opts->lpc_order);
+    pole->freq = frp = malloc(sizeof(double)*LPC_ORDER);
+    pole->band = bap = malloc(sizeof(double)*LPC_ORDER);
 
-    lpc(opts->lpc_order, LPC_STABLE, sp->sample_count, dporg, lpca, &normerr,
-        &energy);
+    lpc(sp->sample_count, dporg, lpca, &normerr, &energy);
 
     /* set up starting points for the root search near unit circle */
-    for (size_t i = 0; i <= opts->lpc_order; i += 1) {
-        flo = opts->lpc_order - i;
+    for (size_t i = 0; i <= LPC_ORDER; i += 1) {
+        flo = LPC_ORDER - i;
         rr[i] = 2.0 * cos((flo + 0.5) * x);
         ri[i] = 2.0 * sin((flo + 0.5) * x);
     }
@@ -436,7 +410,7 @@ static void lpc_poles(pole_t *pole, const sound_t *sp,
 
     /* don't waste time on low energy frames */
     if (energy > 1.0) {
-        formant(opts->lpc_order, sp->sample_rate, lpca, &nform, frp, bap, rr, ri);
+        formant(sp->sample_rate, lpca, &nform, frp, bap, rr, ri);
         pole->npoles = nform;
     } else {			/* write out no pole frequencies */
         pole->npoles = 0;
@@ -722,8 +696,8 @@ void sound_calc_formants(sound_t *s, const formant_opts_t *opts) {
         Fdownsample(s, opts->downsample_rate);
 
     pole_t pole;
-    lpc_poles(&pole, s, opts);
-    dpform(&pole, s, opts->n_formants, opts->nom_freq);
+    lpc_poles(&pole, s);
+    dpform(&pole, s);
 
     free(pole.freq);
     free(pole.band);

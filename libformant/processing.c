@@ -27,8 +27,6 @@
 
 #include "processing.h"
 
-#define MAXORDER	60	/* maximum permissible LPC order */
-
 /*
  * Compute the pp+1 autocorrelation lags of the windowsize samples in s.
  * Return the normalized autocorrelation coefficients in r.
@@ -66,7 +64,7 @@ static void autoc(size_t windowsize, const short *s, size_t p, double *r, double
  *	(i.e. a[0] is assumed to be = +1.)
  */
 static void durbin (const double *r, double *k, double *a, int p, double *ex) {
-    double b[MAXORDER];
+    double b[LPC_ORDER_MAX];
     int i, j;
     double e, s;
 
@@ -92,19 +90,19 @@ static void durbin (const double *r, double *k, double *a, int p, double *ex) {
     *ex = e;
 }
 
-void lpc(size_t lpc_ord, double lpc_stabl, size_t wsize, const short *data,
-         double *lpca, double *normerr, double *rms)
+void lpc(size_t wsize, const short *data, double *lpca, double *normerr,
+         double *rms)
 {
-    double rho[MAXORDER+1], k[MAXORDER],en,er;
+    double rho[LPC_ORDER_MAX+1], k[LPC_ORDER_MAX],en,er;
 
-    autoc( wsize, data, lpc_ord, rho, &en );
-    if(lpc_stabl > 1.0) { /* add a little to the diagonal for stability */
+    autoc( wsize, data, LPC_ORDER, rho, &en );
+    if(LPC_STABLE > 1.0) { /* add a little to the diagonal for stability */
         size_t i;
         double ffact;
-        ffact =1.0/(1.0 + exp((-lpc_stabl/20.0) * log(10.0)));
-        for(i=1; i <= lpc_ord; i++) rho[i] = ffact * rho[i];
+        ffact =1.0/(1.0 + exp((-LPC_STABLE/20.0) * log(10.0)));
+        for(i=1; i <= LPC_ORDER; i++) rho[i] = ffact * rho[i];
     }
-    durbin ( rho, k, &lpca[1], lpc_ord, &er);
+    durbin ( rho, k, &lpca[1], LPC_ORDER, &er);
 
     *lpca = 1.0;
     *rms = en;
@@ -178,7 +176,7 @@ static int qquad(double a, double b, double c, double *r1r, double *r1i,
    search on entry to lbpoly(). */
 static int lbpoly(double *a, int order, double *rootr, double *rooti) {
     int	    ord, ordm1, ordm2, itcnt, i, k, mmk, mmkp2, mmkp1, ntrys;
-    double  err, p, q, delp, delq, b[MAXORDER], c[MAXORDER], den;
+    double  err, p, q, delp, delq, b[LPC_ORDER_MAX], c[LPC_ORDER_MAX], den;
     double  lim0 = 0.5*sqrt(DBL_MAX);
 
     for(ord = order; ord > 2; ord -= 2){
@@ -288,13 +286,13 @@ static int lbpoly(double *a, int order, double *rootr, double *rooti) {
 /* lpca: linear predictor coefficients */
 /* freq: returned array of candidate formant frequencies */
 /* band: returned array of candidate formant bandwidths */
-int formant(int lpc_order, double s_freq, double *lpca, int *n_form,
-            double *freq, double *band, double *rr, double *ri)
+int formant(double s_freq, double *lpca, int *n_form, double *freq,
+            double *band, double *rr, double *ri)
 {
     double  flo, pi2t, theta;
     int	i,ii,iscomp1,iscomp2,fc,swit;
 
-    if(! lbpoly(lpca,lpc_order,rr,ri)){ /* find the roots of the LPC polynomial */
+    if(! lbpoly(lpca,LPC_ORDER,rr,ri)){ /* find the roots of the LPC polynomial */
         *n_form = 0;		/* was there a problem in the root finder? */
         return(false);
     }
@@ -302,7 +300,7 @@ int formant(int lpc_order, double s_freq, double *lpca, int *n_form,
     pi2t = M_PI * 2.0 /s_freq;
 
     /* convert the z-plane locations to frequencies and bandwidths */
-    for(fc=0, ii=0; ii < lpc_order; ii++){
+    for(fc=0, ii=0; ii < LPC_ORDER; ii++){
         if((rr[ii] != 0.0)||(ri[ii] != 0.0)){
             theta = atan2(ri[ii],rr[ii]);
             freq[fc] = fabs(theta / pi2t);

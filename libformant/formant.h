@@ -21,22 +21,12 @@ typedef short formant_sample_t;
 
 // Parameters for calculating formants.
 typedef struct {
-    // Number of formants to calculate.
-    size_t n_formants;
     // Sample rate to downsample to.
     double downsample_rate;
-    // Order of LPC algorithm.
-    size_t lpc_order;
-    // Nominal frequency.
-    double nom_freq;
 } formant_opts_t;
 
 // Initialize the given options to (wavesurfer) defaults.
 void formant_opts_init(formant_opts_t *opts);
-
-// Process and validate the given options. The options must be ran through this
-// function before being passed into sound_calc_formants.
-bool formant_opts_process(formant_opts_t *opts);
 
 typedef struct {   /* structure to hold raw LPC analysis data */
     double rms;    /* rms for current LPC analysis frame */
