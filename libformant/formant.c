@@ -402,22 +402,21 @@ static void lpc_poles(sound_t *sp, const formant_opts_t *opts) {
     int nform;
     double energy, lpca[LPC_ORDER_MAX], normerr, *bap, *frp;
     double rr[LPC_ORDER_MAX], ri[LPC_ORDER_MAX];
-    short *datap, *dporg;
+    short *dporg;
     double flo;
     double x;
 
     x = PI / (opts->lpc_order + 1);
 
     dporg = malloc(sizeof(short) * sp->n_samples);
-    datap = dporg;
 
     for (size_t i = 0; i < sp->n_samples; i++)
-        datap[i] = (short) sound_get_sample(sp, 0, i);
+        dporg[i] = (short) sound_get_sample(sp, 0, i);
 
     sp->pole.freq = frp = malloc(sizeof(double)*opts->lpc_order);
     sp->pole.band = bap = malloc(sizeof(double)*opts->lpc_order);
 
-    lpc(opts->lpc_order, LPC_STABLE, sp->n_samples, datap, lpca, &normerr,
+    lpc(opts->lpc_order, LPC_STABLE, sp->n_samples, dporg, lpca, &normerr,
         &energy);
 
     sp->pole.change = 0.0;
