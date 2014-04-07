@@ -54,7 +54,7 @@ typedef struct { /* structure of a DP lattice node for formant tracking */
     size_t ncand; /* # of candidate mappings for this frame */
     short **cand;      /* pole-to-formant map-candidate array */
     short *prept;	 /* backpointer array for each frame */
-    double *cumerr; 	 /* cum. errors associated with each cand. */
+    double *cumerr;	 /* cum. errors associated with each cand. */
 } form_t;
 
 void formant_opts_init(formant_opts_t *opts) {
@@ -234,7 +234,7 @@ static int get_fcand(int npole, double *freq, int nform, short **pcan,
 
 static void dpform(sound_t *ps, size_t nform, double nom_f1) {
     double minerr, dffact, ftemp, berr, ferr, bfact, ffact,
-           rmsmax, fbias, **fr, **ba, rmsdffact, merger=0.0, merge_cost,
+           rmsmax, fbias, *fr, *ba, rmsdffact, merger=0.0, merge_cost,
            FBIAS;
     int	ic, mincan=0;
     short	**pcan;
@@ -262,11 +262,8 @@ static void dpform(sound_t *ps, size_t nform, double nom_f1) {
     if(merge_cost > 1000.0) domerge = false;
 
     /* Allocate space for the formant and bandwidth arrays to be passed back. */
-    fr = malloc(sizeof(double*) * nform * 2);
+    fr = malloc(sizeof(double) * nform * 2);
     ba = fr + nform;
-    for(size_t i=0;i < nform*2; i++){
-        fr[i] = malloc(sizeof(double) * ps->n_samples);
-    }
 
     /* Allocate space for the raw candidate array. */
     pcan = malloc(sizeof(short*) * MAX_CANDIDATES);
@@ -342,57 +339,48 @@ static void dpform(sound_t *ps, size_t nform, double nom_f1) {
     dminc = 100;
     dcountf = 0;
     mincan = -1;
-    for (size_t m = 1; m <= ps->n_samples; m += 1) {
-        size_t i = ps->n_samples - m;
-        if(mincan < 0)		/* need to find best starting candidate? */
-            if(fl.ncand){	/* have candidates at this frame? */
-                minerr = fl.cumerr[0];
-                mincan = 0;
-                for(size_t j=1; j<fl.ncand; j++)
-                    if( fl.cumerr[j] < minerr ){
-                        minerr = fl.cumerr[j];
-                        mincan = j;
-                    }
+
+    if (fl.ncand){	/* have candidates at this frame? */
+        minerr = fl.cumerr[0];
+        mincan = 0;
+        for(size_t j=1; j<fl.ncand; j++)
+            if( fl.cumerr[j] < minerr ){
+                minerr = fl.cumerr[j];
+                mincan = j;
             }
-        if(mincan >= 0){	/* if there is a "best" candidate at this frame */
-            int j;
-            if((j = fl.ncand) > dmaxc) dmaxc = j;
-            else
-                if( j < dminc) dminc = j;
-            dcountf++;
-            for(size_t j=0; j<nform; j++){
-                int k = fl.cand[mincan][j];
-                if(k >= 0){
-                    fr[j][i] = ps->pole.freq[k];
-                    ba[j][i] = ps->pole.band[k];
-                } else {		/* IF FORMANT IS MISSING... */
-                    if(i < ps->n_samples - 1){
-                        fr[j][i] = fr[j][i+1]; /* replicate backwards */
-                        ba[j][i] = ba[j][i+1];
-                    } else {
-                        fr[j][i] = fnom[j]; /* or insert neutral values */
-                        ba[j][i] = NOBAND;
-                    }
-                }
+    }
+
+    if(mincan >= 0){	/* if there is a "best" candidate at this frame */
+        int j;
+        if((j = fl.ncand) > dmaxc) dmaxc = j;
+        else
+            if( j < dminc) dminc = j;
+        dcountf++;
+        for(size_t j=0; j<nform; j++){
+            int k = fl.cand[mincan][j];
+            if(k >= 0){
+                fr[j] = ps->pole.freq[k];
+                ba[j] = ps->pole.band[k];
+            } else {		/* IF FORMANT IS MISSING... */
+                fr[j] = fnom[j]; /* or insert neutral values */
+                ba[j] = NOBAND;
             }
-            mincan = fl.prept[mincan];
-        } else {		/* if no candidates, fake with "nominal" frequencies. */
-            for(size_t j = 0; j < nform; j++){
-                fr[j][i] = fnom[j];
-                ba[j][i] = NOBAND;
-            }
-        }			/* note that mincan will remain =-1 if no candidates */
-    }				/* end unpacking formant tracks from the dp lattice */
+        }
+        mincan = fl.prept[mincan];
+    } else {		/* if no candidates, fake with "nominal" frequencies. */
+        for(size_t j = 0; j < nform; j++){
+            fr[j] = fnom[j];
+            ba[j] = NOBAND;
+        }
+    }			/* note that mincan will remain =-1 if no candidates */
     /* Deallocate all the DP lattice work space. */
-    for (size_t m = 1; m <= ps->n_samples; m += 1) {
-        if(fl.ncand){
-            if(fl.cand) {
-                for(size_t j = 0; j < fl.ncand; j++)
-                    free(fl.cand[j]);
-                free(fl.cand);
-                free(fl.cumerr);
-                free(fl.prept);
-            }
+    if(fl.ncand){
+        if(fl.cand) {
+            for(size_t j = 0; j < fl.ncand; j++)
+                free(fl.cand[j]);
+            free(fl.cand);
+            free(fl.cumerr);
+            free(fl.prept);
         }
     }
 
@@ -402,11 +390,9 @@ static void dpform(sound_t *ps, size_t nform, double nom_f1) {
 
     ps->n_channels = nform * 2;
 
-    for (size_t i = 0; i < ps->n_samples; i++)
-        for (size_t j = 0; j < ps->n_channels; j++)
-            sound_set_sample(ps, j, i, fr[j][i]);
+    for (size_t j = 0; j < ps->n_channels; j++)
+        sound_set_sample(ps, j, 0, fr[j]);
 
-    for(size_t i = 0; i < nform*2; i++) free(fr[i]);
     free(fr);
 }
 
@@ -457,7 +443,6 @@ static void lpc_poles(sound_t *sp, const formant_opts_t *opts) {
 
     sp->sample_rate = sp->n_samples;
     sp->n_channels = opts->lpc_order;
-    sp->n_samples = 1;
 
     for (size_t j = 0; j < opts->lpc_order; j++)
         sound_set_sample(sp, j, 0, sp->pole.freq[j]);

@@ -25,8 +25,9 @@ typedef struct {
     size_t n_formants;
     // Sample rate to downsample to.
     double downsample_rate;
-    // XXX: not sure what these do.
+    // Order of LPC algorithm.
     size_t lpc_order;
+    // Nominal frequency.
     double nom_freq;
 } formant_opts_t;
 
