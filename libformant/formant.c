@@ -198,8 +198,7 @@ static int get_fcand(int npole, double *freq, int nform, short **pcan,
     return candy(pcan, freq, npole, nform, domerge, 0, 0, 0, 0, fmins, fmaxs) + 1;
 }
 
-static void dpform(pole_t *pole, const sound_t *ps)
-{
+static void dpform(pole_t *pole, const sound_t *ps, formants_t *f) {
     double minerr, dffact, ftemp, berr, ferr, bfact, ffact,
            rmsmax, fbias, *fr, *ba, rmsdffact, merger=0.0, merge_cost,
            FBIAS;
@@ -355,8 +354,8 @@ static void dpform(pole_t *pole, const sound_t *ps)
     for(size_t i=0;i<MAX_CANDIDATES;i++) free(pcan[i]);
     free(pcan);
 
-    ps->samples[0] = fr[0];
-    ps->samples[1] = fr[1];
+    f->f1 = fr[0];
+    f->f2 = fr[1];
 
     free(fr);
 }
@@ -673,10 +672,11 @@ void sound_downsample(sound_t *s, size_t freq2) {
     free(bufin);
 }
 
-void sound_calc_formants(sound_t *s) {
+void formants_calc(formants_t *f, const sound_t *s) {
     pole_t pole;
+
     lpc_poles(&pole, s);
-    dpform(&pole, s);
+    dpform(&pole, s, f);
 
     free(pole.freq);
     free(pole.band);

@@ -19,6 +19,10 @@
 // How input samples are represented.
 typedef short formant_sample_t;
 
+typedef struct {
+    formant_sample_t f1, f2;
+} formants_t;
+
 typedef struct {   /* structure to hold raw LPC analysis data */
     double rms;    /* rms for current LPC analysis frame */
     double rms2;    /* rms for current F0 analysis frame */
@@ -60,24 +64,7 @@ void sound_load_samples(sound_t *s, const formant_sample_t *samples, size_t samp
 // Downsample the given sound's sample rate to freq2.
 void sound_downsample(sound_t *s, size_t freq2);
 
-// Calculate the formants for the samples in the given sound. Return true if the
-// formants were calculated successfully and false otherwise.
-//
-// The sound is modified in place such that
-//
-//  - sample_count is set to the number of formants calculated
-//  - channel_count is set to 2 * sample_count
-//
-void sound_calc_formants(sound_t *s);
-
-// Get the i'th F1 formant.
-static inline formant_sample_t sound_f1(const sound_t *s) {
-    return s->samples[0];
-}
-
-// Get the i'th F2 formant.
-static inline formant_sample_t sound_f2(const sound_t *s) {
-    return s->samples[1];
-}
+// Calculate the formants for the samples in the given sound.
+void formants_calc(formants_t *f, const sound_t *s);
 
 #endif
