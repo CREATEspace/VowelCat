@@ -258,11 +258,11 @@ static void dpform(sound_t *ps, size_t nform, double nom_f1) {
         }
     }
     rmsmax = ps->pole.rms;
-    FBIAS = F_BIAS /(.01 * ps->sample_rate);
+    FBIAS = F_BIAS /(.01 * ps->n_samples);
     /* Setup working values of the cost weights. */
-    dffact = (DF_FACT * .01) * ps->sample_rate; /* keep dffact scaled to frame rate */
-    bfact = BAND_FACT /(.01 * ps->sample_rate);
-    ffact = DFN_FACT /(.01 * ps->sample_rate);
+    dffact = (DF_FACT * .01) * ps->n_samples; /* keep dffact scaled to frame rate */
+    bfact = BAND_FACT /(.01 * ps->n_samples);
+    ffact = DFN_FACT /(.01 * ps->n_samples);
     merge_cost = F_MERGE;
     if(merge_cost > 1000.0) domerge = false;
 
@@ -441,7 +441,6 @@ static void lpc_poles(sound_t *sp, const formant_opts_t *opts) {
 
     free(dporg);
 
-    sp->sample_rate = sp->n_samples;
     sp->n_channels = opts->lpc_order;
 
     for (size_t j = 0; j < opts->lpc_order; j++)
