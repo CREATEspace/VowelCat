@@ -35,7 +35,6 @@ static_assert(FORMANT_COUNT <= (LPC_ORDER - 4) / 2,
 int formant(double s_freq, double *lpca, size_t *n_form, double *freq,
             double *band, double *rr, double *ri);
 
-void lpc(size_t wsize, const short *data, double *lpca, double *normerr,
-         double *rms);
+void lpc(size_t wsize, const short *data, double *lpca, double *rms);
 
 #endif

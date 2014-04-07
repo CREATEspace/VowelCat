@@ -367,7 +367,7 @@ static void pole_dpform(pole_t *pole, const sound_t *ps, formants_t *f) {
 }
 
 static void pole_lpc(pole_t *pole, const sound_t *sp) {
-    double lpca[LPC_ORDER_MAX], normerr;
+    double lpca[LPC_ORDER_MAX];
     double rr[LPC_ORDER_MAX], ri[LPC_ORDER_MAX];
     short *dporg;
     double flo;
@@ -380,7 +380,7 @@ static void pole_lpc(pole_t *pole, const sound_t *sp) {
     for (size_t i = 0; i < sp->sample_count; i++)
         dporg[i] = (short) sound_get_sample(sp, 0, i);
 
-    lpc(sp->sample_count, dporg, lpca, &normerr, &pole->rms);
+    lpc(sp->sample_count, dporg, lpca, &pole->rms);
 
     /* set up starting points for the root search near unit circle */
     for (size_t i = 0; i <= LPC_ORDER; i += 1) {

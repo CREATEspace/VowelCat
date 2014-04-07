@@ -90,9 +90,7 @@ static void durbin (const double *r, double *k, double *a, int p, double *ex) {
     *ex = e;
 }
 
-void lpc(size_t wsize, const short *data, double *lpca, double *normerr,
-         double *rms)
-{
+void lpc(size_t wsize, const short *data, double *lpca, double *rms) {
     double rho[LPC_ORDER_MAX+1], k[LPC_ORDER_MAX],en,er;
 
     autoc( wsize, data, LPC_ORDER, rho, &en );
@@ -106,7 +104,6 @@ void lpc(size_t wsize, const short *data, double *lpca, double *normerr,
 
     *lpca = 1.0;
     *rms = en;
-    *normerr = er;
 }
 
 /*		lbpoly.c		*/
