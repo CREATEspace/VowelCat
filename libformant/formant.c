@@ -198,7 +198,7 @@ static int get_fcand(int npole, double *freq, int nform, short **pcan,
     return candy(pcan, freq, npole, nform, domerge, 0, 0, 0, 0, fmins, fmaxs) + 1;
 }
 
-static void dpform(pole_t *pole, const sound_t *ps, formants_t *f) {
+static void pole_dpform(pole_t *pole, const sound_t *ps, formants_t *f) {
     double minerr, dffact, ftemp, berr, ferr, bfact, ffact,
            rmsmax, fbias, *fr, rmsdffact, merger=0.0, merge_cost,
            FBIAS;
@@ -672,7 +672,7 @@ void formants_calc(formants_t *f, const sound_t *s) {
     pole_t pole;
 
     pole_lpc(&pole, s);
-    dpform(&pole, s, f);
+    pole_dpform(&pole, s, f);
 
     free(pole.freq);
     free(pole.band);
