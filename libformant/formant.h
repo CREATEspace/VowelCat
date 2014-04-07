@@ -53,7 +53,7 @@ typedef struct sound_t {
     // Sample rate of the audio data in Hz.
     size_t sample_rate;
     // Number of channels (1 for mono, 2 for stereo, and so on).
-    size_t n_channels;
+    size_t channel_count;
     // The number of samples per channel in the audio data.
     size_t n_samples;
     // The audio data itself.
@@ -65,7 +65,7 @@ typedef struct sound_t {
 void sound_init(sound_t *s);
 
 // Reset the given sound to have the given sample rate and channel setup.
-void sound_reset(sound_t *s, size_t sample_rate, size_t n_channels);
+void sound_reset(sound_t *s, size_t sample_rate, size_t channel_count);
 
 // Release the memory held by the given sound.
 void sound_destroy(sound_t *s);
@@ -83,7 +83,7 @@ void sound_load_samples(sound_t *s, const formant_sample_t *samples, size_t n_sa
 // The sound is modified in place such that
 //
 //  - n_samples is set to the number of formants calculated
-//  - n_channels is set to 2 * n_samples
+//  - channel_count is set to 2 * n_samples
 //
 void sound_calc_formants(sound_t *s, const formant_opts_t *opts);
 

@@ -94,15 +94,15 @@ TEST test_formant_opts_process() {
 void sound_init(sound_t *s) {
     *s = (sound_t) {
         .sample_rate = 0,
-        .n_channels = 0,
+        .channel_count = 0,
         .n_samples = 0,
         .samples = NULL,
     };
 }
 
-void sound_reset(sound_t *s, size_t sample_rate, size_t n_channels) {
+void sound_reset(sound_t *s, size_t sample_rate, size_t channel_count) {
     s->sample_rate = sample_rate;
-    s->n_channels = n_channels;
+    s->channel_count = channel_count;
 }
 
 void sound_destroy(sound_t *s) {
@@ -110,12 +110,12 @@ void sound_destroy(sound_t *s) {
 }
 
 void sound_resize(sound_t *s, size_t n_samples) {
-    if (n_samples > s->n_samples * s->n_channels)
+    if (n_samples > s->n_samples * s->channel_count)
         s->samples = realloc(s->samples, n_samples * sizeof(formant_sample_t));
 
     // The rest of the processing functions expect n_samples to be the number of
     // samples per channel.
-    s->n_samples = n_samples / s->n_channels;
+    s->n_samples = n_samples / s->channel_count;
 }
 
 void sound_load_samples(sound_t *s, const formant_sample_t *samples, size_t n_samples) {
@@ -145,13 +145,13 @@ TEST test_sound_load_samples() {
 
 // Get the i'th sample in the given channel.
 static inline formant_sample_t sound_get_sample(const sound_t *s, size_t chan, size_t i) {
-    return s->samples[i * s->n_channels + chan];
+    return s->samples[i * s->channel_count + chan];
 }
 
 static inline void sound_set_sample(sound_t *s, size_t chan, size_t i,
                                     formant_sample_t val)
 {
-    s->samples[i * s->n_channels + chan] = val;
+    s->samples[i * s->channel_count + chan] = val;
 }
 
 /* A formant tracker based on LPC polynomial roots and dynamic programming */
@@ -441,7 +441,7 @@ static void lpc_poles(sound_t *sp, const formant_opts_t *opts) {
 
     free(dporg);
 
-    sp->n_channels = opts->lpc_order;
+    sp->channel_count = opts->lpc_order;
 
     for (size_t j = 0; j < opts->lpc_order; j++)
         sound_set_sample(sp, j, 0, sp->pole.freq[j]);
