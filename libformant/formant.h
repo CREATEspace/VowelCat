@@ -66,6 +66,9 @@ void sound_resize(sound_t *s, size_t sample_count);
 // total number of samples in the buffer, not per channel.
 void sound_load_samples(sound_t *s, const formant_sample_t *samples, size_t sample_count);
 
+// Downsample the given sound's sample rate to freq2.
+void sound_downsample(sound_t *s, size_t freq2);
+
 // Calculate the formants for the samples in the given sound. Return true if the
 // formants were calculated successfully and false otherwise.
 //

@@ -631,7 +631,7 @@ static int ratprx(double a, int *k, int *l, int qlim) {
     return(true);
 }
 
-static void sound_downsample(sound_t *s, double freq2) {
+void sound_downsample(sound_t *s, size_t freq2) {
     enum { N_BITS = 15 };
 
     short	*bufin, **bufout;
@@ -692,9 +692,6 @@ static void sound_downsample(sound_t *s, double freq2) {
 }
 
 void sound_calc_formants(sound_t *s, const formant_opts_t *opts) {
-    if (opts->downsample_rate < s->sample_rate)
-        sound_downsample(s, opts->downsample_rate);
-
     pole_t pole;
     lpc_poles(&pole, s);
     dpform(&pole, s);
