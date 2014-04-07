@@ -50,7 +50,7 @@ typedef struct { /* structure of a DP lattice node for formant tracking */
     short **cand;      /* pole-to-formant map-candidate array */
     short *prept;	 /* backpointer array for each frame */
     double *cumerr;	 /* cum. errors associated with each cand. */
-} form_t;
+} dp_lattice_t;
 
 void sound_init(sound_t *s) {
     *s = (sound_t) {
@@ -236,7 +236,7 @@ static void pole_dpform(pole_t *pole, const sound_t *ps, formants_t *f) {
         pcan[i] = malloc(sizeof(short) * FORMANT_COUNT);
 
     /* Allocate space for the dp lattice */
-    form_t fl;
+    dp_lattice_t fl;
 
     /* main formant tracking loop */
     size_t ncan = 0;		/* initialize candidate mapping count to 0 */
