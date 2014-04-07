@@ -585,7 +585,7 @@ static void dwnsamp(short *buf, int in_samps, short **buf2, size_t *out_samps,
     *buf2 = realloc(*buf2,sizeof(short) * (*out_samps));
 }
 
-static int ratprx(double a, int *k, int *l, int qlim) {
+static void ratprx(double a, int *k, int *l, int qlim) {
     double aa, af, q, em, qq = 0, pp = 0, ps, e;
     int	ai, ip, i;
 
@@ -608,7 +608,6 @@ static int ratprx(double a, int *k, int *l, int qlim) {
     *k = (int) ((ai * qq) + pp);
     *k = (a > 0)? *k : -(*k);
     *l = (int) qq;
-    return(true);
 }
 
 void sound_downsample(sound_t *s, size_t freq2) {
