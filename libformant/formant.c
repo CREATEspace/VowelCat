@@ -358,7 +358,7 @@ static void pole_dpform(pole_t *pole, const sound_t *ps, formants_t *f) {
 
 static void pole_lpc(pole_t *pole, const sound_t *sp) {
     int nform;
-    double energy, lpca[LPC_ORDER_MAX], normerr, *bap, *frp;
+    double energy, lpca[LPC_ORDER_MAX], normerr;
     double rr[LPC_ORDER_MAX], ri[LPC_ORDER_MAX];
     short *dporg;
     double flo;
@@ -370,9 +370,6 @@ static void pole_lpc(pole_t *pole, const sound_t *sp) {
 
     for (size_t i = 0; i < sp->sample_count; i++)
         dporg[i] = (short) sound_get_sample(sp, 0, i);
-
-    pole->freq = frp = malloc(sizeof(double)*LPC_ORDER);
-    pole->band = bap = malloc(sizeof(double)*LPC_ORDER);
 
     lpc(sp->sample_count, dporg, lpca, &normerr, &energy);
 
@@ -387,7 +384,7 @@ static void pole_lpc(pole_t *pole, const sound_t *sp) {
 
     /* don't waste time on low energy frames */
     if (energy > 1.0) {
-        formant(sp->sample_rate, lpca, &nform, frp, bap, rr, ri);
+        formant(sp->sample_rate, lpca, &nform, pole->freq, pole->band, rr, ri);
         pole->npoles = nform;
     } else {			/* write out no pole frequencies */
         pole->npoles = 0;
@@ -673,9 +670,6 @@ void formants_calc(formants_t *f, const sound_t *s) {
 
     pole_lpc(&pole, s);
     pole_dpform(&pole, s, f);
-
-    free(pole.freq);
-    free(pole.band);
 }
 
 #ifdef LIBFORMANT_TEST

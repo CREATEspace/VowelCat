@@ -29,8 +29,8 @@ typedef struct {   /* structure to hold raw LPC analysis data */
     double f0;     /* fundamental frequency estimate for this frame */
     double pv;		/* probability that frame is voiced */
     size_t npoles; /* # of complex poles from roots of LPC polynomial */
-    double *freq;  /* array of complex pole frequencies (Hz) */
-    double *band;  /* array of complex pole bandwidths (Hz) */
+    double freq[LPC_ORDER];  /* array of complex pole frequencies (Hz) */
+    double band[LPC_ORDER];  /* array of complex pole bandwidths (Hz) */
 } pole_t;
 
 // A raw audio segment.
