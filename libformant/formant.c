@@ -143,6 +143,11 @@ TEST test_sound_load_samples() {
 }
 #endif
 
+// Get the i'th sample in the given channel.
+static inline formant_sample_t sound_get_sample(const sound_t *s, size_t chan, size_t i) {
+    return s->samples[i * s->n_channels + chan];
+}
+
 static inline void sound_set_sample(sound_t *s, size_t chan, size_t i,
                                     formant_sample_t val)
 {
@@ -388,10 +393,8 @@ static void dpform(sound_t *ps, size_t nform, double nom_f1) {
     for(size_t i=0;i<MAX_CANDIDATES;i++) free(pcan[i]);
     free(pcan);
 
-    ps->n_channels = nform * 2;
-
-    for (size_t j = 0; j < ps->n_channels; j++)
-        sound_set_sample(ps, j, 0, fr[j]);
+    ps->samples[0] = fr[0];
+    ps->samples[1] = fr[1];
 
     free(fr);
 }

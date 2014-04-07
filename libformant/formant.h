@@ -88,19 +88,14 @@ void sound_load_samples(sound_t *s, const formant_sample_t *samples, size_t n_sa
 //
 void sound_calc_formants(sound_t *s, const formant_opts_t *opts);
 
-// Get the i'th sample in the given channel.
-static inline formant_sample_t sound_get_sample(const sound_t *s, size_t chan, size_t i) {
-    return s->samples[i * s->n_channels + chan];
-}
-
 // Get the i'th F1 formant.
-static inline formant_sample_t sound_get_f1(const sound_t *s, size_t i) {
-    return sound_get_sample(s, 0, i);
+static inline formant_sample_t sound_f1(const sound_t *s) {
+    return s->samples[0];
 }
 
 // Get the i'th F2 formant.
-static inline formant_sample_t sound_get_f2(const sound_t *s, size_t i) {
-    return sound_get_sample(s, 1, i);
+static inline formant_sample_t sound_f2(const sound_t *s) {
+    return s->samples[1];
 }
 
 #endif
