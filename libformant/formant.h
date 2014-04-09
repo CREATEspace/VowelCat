@@ -34,9 +34,6 @@ typedef struct sound_t {
 // Initialize the given sound to a default state.
 void sound_init(sound_t *s);
 
-// Reset the given sound to have the given sample rate.
-void sound_reset(sound_t *s, size_t sample_rate);
-
 // Release the memory held by the given sound.
 void sound_destroy(sound_t *s);
 

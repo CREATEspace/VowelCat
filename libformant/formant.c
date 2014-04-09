@@ -70,10 +70,6 @@ void sound_init(sound_t *s) {
     };
 }
 
-void sound_reset(sound_t *s, size_t sample_rate) {
-    s->sample_rate = sample_rate;
-}
-
 void sound_destroy(sound_t *s) {
     free(s->samples);
 }
