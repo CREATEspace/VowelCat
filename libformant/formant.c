@@ -65,15 +65,13 @@ typedef struct {   /* structure to hold raw LPC analysis data */
 void sound_init(sound_t *s) {
     *s = (sound_t) {
         .sample_rate = 0,
-        .channel_count = 0,
         .sample_count = 0,
         .samples = NULL,
     };
 }
 
-void sound_reset(sound_t *s, size_t sample_rate, size_t channel_count) {
+void sound_reset(sound_t *s, size_t sample_rate) {
     s->sample_rate = sample_rate;
-    s->channel_count = channel_count;
 }
 
 void sound_destroy(sound_t *s) {
@@ -81,12 +79,10 @@ void sound_destroy(sound_t *s) {
 }
 
 void sound_resize(sound_t *s, size_t sample_count) {
-    if (sample_count > s->sample_count * s->channel_count)
+    if (sample_count > s->sample_count)
         s->samples = realloc(s->samples, sample_count * sizeof(formant_sample_t));
 
-    // The rest of the processing functions expect sample_count to be the number of
-    // samples per channel.
-    s->sample_count = sample_count / s->channel_count;
+    s->sample_count = sample_count;
 }
 
 void sound_load_samples(sound_t *s, const formant_sample_t *samples, size_t sample_count) {
@@ -113,17 +109,6 @@ TEST test_sound_load_samples() {
     PASS();
 }
 #endif
-
-// Get the i'th sample in the given channel.
-static inline formant_sample_t sound_get_sample(const sound_t *s, size_t chan, size_t i) {
-    return s->samples[i * s->channel_count + chan];
-}
-
-static inline void sound_set_sample(sound_t *s, size_t chan, size_t i,
-                                    formant_sample_t val)
-{
-    s->samples[i * s->channel_count + chan] = val;
-}
 
 /* A formant tracker based on LPC polynomial roots and dynamic programming */
 /* At each frame, the LPC poles are ordered by increasing frequency.  All
@@ -367,18 +352,12 @@ static void pole_dpform(pole_t *pole, const sound_t *ps, formants_t *f) {
 static void pole_lpc(pole_t *pole, const sound_t *sp) {
     double lpca[LPC_ORDER_MAX];
     double rr[LPC_ORDER_MAX], ri[LPC_ORDER_MAX];
-    short *dporg;
     double flo;
     double x;
 
     x = M_PI / (LPC_ORDER + 1);
 
-    dporg = malloc(sizeof(short) * sp->sample_count);
-
-    for (size_t i = 0; i < sp->sample_count; i++)
-        dporg[i] = (short) sound_get_sample(sp, 0, i);
-
-    lpc(sp->sample_count, dporg, lpca, &pole->rms);
+    lpc(sp->sample_count, sp->samples, lpca, &pole->rms);
 
     /* set up starting points for the root search near unit circle */
     for (size_t i = 0; i <= LPC_ORDER; i += 1) {
@@ -394,8 +373,6 @@ static void pole_lpc(pole_t *pole, const sound_t *sp) {
     } else {			/* write out no pole frequencies */
         pole->npoles = 0;
     }
-
-    free(dporg);
 }
 
 /*	Copyright (c) 1987, 1988, 1989 AT&T	*/
@@ -635,9 +612,7 @@ void sound_downsample(sound_t *s, size_t freq2) {
     bufout = malloc(sizeof(formant_sample_t*));
     bufin = malloc(sizeof(formant_sample_t) * s->sample_count);
 
-    for (size_t i = 0; i < s->sample_count; i++) {
-        bufin[i] = (formant_sample_t) sound_get_sample(s, 0, i);
-    }
+    memcpy(bufin, s->samples, s->sample_count * sizeof(formant_sample_t));
 
     freq2 = tratio * freq1;
     beta_new = (.5 * freq2)/(insert * freq1);
@@ -656,9 +631,7 @@ void sound_downsample(sound_t *s, size_t freq2) {
     dwnsamp(bufin, s->sample_count, bufout, &out_samps, insert, decimate,
             ncoefft, ic, &smin, &smax);
 
-    for (size_t i = 0; i < out_samps; i++) {
-        sound_set_sample(s, 0, i, (*bufout)[i]);
-    }
+    memcpy(s->samples, *bufout, out_samps * sizeof(formant_sample_t));
 
     s->sample_count = out_samps;
     s->sample_rate = (int)freq2;
