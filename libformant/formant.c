@@ -81,31 +81,6 @@ void sound_resize(sound_t *s, size_t sample_count) {
     s->sample_count = sample_count;
 }
 
-void sound_load_samples(sound_t *s, const formant_sample_t *samples, size_t sample_count) {
-    sound_resize(s, sample_count);
-    memcpy(s->samples, samples, sample_count * sizeof(formant_sample_t));
-}
-
-#ifdef LIBFORMANT_TEST
-TEST test_sound_load_samples() {
-    sound_t s;
-    sound_init(&s);
-    sound_reset(&s, 44100, 2);
-
-    sound_load_samples(&s, NULL, 0);
-    GREATEST_ASSERT_EQm("don't allocate with no samples", s.samples, NULL);
-    GREATEST_ASSERT_EQm("don't set sample_count with no samples", s.sample_count, 0);
-
-    formant_sample_t samples[8] = {0, 0, 0, 0, 0, 0, 0, 42};
-    sound_load_samples(&s, samples, 8);
-    GREATEST_ASSERT_EQm("set sample_count correctly", s.sample_count, 4);
-    GREATEST_ASSERTm("samples allocated", s.samples);
-    GREATEST_ASSERT_EQm("copy samples correctly", s.samples[7], 42);
-
-    PASS();
-}
-#endif
-
 /* A formant tracker based on LPC polynomial roots and dynamic programming */
 /* At each frame, the LPC poles are ordered by increasing frequency.  All
    "reasonable" mappings of the poles to F1, F2, ... are performed.
@@ -646,6 +621,5 @@ void formants_calc(formants_t *f, const sound_t *s) {
 
 #ifdef LIBFORMANT_TEST
 SUITE(formant_suite) {
-    RUN_TEST(test_sound_load_samples);
 }
 #endif

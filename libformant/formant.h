@@ -40,9 +40,6 @@ void sound_destroy(sound_t *s);
 // Resize the given sound so it can hold the given number of samples.
 void sound_resize(sound_t *s, size_t sample_count);
 
-// Load a buffer of samples into the given sound.
-void sound_load_samples(sound_t *s, const formant_sample_t *samples, size_t sample_count);
-
 // Downsample the given sound's sample rate to freq2.
 void sound_downsample(sound_t *s, size_t freq2);
 
