@@ -474,21 +474,30 @@ static void do_fir(formant_sample_t *buf, int in_samps, formant_sample_t *bufo,
     }
 }
 
-static int get_abs_maximum(formant_sample_t *d, int n) {
-    int i;
-    formant_sample_t amax, t;
+static formant_sample_t get_abs_maximum(formant_sample_t *d, size_t n) {
+#define MAX(a, b) ((a) > (b) ? (a) : (b))
+#define ABS(x) ((x) > 0 ? (x) : -(x))
 
-    if((t = *d++) >= 0) amax = t;
-    else amax = -t;
+    formant_sample_t max = 0;
 
-    for(i = n-1; i-- > 0; ) {
-        if((t = *d++) > amax) amax = t;
-        else {
-            if(-t > amax) amax = -t;
-        }
-    }
-    return((int)amax);
+    for (size_t i = 0; i < n; i += 1)
+        max = MAX(ABS(d[i]), max);
+
+    return max;
+
+#undef ABS
+#undef MAX
 }
+
+#ifdef LIBFORMANT_TEST
+TEST test_abs_max() {
+    ASSERT_EQ(get_abs_maximum((formant_sample_t[])
+        {0, 1, 2, 3, 4, 3, 2, 1, 0}, 9), 4);
+    ASSERT_EQ(get_abs_maximum((formant_sample_t[]){-10}, 1), 10);
+
+    PASS();
+}
+#endif
 
 static void dwnsamp(formant_sample_t *buf, int in_samps, formant_sample_t **buf2,
                     size_t *out_samps, int insert, int decimate, int ncoef,
@@ -620,5 +629,6 @@ void formants_calc(formants_t *f, const sound_t *s) {
 
 #ifdef LIBFORMANT_TEST
 SUITE(formant_suite) {
+    RUN_TEST(test_abs_max);
 }
 #endif
