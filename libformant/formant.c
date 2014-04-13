@@ -47,8 +47,8 @@ static const double F_MERGE = 2000.0;
 
 typedef struct { /* structure of a DP lattice node for formant tracking */
     size_t ncand; /* # of candidate mappings for this frame */
-    short **cand;      /* pole-to-formant map-candidate array */
-    short *prept;	 /* backpointer array for each frame */
+    int **cand;      /* pole-to-formant map-candidate array */
+    int *prept;	 /* backpointer array for each frame */
     double *cumerr;	 /* cum. errors associated with each cand. */
 } dp_lattice_t;
 
@@ -151,7 +151,7 @@ static int canbe(const double *fmins, const double *fmaxs, const double *fre,
 /* fnumb: formant number under consideration */
 /* maxp: number of poles to consider */
 /* maxf: number of formants to find */
-static int candy(short **pc, double *fre, int maxp, int maxf, bool domerge,
+static int candy(int **pc, double *fre, int maxp, int maxf, bool domerge,
                  int ncan, int cand, int pnumb, int fnumb,
                  const double *fmins, const double *fmaxs)
 {
@@ -202,7 +202,7 @@ static int candy(short **pc, double *fre, int maxp, int maxf, bool domerge,
    for nform formants, calculate all possible mappings of pole frequencies
    to formants, including, possibly, mappings with missing formants. */
 /* freq: poles ordered by increasing FREQUENCY */
-static int get_fcand(int npole, double *freq, int nform, short **pcan,
+static int get_fcand(int npole, double *freq, int nform, int **pcan,
                      bool domerge, const double *fmins, const double *fmaxs)
 {
     return candy(pcan, freq, npole, nform, domerge, 0, 0, 0, 0, fmins, fmaxs) + 1;
@@ -213,7 +213,7 @@ static void pole_dpform(pole_t *pole, const sound_t *ps, formants_t *f) {
            rmsmax, fbias, *fr, rmsdffact, merger=0.0, merge_cost,
            FBIAS;
     int	ic, mincan=0;
-    short	**pcan;
+    int	**pcan;
     int dmaxc,dminc,dcountf;
     bool domerge;
 
@@ -241,9 +241,9 @@ static void pole_dpform(pole_t *pole, const sound_t *ps, formants_t *f) {
     fr = malloc(sizeof(double) * FORMANT_COUNT);
 
     /* Allocate space for the raw candidate array. */
-    pcan = malloc(sizeof(short*) * MAX_CANDIDATES);
+    pcan = malloc(sizeof(*pcan) * MAX_CANDIDATES);
     for(size_t i=0;i<MAX_CANDIDATES;i++)
-        pcan[i] = malloc(sizeof(short) * FORMANT_COUNT);
+        pcan[i] = malloc(sizeof(**pcan) * FORMANT_COUNT);
 
     /* Allocate space for the dp lattice */
     dp_lattice_t fl;
@@ -262,12 +262,12 @@ static void pole_dpform(pole_t *pole, const sound_t *ps, formants_t *f) {
                          fmins, fmaxs);
 
         /* Allocate space for this frame's candidates in the dp lattice. */
-        fl.prept =  malloc(sizeof(short) * ncan);
+        fl.prept =  malloc(sizeof(*fl.prept) * ncan);
         fl.cumerr = malloc(sizeof(double) * ncan);
-        fl.cand =   malloc(sizeof(short*) * ncan);
+        fl.cand =   malloc(sizeof(*fl.cand) * ncan);
 
         for(size_t j = 0; j < ncan; j++){	/* allocate cand. slots and install candidates */
-            fl.cand[j] = malloc(sizeof(short) * FORMANT_COUNT);
+            fl.cand[j] = malloc(sizeof(**fl.cand) * FORMANT_COUNT);
 
             for(size_t k = 0; k < FORMANT_COUNT; k++)
                 fl.cand[j][k] = pcan[j][k];
