@@ -434,11 +434,11 @@ static void lc_lin_fir(double fc, int *nf, double *coef) {
    passband gain.  This filter is convolved with the signal in buf.
    The output is placed in buf2.  If invert != 0, the filter magnitude
    response will be inverted. */
-static void do_fir(short *buf, int in_samps, short *bufo, int ncoef,
-                   short *ic, int invert)
+static void do_fir(formant_sample_t *buf, int in_samps, formant_sample_t *bufo,
+                   int ncoef, formant_sample_t *ic, int invert)
 {
-    short  *buft, *bufp, *bufp2, stem;
-    short co[256], mem[256];
+    formant_sample_t  *buft, *bufp, *bufp2, stem;
+    formant_sample_t co[256], mem[256];
     int i, j, k, l, m, sum, integral;
 
     bufp = ic + ncoef - 1;
@@ -526,9 +526,9 @@ static void do_fir(short *buf, int in_samps, short *bufo, int ncoef,
     }
 }
 
-static int get_abs_maximum(short *d, int n) {
+static int get_abs_maximum(formant_sample_t *d, int n) {
     int i;
-    short amax, t;
+    formant_sample_t amax, t;
 
     if((t = *d++) >= 0) amax = t;
     else amax = -t;
@@ -542,16 +542,16 @@ static int get_abs_maximum(short *d, int n) {
     return((int)amax);
 }
 
-static void dwnsamp(short *buf, int in_samps, short **buf2, size_t *out_samps,
-                    int insert, int decimate, int ncoef, short *ic, int *smin,
-                    int *smax)
+static void dwnsamp(formant_sample_t *buf, int in_samps, formant_sample_t **buf2,
+                    size_t *out_samps, int insert, int decimate, int ncoef,
+                    formant_sample_t *ic, int *smin, int *smax)
 {
-    short  *bufp, *bufp2;
-    short	*buft;
+    formant_sample_t  *bufp, *bufp2;
+    formant_sample_t	*buft;
     int i, j, k, l, m;
     int imax, imin;
 
-    *buf2 = buft = malloc(sizeof(short)*insert*in_samps);
+    *buf2 = buft = malloc(sizeof(formant_sample_t)*insert*in_samps);
 
     k = imax = get_abs_maximum(buf,in_samps);
     if (k == 0) k = 1;
@@ -580,7 +580,7 @@ static void dwnsamp(short *buf, int in_samps, short **buf2, size_t *out_samps,
     }
     *smin = imin;
     *smax = imax;
-    *buf2 = realloc(*buf2,sizeof(short) * (*out_samps));
+    *buf2 = realloc(*buf2,sizeof(formant_sample_t) * (*out_samps));
 }
 
 static void ratprx(double a, int *k, int *l, int qlim) {
@@ -611,11 +611,11 @@ static void ratprx(double a, int *k, int *l, int qlim) {
 void sound_downsample(sound_t *s, size_t freq2) {
     enum { N_BITS = 15 };
 
-    short	*bufin, **bufout;
+    formant_sample_t	*bufin, **bufout;
     double	beta = 0.0, b[256];
     double	tratio, maxi, ratio, beta_new, freq1;
     int	ncoeff = 127;
-    short	ic[256];
+    formant_sample_t	ic[256];
     int	insert, decimate, smin, smax;
 
     size_t out_samps;
@@ -632,11 +632,11 @@ void sound_downsample(sound_t *s, size_t freq2) {
 
     ncoefft = 0;
 
-    bufout = malloc(sizeof(short*));
-    bufin = malloc(sizeof(short) * s->sample_count);
+    bufout = malloc(sizeof(formant_sample_t*));
+    bufin = malloc(sizeof(formant_sample_t) * s->sample_count);
 
     for (size_t i = 0; i < s->sample_count; i++) {
-        bufin[i] = (short) sound_get_sample(s, 0, i);
+        bufin[i] = (formant_sample_t) sound_get_sample(s, 0, i);
     }
 
     freq2 = tratio * freq1;
@@ -653,8 +653,8 @@ void sound_downsample(sound_t *s, size_t freq2) {
         }
     }				/*  endif new coefficients need to be computed */
 
-    dwnsamp(bufin, s->sample_count, bufout, &out_samps, insert, decimate, ncoefft, ic,
-            &smin, &smax);
+    dwnsamp(bufin, s->sample_count, bufout, &out_samps, insert, decimate,
+            ncoefft, ic, &smin, &smax);
 
     for (size_t i = 0; i < out_samps; i++) {
         sound_set_sample(s, 0, i, (*bufout)[i]);

@@ -12,6 +12,8 @@
 #include <assert.h>
 #include <stddef.h>
 
+#include "formant.h"
+
 #define FORMANT_COUNT 4
 #define MAX_FORMANTS 7
 
@@ -35,6 +37,6 @@ static_assert(FORMANT_COUNT <= (LPC_ORDER - 4) / 2,
 int formant(double s_freq, double *lpca, size_t *n_form, double *freq,
             double *band, double *rr, double *ri);
 
-void lpc(size_t wsize, const short *data, double *lpca, double *rms);
+void lpc(size_t wsize, const formant_sample_t *data, double *lpca, double *rms);
 
 #endif
