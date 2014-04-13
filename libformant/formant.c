@@ -556,7 +556,7 @@ static void ratprx(double a, int *k, int *l, int qlim) {
     *l = (int) qq;
 }
 
-void sound_downsample(sound_t *s, size_t freq2) {
+void sound_downsample(sound_t *s, size_t downsample_rate) {
     enum { N_BITS = 15 };
 
     formant_sample_t	*bufin, **bufout;
@@ -570,7 +570,7 @@ void sound_downsample(sound_t *s, size_t freq2) {
     size_t j;
     size_t ncoefft;
 
-    ratio = (double) freq2/s->sample_rate;
+    ratio = (double) downsample_rate/s->sample_rate;
     ratprx(ratio,&insert,&decimate,10);
     tratio = ((double)insert)/((double)decimate);
 
@@ -584,8 +584,8 @@ void sound_downsample(sound_t *s, size_t freq2) {
 
     memcpy(bufin, s->samples, s->sample_count * sizeof(formant_sample_t));
 
-    freq2 = tratio * s->sample_rate;
-    beta_new = (.5 * freq2)/(insert * s->sample_rate);
+    downsample_rate = tratio * s->sample_rate;
+    beta_new = (.5 * downsample_rate)/(insert * s->sample_rate);
 
     if(beta != beta_new){
         beta = beta_new;
@@ -604,7 +604,7 @@ void sound_downsample(sound_t *s, size_t freq2) {
     memcpy(s->samples, *bufout, out_samps * sizeof(formant_sample_t));
 
     s->sample_count = out_samps;
-    s->sample_rate = (int)freq2;
+    s->sample_rate = (int)downsample_rate;
 
     free(*bufout);
     free(bufout);

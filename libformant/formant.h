@@ -40,8 +40,8 @@ void sound_destroy(sound_t *s);
 // Resize the given sound so it can hold the given number of samples.
 void sound_resize(sound_t *s, size_t sample_count);
 
-// Downsample the given sound's sample rate to freq2.
-void sound_downsample(sound_t *s, size_t freq2);
+// Downsample the given sound's sample rate to downsample_rate.
+void sound_downsample(sound_t *s, size_t downsample_rate);
 
 // Calculate the formants for the samples in the given sound.
 void formants_calc(formants_t *f, const sound_t *s);
