@@ -210,7 +210,7 @@ static int get_fcand(int npole, double *freq, int nform, int **pcan,
 
 static void pole_dpform(pole_t *pole, const sound_t *ps, formants_t *f) {
     double minerr, dffact, ftemp, berr, ferr, bfact, ffact,
-           rmsmax, fbias, *fr, rmsdffact, merger=0.0, merge_cost,
+           rmsmax, fbias, rmsdffact, merger=0.0, merge_cost,
            FBIAS;
     int	ic, mincan=0;
     int	**pcan;
@@ -238,7 +238,7 @@ static void pole_dpform(pole_t *pole, const sound_t *ps, formants_t *f) {
     if(merge_cost > 1000.0) domerge = false;
 
     /* Allocate space for the formant and bandwidth arrays to be passed back. */
-    fr = malloc(sizeof(double) * FORMANT_COUNT);
+    double fr[FORMANT_COUNT];
 
     /* Allocate space for the raw candidate array. */
     pcan = malloc(sizeof(*pcan) * MAX_CANDIDATES);
@@ -362,8 +362,6 @@ static void pole_dpform(pole_t *pole, const sound_t *ps, formants_t *f) {
 
     f->f1 = fr[0];
     f->f2 = fr[1];
-
-    free(fr);
 }
 
 static void pole_lpc(pole_t *pole, const sound_t *sp) {
