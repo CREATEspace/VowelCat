@@ -561,7 +561,7 @@ void sound_downsample(sound_t *s, size_t freq2) {
 
     formant_sample_t	*bufin, **bufout;
     double	beta = 0.0, b[256];
-    double	tratio, maxi, ratio, beta_new, freq1;
+    double	tratio, maxi, ratio, beta_new;
     int	ncoeff = 127;
     formant_sample_t	ic[256];
     int	insert, decimate, smin, smax;
@@ -570,8 +570,7 @@ void sound_downsample(sound_t *s, size_t freq2) {
     size_t j;
     size_t ncoefft;
 
-    freq1 = s->sample_rate;
-    ratio = freq2/freq1;
+    ratio = (double) freq2/s->sample_rate;
     ratprx(ratio,&insert,&decimate,10);
     tratio = ((double)insert)/((double)decimate);
 
@@ -585,8 +584,8 @@ void sound_downsample(sound_t *s, size_t freq2) {
 
     memcpy(bufin, s->samples, s->sample_count * sizeof(formant_sample_t));
 
-    freq2 = tratio * freq1;
-    beta_new = (.5 * freq2)/(insert * freq1);
+    freq2 = tratio * s->sample_rate;
+    beta_new = (.5 * freq2)/(insert * s->sample_rate);
 
     if(beta != beta_new){
         beta = beta_new;
