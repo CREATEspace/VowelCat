@@ -99,7 +99,7 @@ void sound_resize(sound_t *s, size_t sample_count) {
 static int canbe(const double *fmins, const double *fmaxs, const double *fre,
                  int pnumb, int fnumb)
 {
-    return((fre[pnumb] >= fmins[fnumb])&&(fre[pnumb] <= fmaxs[fnumb]));
+    return fre[pnumb] >= fmins[fnumb] && fre[pnumb] <= fmaxs[fnumb];
 }
 
 /* This does the real work of mapping frequencies to formants. */
