@@ -21,6 +21,7 @@
 #define LPC_ORDER 12
 #define LPC_ORDER_MIN 2
 #define LPC_ORDER_MAX 30
+#define LPC_COEF (LPC_ORDER + 1)
 
 // Nominal F1 frequency.
 #define NOM_FREQ 0

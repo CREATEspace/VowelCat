@@ -51,13 +51,13 @@ static void autoc(size_t windowsize, const formant_sample_t *s, double *coef,
         *rms = 1;
 
         /* Now fake autocorrelation of white noise. */
-        for (size_t i = 1; i <= ncoef; i += 1)
+        for (size_t i = 1; i < ncoef; i += 1)
             coef[i] = 0;
 
         return;
     }
 
-    for (size_t i = 1; i <= ncoef; i += 1) {
+    for (size_t i = 1; i < ncoef; i += 1) {
         sum = 0;
 
         for (size_t j = 0; j < windowsize - i; j += 1)
@@ -75,7 +75,7 @@ static void autoc(size_t windowsize, const formant_sample_t *s, double *coef,
  *	(i.e. a[0] is assumed to be = +1.)
  */
 static void durbin(const double *coef, double *a, size_t ncoef) {
-    double b[LPC_ORDER_MAX];
+    double b[LPC_COEF];
     double k;
     double e, s;
 
@@ -84,7 +84,7 @@ static void durbin(const double *coef, double *a, size_t ncoef) {
     a[0] = k;
     e *= 1 - k*k;
 
-    for (size_t i = 1; i < ncoef; i += 1) {
+    for (size_t i = 1; i < ncoef - 1; i += 1) {
         s = 0;
 
         for (size_t j = 0; j < i; j += 1)
@@ -104,19 +104,19 @@ static void durbin(const double *coef, double *a, size_t ncoef) {
 }
 
 void lpc(size_t wsize, const formant_sample_t *data, double *lpca, double *rms) {
-    double rho[LPC_ORDER + 1];
+    double rho[LPC_COEF];
 
-    autoc(wsize, data, rho, LPC_ORDER, rms);
+    autoc(wsize, data, rho, LPC_COEF, rms);
 
     /* add a little to the diagonal for stability */
     if (LPC_STABLE > 1.0) {
         double ffact = 1.0 / (1.0 + exp(-LPC_STABLE / 20.0 * log(10.0)));
 
-        for (size_t i = 1; i <= LPC_ORDER; i++)
+        for (size_t i = 1; i < LPC_COEF; i++)
             rho[i] *= ffact;
     }
 
-    durbin(rho, &lpca[1], LPC_ORDER);
+    durbin(rho, &lpca[1], LPC_COEF);
 
     lpca[0] = 1.0;
 }
@@ -190,8 +190,8 @@ static int qquad(double a, double b, double c, double *r1r, double *r1i,
 static int lbpoly(double *a, int order, double *rootr, double *rooti) {
     int	    ord, ordm1, ordm2, itcnt, i, k, mmk, mmkp2, mmkp1, ntrys;
     double  err, p, q, delp, delq, den;
-    double b[LPC_ORDER_MAX];
-    double c[LPC_ORDER_MAX];
+    double b[LPC_COEF];
+    double c[LPC_COEF];
     double  lim0 = 0.5 * sqrt(DBL_MAX);
 
     for (ord = order; ord > 2; ord -= 2) {
