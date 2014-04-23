@@ -11,11 +11,8 @@ extern "C" {
 #include "formant.h"
 }
 
-#include "mainwindow.h"
 #include "params.h"
 #include "timespec.h"
-
-class MainWindow;
 
 // Number of samples to take into account when checking for noise.
 static const size_t NOISE_SAMPLES = SAMPLES_PER_CHUNK / 500;
@@ -31,8 +28,6 @@ class Plotter : public QObject {
     Q_OBJECT
 
 public:
-    MainWindow *window;
-
     Plotter(audio_t *a);
     ~Plotter();
 
@@ -57,6 +52,7 @@ public:
 
 signals:
     void pauseSig();
+    void newFormant(formant_sample_t f1, formant_sample_t f2, uintmax_t dur);
 
 private:
     // Thread ID.

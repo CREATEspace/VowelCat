@@ -50,13 +50,14 @@ Tracer::Tracer(QCustomPlot *plot, QCPGraph *graph, size_t i):
     setSize(size(i));
 }
 
-MainWindow::MainWindow(audio_t *a):
+MainWindow::MainWindow(audio_t *a, Plotter *p):
     ui(new Ui::MainWindow),
     tracer(Tracer::COUNT),
     plot_lock(PTHREAD_MUTEX_INITIALIZER),
     flags(DEFAULT),
     mflags(LISTENING),
-    audio(a)
+    audio(a),
+    plotter(p)
 {
     // Start at the origin for lack of a better place.
     cur = (pair_t) {

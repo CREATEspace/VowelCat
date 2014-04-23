@@ -38,13 +38,15 @@ int main(int argc, char *argv[])
     audio_init(&audio, SAMPLE_RATE, CHANNELS, SAMPLES_PER_CHUNK);
 
     Plotter plotter(&audio);
-    MainWindow window(&audio);
-
-    plotter.window = &window;
-    window.plotter = &plotter;
+    MainWindow window(&audio, &plotter);
 
     QObject::connect(&plotter, SIGNAL(pauseSig()),
                      &window, SLOT(pauseAudio()));
+    // This multithreaded DirectConnection is safe since proper locking is done
+    // inside the MainWindow functions.
+    QObject::connect(&plotter, &Plotter::newFormant,
+                     &window, &MainWindow::plotFormant,
+                     Qt::DirectConnection);
 
     plotter.listen();
     window.show();

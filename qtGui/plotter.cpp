@@ -11,7 +11,6 @@ extern "C" {
 #include "formant.h"
 }
 
-#include "mainwindow.h"
 #include "params.h"
 #include "plotter.h"
 #include "timespec.h"
@@ -93,7 +92,7 @@ void Plotter::listen_run() {
         dur = (timespec_diff(&before, &after) + count * dur) / (count + 1);
         count += 1;
 
-        window->plotFormant(f1, f2, dur);
+        emit newFormant(f1, f2, dur);
     }
 
     audio_stop(audio);
@@ -132,7 +131,7 @@ void Plotter::record_run() {
         dur = (timespec_diff(&before, &after) + count * dur) / (count + 1);
         count += 1;
 
-        window->plotFormant(f1, f2, dur);
+        emit newFormant(f1, f2, dur);
     }
 
     audio_seek(audio, 0);
@@ -172,7 +171,7 @@ void Plotter::play_run() {
         dur = (timespec_diff(&before, &after) + count * dur) / (count + 1);
         count += 1;
 
-        window->plotFormant(f1, f2, dur);
+        emit newFormant(f1, f2, dur);
     }
 
     if(run)

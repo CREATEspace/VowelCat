@@ -69,9 +69,6 @@ private:
 class MainWindow: public QMainWindow {
     Q_OBJECT
 
-public:
-    Plotter *plotter;
-
 private:
     enum { TIMER_INTERVAL = 10 };
 
@@ -126,13 +123,14 @@ private:
     uint32_t mflags;
 
     audio_t *audio;
+    Plotter *plotter;
 
 public:
-    explicit MainWindow(audio_t *a);
+    explicit MainWindow(audio_t *a, Plotter *p);
     ~MainWindow();
 
+public slots:
     void plotFormant(formant_sample_t f1, formant_sample_t f2, uintmax_t dur_);
-
 
 private slots:
     void plotNext();
