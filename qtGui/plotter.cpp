@@ -24,7 +24,6 @@ Plotter::Plotter(audio_t *a) :
 
     formant_opts_init(&opts);
     opts.pre_emph_factor = 1;
-    opts.downsample_rate = SAMPLE_RATE;
     formant_opts_process(&opts);
 }
 

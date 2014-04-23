@@ -18,7 +18,7 @@ extern "C" {
 class MainWindow;
 
 // Number of samples to take into account when checking for noise.
-static const size_t NOISE_SAMPLES = 1 << 6;
+static const size_t NOISE_SAMPLES = SAMPLES_PER_CHUNK / 500;
 // If recorded samples have an average value less than this, then consider them
 // noise.
 static const size_t NOISE_THRESHOLD = 80;
