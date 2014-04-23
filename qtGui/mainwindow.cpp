@@ -7,15 +7,25 @@
 #include <time.h>
 #include <iostream>
 
+#ifdef LOG_FPS
+#include <stdio.h>
+#endif
+
 #include <QColor>
 #include <QObject>
 #include <QWidget>
 #include <QSignalMapper>
 
+extern "C" {
+#include "audio.h"
 #include "formant.h"
+}
+
 #include "mainwindow.h"
+#include "plotter.h"
 #include "timespec.h"
 #include "ui_mainwindow.h"
+
 
 using namespace std;
 
@@ -41,11 +51,13 @@ Tracer::Tracer(QCustomPlot *plot, QCPGraph *graph, size_t i):
     setSize(size(i));
 }
 
-MainWindow::MainWindow(QWidget *parent) :
-    QMainWindow(parent),
+MainWindow::MainWindow(audio_t *a) :
     ui(new Ui::MainWindow),
     tracer(Tracer::COUNT),
-    plot_lock(PTHREAD_MUTEX_INITIALIZER)
+    plot_lock(PTHREAD_MUTEX_INITIALIZER),
+    flags(DEFAULT),
+    mflags(LISTENING),
+    audio(a)
 {
     // Start at the origin for lack of a better place.
     cur = (pair_t) {
@@ -54,15 +66,22 @@ MainWindow::MainWindow(QWidget *parent) :
     };
 
     ui->setupUi(this);
+
+    QIcon::setThemeName("tango");
+    ui->beginButton->setIcon(QIcon::fromTheme("media-skip-backward"));
+    ui->recordButton->setIcon(QIcon::fromTheme("media-record"));
+    ui->stopButton->setIcon(QIcon::fromTheme("media-playback-stop"));
+    ui->playButton->setIcon(QIcon::fromTheme("media-playback-start"));
+    ui->pauseButton->setIcon(QIcon::fromTheme("media-playback-pause"));
+    ui->endButton->setIcon(QIcon::fromTheme("media-skip-forward"));
+
     setGeometry(400, 250, 1000, 1000);
     ui->englishGroupBox->setStyleSheet("QPushButton {font-size:18pt;}");
     ui->chineseGroupBox->setStyleSheet("QPushButton {font-size:18pt;}");
 
-    axisReversed = true;
     vowelToggle = true;
     symbolToggle = true;
     
-    axisButton = ui->axisButton;
     resetButton = ui->resetButton;
     chineseButton = ui->chineseButton;
     defaultSymbolsButton = ui->defaultSymbolsButton;
@@ -78,25 +97,131 @@ MainWindow::MainWindow(QWidget *parent) :
 
     connect(plot, SIGNAL(mouseMove(QMouseEvent*)), this, SLOT(mouseMove(QMouseEvent*)));
     connect(plot, SIGNAL(mouseRelease(QMouseEvent*)), this, SLOT(mouseRelease()));
-    connect(axisButton, SIGNAL(released()), this, SLOT(axisButtonPushed()));
     connect(resetButton, SIGNAL(released()), this, SLOT(resetButtonPushed()));
     connect(chineseButton, SIGNAL(released()), this, SLOT(chineseButtonPushed()));
     connect(defaultSymbolsButton, SIGNAL(released()), this, SLOT(defaultSymbolsButtonPushed()));
     connect(addSymbolButton, SIGNAL(released()), this, SLOT(addSymbolButtonPushed()));
+    connect(ui->actionInvertAxes, SIGNAL(triggered()), this, SLOT(invertAxes()));
     connect(&timer, SIGNAL(timeout()), this, SLOT(plotNext()));
     timer.start(TIMER_INTERVAL);
 
     vowelButtons.resize(45);
     setupEnglishButtons();
     setupChineseButtons();
+
+
+    //** Media Connect
+    connect(ui->playButton, SIGNAL(clicked()), this, SLOT(startPlay())); //Play
+    connect(ui->recordButton, SIGNAL(clicked()), this, SLOT(startRecord())); //Record
+    connect(ui->pauseButton, SIGNAL(clicked()), this, SLOT(pauseAudio())); //Pause
+    connect(ui->stopButton, SIGNAL(clicked()), this, SLOT(stopAudio())); //Stop
+    connect(ui->beginButton, SIGNAL(clicked()), this, SLOT(beginAudio())); //Skip to Begin
+    connect(ui->endButton, SIGNAL(clicked()), this, SLOT(endAudio())); //Skip to End
+    connect(ui->actionNew, SIGNAL(triggered()), this, SLOT(newAudio())); //Clear audio
+
+    ui->beginButton->setEnabled(false);
+    ui->playButton->setEnabled(false);
+    ui->endButton->setEnabled(false);
+    //** 
+
     setupPlot();
+    updateButtons();
 }
+
+void MainWindow::updateButtons() {
+    ui->recordButton->setVisible(!(mflags & RECORDING));
+    ui->stopButton->setVisible(mflags & RECORDING);
+
+    ui->playButton->setVisible(!(mflags & PLAYING));
+    ui->pauseButton->setVisible(mflags & PLAYING);
+}
+
+   
+
+//** MEDIA BUTTONS ****
+void MainWindow::newAudio() {
+    timer.start(TIMER_INTERVAL);
+    ui->recordButton->setVisible(true);
+    ui->stopButton->setVisible(false);
+    ui->playButton->setVisible(true);
+    ui->pauseButton->setVisible(false);
+
+    ui->beginButton->setEnabled(false);
+    ui->playButton->setEnabled(false);
+    ui->endButton->setEnabled(false);
+
+    plotter->stop();
+    plotter->listen();
+}
+
+void MainWindow::startRecord() {
+    timer.start(TIMER_INTERVAL);
+
+    ui->recordButton->setVisible(false);
+    ui->stopButton->setVisible(true);
+    ui->stopButton->setEnabled(true);
+
+
+    plotter->stop();
+    plotter->record();
+}
+
+void MainWindow::stopAudio() {
+    ui->stopButton->setEnabled(false);
+    ui->beginButton->setEnabled(true);
+    ui->playButton->setEnabled(true);
+    ui->endButton->setEnabled(true);
+
+    plotter->stop();
+
+    pauseTracers(audio->prbuf_size - audio->frames_per_buffer);
+}
+
+void MainWindow::startPlay() {
+    timer.start(TIMER_INTERVAL);
+
+    ui->pauseButton->setVisible(true);
+    ui->playButton->setVisible(false);
+    ui->beginButton->setEnabled(false);
+    ui->endButton->setEnabled(false);
+
+    plotter->stop();
+    plotter->play();
+}
+
+
+void MainWindow::pauseAudio() {
+    ui->pauseButton->setVisible(false);
+    ui->playButton->setVisible(true);
+    ui->beginButton->setEnabled(true);
+    ui->endButton->setEnabled(true);
+
+    plotter->stop();
+
+    pauseTracers(audio->prbuf_offset - audio->frames_per_buffer);
+}
+
+void MainWindow::beginAudio() {
+    plotter->stop();
+    plotter->begin();
+
+    pauseTracers(audio->frames_per_buffer);
+}
+
+void MainWindow::endAudio() {
+    plotter->stop();
+    plotter->end();
+
+    pauseTracers(audio->prbuf_size - audio->frames_per_buffer);
+}
+
+
+//** MEDIA BUTTONS ****
+
 
 void MainWindow::setupPlot()
 {
-    //QCP::iRangeDrag | 
     plot->setInteractions(QCP::iRangeZoom | QCP::iSelectItems);
-    //plot->axisRect()->setBackground(QColor(100, 100, 100));
     graph->setPen(Qt::NoPen);
     graph->addData(DBL_MAX, DBL_MAX);
 
@@ -360,7 +485,7 @@ void MainWindow::setupEnglishButtons(){
 }
 
 void MainWindow::plotFormant(formant_sample_t f1, formant_sample_t f2,
-                             uintmax_t dur)
+                             uintmax_t dur_)
 {
     pthread_mutex_lock(&plot_lock);
 
@@ -370,7 +495,7 @@ void MainWindow::plotFormant(formant_sample_t f1, formant_sample_t f2,
         .y = f1,
     };
 
-    this->dur = dur;
+    dur = dur_;
 
     // Set the last-drawn point as the initial point.
     from = cur;
@@ -420,7 +545,8 @@ void MainWindow::plotNext() {
     updateFPS();
 }
 
-void MainWindow::updateFPS() {
+void MainWindow::updateFPS() const {
+#ifdef LOG_FPS
   #if QT_VERSION < QT_VERSION_CHECK(4, 7, 0)
     double secs = 0;
   #else
@@ -433,14 +559,11 @@ void MainWindow::updateFPS() {
   ++frameCount;
   if (key-lastFpsKey > 2) // average fps over 2 seconds
   {
-    ui->statusBar->showMessage(
-          QString("%1 FPS, Total Data points: %2")
-          .arg(frameCount/(key-lastFpsKey), 0, 'f', 0)
-          .arg(ui->customPlot->graph(0)->data()->count())
-          , 0);
+    printf("%f FPS", frameCount/(key-lastFpsKey));
     lastFpsKey = key;
     frameCount = 0;
   }
+#endif
 }
 
 void MainWindow::updateTracers(formant_sample_t f2, formant_sample_t f1) {
@@ -456,6 +579,18 @@ void MainWindow::updateTracers(formant_sample_t f2, formant_sample_t f1) {
     plot->replot();
 }
 
+void MainWindow::pauseTracers(size_t offset) {
+    uintmax_t f1, f2;
+    timer.stop();
+    plotter->pause(offset, f1, f2);
+
+    graph->addData(f2, f1); 
+    for (size_t i = 0; i <= Tracer::LAST; i += 1)
+        tracers[i]->setGraphKey(f2);
+
+    plot->replot();
+}
+
 void MainWindow::clearTracer() {
     if (tracers[0]->graphKey() != DBL_MAX)
         graph->removeData(tracers[0]->graphKey());
@@ -467,12 +602,6 @@ void MainWindow::clearTracer() {
         graph->removeData(tracers[Tracer::LAST - tracer]->graphKey());
 
     tracers[Tracer::LAST - tracer]->setGraphKey(DBL_MAX);
-    plot->replot();
-}
-
-void MainWindow::axisButtonPushed(){
-    axisReversed = !axisReversed;
-    plot->yAxis->setRangeReversed(axisReversed);
     plot->replot();
 }
 
@@ -556,6 +685,11 @@ void MainWindow::addSymbol(QString symbol){
 
     vowelSymbols.push_back(userVowel);
     ui->customPlot->addItem(userVowel);
+}
+
+void MainWindow::invertAxes(){
+    flags ^= INVERT_AXES;
+    plot->yAxis->setRangeReversed(!(flags & INVERT_AXES));
     plot->replot();
 }
 

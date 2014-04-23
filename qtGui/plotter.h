@@ -6,47 +6,68 @@
 
 #include <pthread.h>
 
-#include "audio.h"
-#include "formant.h"
+extern "C" {
+    #include "audio.h"
+    #include "formant.h"
+}
 #include "mainwindow.h"
+#include "params.h"
+#include "timespec.h"
 
-// Some audio constants for now.
-enum { SAMPLE_RATE = 11025 };
-enum { CHANNELS = 1 };
-enum { SAMPLES = 2048 };
+class MainWindow;
 
 // Number of samples to take into account when checking for noise.
-enum { NOISE_SAMPLES = SAMPLES / 500 };
+static const size_t NOISE_SAMPLES = 1 << 6;
 // If recorded samples have an average value less than this, then consider them
 // noise.
-enum { NOISE_THRESHOLD = 80 };
+static const size_t NOISE_THRESHOLD = 80;
+
+static_assert(NOISE_SAMPLES > 0 && NOISE_SAMPLES < SAMPLES_PER_CHUNK,
+              "NOISE_SAMPLES is within bounds");
 
 // Worker that processes formants in a separate thread.
-typedef struct {
+class Plotter : public QObject {
+
+    Q_OBJECT
+
+public:
+    MainWindow *window;
+
+    Plotter(audio_t *a);
+    ~Plotter();
+
+    bool noise();
+    void formant(uintmax_t &f1, uintmax_t &f2);
+
+    // Start the plotter in a new thread.
+    void listen();
+    void record();
+    void play();
+    void begin();
+    void end();
+
+    void pause(size_t offset, uintmax_t &f1, uintmax_t &f2);
+
+    void listen_run();
+    void record_run();
+    void play_run();
+
+    // Stop the plotter and wait for it to finish processing.
+    void stop();
+
+signals:
+    void pauseSig();
+  
+private:
     // Thread ID.
     pthread_t tid;
-    // Whether to keep processing.
+
     bool run;
 
     // Relevant structures.
-    audio_t aud;
+    audio_t *audio;
     formant_opts_t opts;
     sound_t sound;
-
-    // Window to update.
-    MainWindow *window;
-} plotter_t;
-
-// Initialize the given plotter.
-void plotter_init(plotter_t *p, MainWindow *window);
-
-// Free memory held by the given plotter.
-void plotter_destroy(plotter_t *p);
-
-// Start the plotter in a new thread.
-void plotter_start(plotter_t *p);
-
-// Stop the plotter and wait for it to finish processing.
-void plotter_stop(plotter_t *p);
+};
 
 #endif

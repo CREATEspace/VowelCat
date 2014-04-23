@@ -1,4 +1,4 @@
-SRC = pa_ringbuffer.c audio.c
+SRC = pa_ringbuffer.c audio.c 
 OBJ = $(SRC:.c=.o)
 
 ALL_CFLAGS += -std=c11 -Wall -Wextra -pipe
@@ -10,6 +10,6 @@ libaudio.a: $(OBJ)
 	$(AR) rcs $@ $^
 
 %.o: %.c
-	$(CC) $(ALL_CFLAGS) -c -o $@ $<
+	$(CC) $(ALL_CFLAGS) -c -o $@ $< 
 
 .PHONY: all

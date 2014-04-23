@@ -48,10 +48,12 @@ static int playCallback( const void *inputBuffer, void *outputBuffer,
       ret = paComplete;
    }
    else{
-      memcpy(wptr, &a->prbuf[a->prbuf_offset], n_samples * sizeof(audio_sample_t));
+      memcpy(&wptr[0], &a->prbuf[a->prbuf_offset], n_samples * sizeof(audio_sample_t));
       a->prbuf_offset += n_samples;
    }
 
+
+   a->play_offset = a->prbuf_offset;
    audio_sig_read(a);
 
    return ret;
@@ -133,11 +135,10 @@ bool audio_init(audio_t *a, size_t sample_rate, size_t n_channels, size_t frames
       NULL,
       &outparams,
       sample_rate,
-      frames_per_buffer,
+      (frames_per_buffer >> PLAY_FPB_DOWNSIZE),
       paClipOff,
       playCallback,
-      a) != paNoError) return false;
-   //**************
+      a) != paNoError) return false; //**************
 
    //********Open record and listen stream******* 
    PaStream *rstream=NULL;
@@ -178,6 +179,7 @@ bool audio_init(audio_t *a, size_t sample_rate, size_t n_channels, size_t frames
       .prbuf = NULL,
       .prbuf_size = 0,
       .prbuf_offset = 0,
+      .play_offset = 0,
 
       .rb = rb,
       .rb_data = rb_data 
@@ -200,7 +202,6 @@ void audio_destroy(audio_t *a)
    free(a->rb_data);
    //*******************
 }
-
 void audio_reset(audio_t *a)
 {
    if(a->flags & SOURCE_DISK)
@@ -211,6 +212,7 @@ void audio_reset(audio_t *a)
    a->prbuf = NULL;
    a->prbuf_size = 0;
    a->prbuf_offset = 0;
+   a->play_offset = 0;
    a->flags &= ~SOURCE_DISK; 
 
    PaUtil_FlushRingBuffer(&a->rb);
@@ -234,7 +236,6 @@ bool audio_save(audio_t *a, int fd)
      return false;
 }
 //**
-
 //**
 bool audio_resize(audio_t *a, size_t n_samples)
 {
@@ -269,22 +270,25 @@ void audio_stop(audio_t *a)
 //**
 bool audio_play_read(audio_t *a, audio_sample_t *samples)
 {
-   //***************************
+
    size_t offset;
-   if(Pa_IsStreamActive(a->pstream)) {
-      audio_sig_write(a);
-      offset = a->prbuf_offset;
-      //***************************  
-      if(a->prbuf_size > offset){
-         memcpy(&samples[0], &a->prbuf[offset - a->frames_per_buffer], a->frames_per_buffer * sizeof(audio_sample_t));
-         return true; 
-      }
-      else if(a->prbuf_size == offset){
-         memcpy(&samples[0], &a->prbuf[offset - a->frames_per_buffer], a->frames_per_buffer * sizeof(audio_sample_t));
-         return false;
+   for(size_t i = 0; i < 1 << PLAY_FPB_DOWNSIZE; i++) {
+      if(Pa_IsStreamActive(a->pstream)) {
+         audio_sig_write(a);
+         if(i < 3 && a->prbuf_size == a->prbuf_offset)
+            return false;
       }
    }
-   return false; 
+   offset = a->play_offset;
+   
+   if(a->prbuf_size > offset) {
+      memcpy(&samples[0], &a->prbuf[offset - a->frames_per_buffer], a->frames_per_buffer * sizeof(audio_sample_t));
+      return true;
+   }
+   else if(a->prbuf_size == offset) {
+      memcpy(&samples[0], &a->prbuf[offset - a->frames_per_buffer], a->frames_per_buffer * sizeof(audio_sample_t));
+   }
+   return false;
 }
 
 bool audio_record_read(audio_t *a, audio_sample_t *samples)

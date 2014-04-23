@@ -13,10 +13,17 @@
 #include <QTimer>
 #include <QPushButton>
 
-#include "formant.h"
+extern "C" {
+    #include "audio.h"
+    #include "formant.h"
+}
+
+#include "plotter.h"
 #include "qcustomplot.h"
 #include "timespec.h"
 #include "ui_mainwindow.h"
+
+class Plotter;
 
 class Tracer: public QCPItemTracer {
 public:
@@ -63,6 +70,9 @@ class MainWindow : public QMainWindow
 {
     Q_OBJECT
 
+public:
+    Plotter *plotter;
+
 private:
     enum { TIMER_INTERVAL = 10 };
 
@@ -97,27 +107,56 @@ private:
     QPlainTextEdit *plainTextEdit;
     QGroupBox *englishGroupBox;
     QGroupBox *chineseGroupBox;
-    bool axisReversed;
     bool vowelToggle;
     bool symbolToggle;
 
     QVector<QCPItemText*> vowelSymbols;
     QVector<QPushButton*> vowelButtons;
 
+    enum {
+        DEFAULT     = 0,
+        INVERT_AXES = 1 << 0,
+    };
+    uint32_t flags;
+
+    enum {
+        LISTENING  = 0,
+        PLAYING    = 1 << 0,
+        RECORDING  = 1 << 1,
+        PAUSING    = 1 << 2
+    };
+    uint32_t mflags;
+
+    audio_t *audio;
+
 public:
-    explicit MainWindow(QWidget *parent = NULL);
+    explicit MainWindow(audio_t *a);
     ~MainWindow();
 
-    void plotFormant(formant_sample_t f1, formant_sample_t f2, uintmax_t dur);
+    void plotFormant(formant_sample_t f1, formant_sample_t f2, uintmax_t dur_);
+
 
 private slots:
     void plotNext();
-    void axisButtonPushed();
+
     void vowelButtonPushed(int vowelButtonPushed);
     void resetButtonPushed();
     void chineseButtonPushed();
     void defaultSymbolsButtonPushed();
     void addSymbolButtonPushed();
+
+    void invertAxes();
+
+    void newAudio();
+    void startRecord();
+    void stopAudio();
+
+    void startPlay();
+    void pauseAudio();
+    void beginAudio();
+    void endAudio();
+
+
     void mouseMove(QMouseEvent*);
     void mouseRelease();
 
@@ -130,9 +169,11 @@ private:
     void addSymbol(QString symbol);
 
     void updateTracers(formant_sample_t x, formant_sample_t y);
+    void pauseTracers(size_t offset);
     void clearTracer();
 
-    void updateFPS();
+    void updateFPS() const;
+    void updateButtons();
 };
 
 #endif // MAINWINDOW_H

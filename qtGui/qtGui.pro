@@ -26,6 +26,9 @@ HEADERS += \
 FORMS += \
     mainwindow.ui \
 
+RESOURCES += \
+    icons.qrc
+
 QMAKE_CXXFLAGS += -std=c++11
 QMAKE_CXXFLAGS += $$(CFLAGS)
 LIBS += $(LDFLAGS)
