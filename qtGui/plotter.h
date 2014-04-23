@@ -6,6 +6,8 @@
 
 #include <pthread.h>
 
+#include <QObject>
+
 extern "C" {
 #include "audio.h"
 #include "formant.h"
