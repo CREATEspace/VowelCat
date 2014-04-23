@@ -707,6 +707,39 @@ void sound_downsample(sound_t *s, size_t downsample_rate) {
     free(bufin);
 }
 
+void sound_highpass(sound_t *s) {
+    /* This assumes the sampling frequency is 10kHz and that the FIR
+       is a Hanning function of (LCSIZ/10)ms duration. */
+    enum { LCSIZ = 101 };
+    enum { LEN = LCSIZ / 2 + 1 };
+
+#define FN (M_PI * 2.0 / (LCSIZ - 1))
+#define SCALE (32767.0 / (.5 * LCSIZ))
+
+    formant_sample_t *datain, *dataout;
+    formant_sample_t *lcf;
+
+    datain = malloc(sizeof(formant_sample_t) * s->sample_count);
+    dataout = malloc(sizeof(formant_sample_t) * s->sample_count);
+
+    memcpy(datain, s->samples, sizeof(formant_sample_t) * s->sample_count);
+
+    lcf = malloc(sizeof(formant_sample_t) * LCSIZ);
+
+    for (size_t i = 0; i < LEN; i++)
+        lcf[i] = SCALE * (.5 + .4 * cos(FN * (double) i));
+
+    do_fir(datain, s->sample_count, dataout, LEN, lcf, 1);
+    memcpy(s->samples, dataout, sizeof(formant_sample_t) * s->sample_count);
+
+    free(lcf);
+    free(dataout);
+    free(datain);
+
+#undef SCALE
+#undef FN
+}
+
 void formants_calc(formants_t *f, const sound_t *s) {
     pole_t pole;
 

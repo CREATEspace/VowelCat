@@ -43,6 +43,9 @@ void sound_resize(sound_t *s, size_t sample_count);
 // Downsample the given sound's sample rate to downsample_rate.
 void sound_downsample(sound_t *s, size_t downsample_rate);
 
+// Perform a highpass on the given sound.
+void sound_highpass(sound_t *s);
+
 // Calculate the formants for the samples in the given sound.
 void formants_calc(formants_t *f, const sound_t *s);
 
