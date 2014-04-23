@@ -567,6 +567,10 @@ void MainWindow::updateTracers(formant_sample_t f2, formant_sample_t f1) {
 
 void MainWindow::pauseTracers(size_t offset) {
     uintmax_t f1, f2;
+
+    if (offset >= audio->prbuf_size)
+        return;
+
     timer.stop();
     plotter->pause(offset, f1, f2);
 
