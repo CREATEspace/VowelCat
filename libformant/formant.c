@@ -439,22 +439,23 @@ static void lc_lin_fir(double fc, int *nf, double *coef) {
    passband gain.  This filter is convolved with the signal in buf.
    The output is placed in buf2.  If invert != 0, the filter magnitude
    response will be inverted. */
-static void do_fir(formant_sample_t *buf, int in_samps, formant_sample_t *bufo,
-                   int ncoef, formant_sample_t *ic, int invert)
+static void fir(formant_sample_t *buf, int in_samps, formant_sample_t *bufo,
+                int ncoef, formant_sample_t *ic, int invert)
 {
     enum { M = 15 };
+    enum { L = 1 << 14 };
 
-    formant_sample_t  *buft, *bufp, *bufp2, stem;
+    formant_sample_t *buft, *bufp, *bufp2, stem;
     formant_sample_t co[256], mem[256];
 
-    int i, j, k, l, sum, integral;
+    int integral;
 
     bufp = ic + ncoef - 1;
     bufp2 = co;
     buft = co + (ncoef - 1) * 2;
     integral = 0;
 
-    for (i = ncoef - 1; i > 0; i -= 1) {
+    for (int i = ncoef - 1; i > 0; i -= 1) {
         if (!invert) {
             *buft = *bufp2 = *bufp;
 
@@ -462,7 +463,8 @@ static void do_fir(formant_sample_t *buf, int in_samps, formant_sample_t *bufo,
             bufp2 += 1;
             bufp -= 1;
         } else {
-            integral += (stem = *bufp);
+            stem = *bufp;
+            integral += stem;
             *buft = *bufp2 = -stem;
 
             bufp -= 1;
@@ -481,23 +483,22 @@ static void do_fir(formant_sample_t *buf, int in_samps, formant_sample_t *bufo,
 
     buft = mem;
 
-    for (i = ncoef - 1; i > 0; i -= 1)
+    for (int i = ncoef - 1; i > 0; i -= 1)
         *buft++ = 0;
 
-    for (i = ncoef; i > 0; i -= 1)
+    for (int i = ncoef; i > 0; i -= 1)
         *buft++ = *buf++;
 
-    l = 16384;
-    k = (ncoef << 1) - 1;
+    const int k = (ncoef << 1) - 1;
 
-    for (i = in_samps - ncoef; i > 0; i -= 1) {
+    for (int i = in_samps - ncoef; i > 0; i -= 1) {
         buft = mem;
         bufp = co;
         bufp2 = mem + 1;
-        sum = 0;
+        int sum = 0;
 
-        for (j = k; j > 0; j -= 1) {
-            sum += (*bufp * *buft + l) >> M;
+        for (int j = k; j > 0; j -= 1) {
+            sum += (*bufp * *buft + L) >> M;
             *buft = *bufp2;
 
             bufp += 1;
@@ -514,14 +515,14 @@ static void do_fir(formant_sample_t *buf, int in_samps, formant_sample_t *bufo,
         bufo += 1;
     }
 
-    for (i = ncoef; i > 0; i -= 1) {	/* pad data end with zeros */
+    for (int i = ncoef; i > 0; i -= 1) {	/* pad data end with zeros */
         buft = mem;
         bufp = co;
         bufp2 = mem + 1;
-        sum = 0;
+        int sum = 0;
 
-        for (j = k; j > 0; j -= 1) {
-            sum += (*bufp * *buft + l) >> M;
+        for (int j = k; j > 0; j -= 1) {
+            sum += (*bufp * *buft + L) >> M;
             *buft = *bufp2;
 
             bufp += 1;
@@ -564,11 +565,11 @@ static void dwnsamp(formant_sample_t *buf, int in_samps, formant_sample_t **buf2
                     formant_sample_t *ic, int *smin, int *smax)
 {
     enum { M = 15 };
+    enum { L = 16384 };
 
-    formant_sample_t  *bufp, *bufp2;
-    formant_sample_t	*buft;
+    formant_sample_t *bufp, *bufp2, *buft;
 
-    int i, j, k, l;
+    int i, j, k;
     int imax, imin;
 
     *buf2 = buft = malloc(sizeof(formant_sample_t) * insert * in_samps);
@@ -584,18 +585,16 @@ static void dwnsamp(formant_sample_t *buf, int in_samps, formant_sample_t **buf2
     else
         k = 16384 * 32767 / k;
 
-    l = 16384;
-
     /* Insert zero samples to boost the sampling frequency and scale the
        signal to maintain maximum precision. */
     for (i = 0, bufp = buft, bufp2 = buf; i < in_samps; i++) {
-        *bufp++ = (k * (*bufp2++) + l) >> M ;
+        *bufp++ = (k * (*bufp2++) + L) >> M ;
 
         for (j = 1; j < insert; j++)
             *bufp++ = 0;
     }
 
-    do_fir(buft, in_samps * insert, buft, ncoef, ic, 0);
+    fir(buft, in_samps * insert, buft, ncoef, ic, 0);
 
     /*	Finally, decimate and return the downsampled signal. */
     *out_samps = j = in_samps * insert / decimate;
@@ -726,10 +725,10 @@ void sound_highpass(sound_t *s) {
 
     lcf = malloc(sizeof(formant_sample_t) * LCSIZ);
 
-    for (size_t i = 0; i < LEN; i++)
-        lcf[i] = SCALE * (.5 + .4 * cos(FN * (double) i));
+    for (size_t i = 0; i < LEN; i += 1)
+        lcf[i] = SCALE * (0.5 + 0.4 * cos(FN * (double) i));
 
-    do_fir(datain, s->sample_count, dataout, LEN, lcf, 1);
+    fir(datain, s->sample_count, dataout, LEN, lcf, 1);
     memcpy(s->samples, dataout, sizeof(formant_sample_t) * s->sample_count);
 
     free(lcf);
