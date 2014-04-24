@@ -50,6 +50,25 @@ Tracer::Tracer(QCustomPlot *plot, QCPGraph *graph, size_t i):
     setSize(size(i));
 }
 
+class VowelSymbol: public QCPItemText {
+private:
+    enum { FONT_SIZE = 30 };
+
+public:
+    VowelSymbol(QCustomPlot *plot, wchar_t symbol, uint32_t f1,
+                uint32_t f2):
+        QCPItemText(plot)
+    {
+        QFont font(plot->font().family(), FONT_SIZE);
+
+        position->setCoords(f2, f1);
+        setFont(font);
+        setSelectedFont(font);
+        setSelectedColor(Qt::blue);
+        setText(QString::fromWCharArray(&symbol, 1));
+    }
+};
+
 MainWindow::MainWindow(audio_t *a, Plotter *p):
     ui(new Ui::MainWindow),
     tracer(Tracer::COUNT),
