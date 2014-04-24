@@ -4,12 +4,8 @@
 #include <float.h>
 #include <inttypes.h>
 #include <math.h>
-#include <time.h>
-#include <iostream>
-
-#ifdef LOG_FPS
 #include <stdio.h>
-#endif
+#include <time.h>
 
 #include <QColor>
 #include <QObject>
@@ -120,6 +116,10 @@ MainWindow::MainWindow(audio_t *a, Plotter *p):
     connect(addSymbolButton, SIGNAL(released()), this, SLOT(addSymbolButtonPushed()));
     connect(ui->actionInvertAxes, SIGNAL(triggered()), this, SLOT(invertAxes()));
     connect(&timer, SIGNAL(timeout()), this, SLOT(plotNext()));
+
+    connect(ui->actionOpenSymbols, SIGNAL(triggered()), this, SLOT(loadSymbols()));
+    connect(ui->actionSaveSymbols, SIGNAL(triggered()), this, SLOT(saveSymbols()));
+
     timer.start(TIMER_INTERVAL);
 
     vowelButtons.resize(45);
@@ -222,6 +222,60 @@ void MainWindow::endAudio() {
     plotter->end();
 
     pauseTracers(audio->prbuf_size - audio->frames_per_buffer);
+}
+
+void MainWindow::loadSymbols() {
+    auto path = QFileDialog::getOpenFileName(this, "Open Vowel Symbols")
+        .toUtf8().constData();
+
+    FILE *stream = fopen(path, "r");
+
+    if (!stream)
+        // TODO: proper error handling.
+        return;
+
+    clearSymbols();
+    vowelSymbols.clear();
+
+    loadSymbols(stream);
+    plot->replot();
+
+    fclose(stream);
+}
+
+void MainWindow::loadSymbols(FILE *stream) {
+    uint32_t f1, f2;
+    wchar_t symbol;
+
+    while (fscanf(stream, "%lc %u %u\n", &symbol, &f1, &f2) == 3) {
+        auto vs = new VowelSymbol(plot, symbol, f1, f2);
+        plot->addItem(vs);
+        vowelSymbols.push_back(vs);
+    }
+}
+
+void MainWindow::saveSymbols() {
+    auto path = QFileDialog::getSaveFileName(this, "Save Vowel Symbols")
+        .toUtf8().constData();
+
+    FILE *stream = fopen(path, "w");
+
+    if (!stream)
+        // TODO: proper error handling.
+        return;
+
+    saveSymbols(stream);
+    fclose(stream);
+}
+
+void MainWindow::saveSymbols(FILE *stream) const {
+    for (int i = 0; i < vowelSymbols.size(); i += 1) {
+        auto vs = vowelSymbols[i];
+        auto coords = vs->position->coords();
+
+        fprintf(stream, "%lc\t%u\t%u\n", vs->text().at(0).unicode(),
+            (uint32_t) coords.y(), (uint32_t) coords.x());
+    }
 }
 
 void MainWindow::setupPlot()

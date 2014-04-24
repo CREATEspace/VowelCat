@@ -936,9 +936,17 @@
     <addaction name="separator"/>
     <addaction name="actionQuit"/>
    </widget>
+   <widget class="QMenu" name="menuVowelSymbols">
+    <property name="title">
+     <string>Vowel Symbols</string>
+    </property>
+    <addaction name="actionOpenSymbols"/>
+    <addaction name="actionSaveSymbols"/>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuView"/>
    <addaction name="menuControls"/>
+   <addaction name="menuVowelSymbols"/>
   </widget>
   <widget class="QToolBar" name="toolBar">
    <property name="windowTitle">
@@ -1037,6 +1045,16 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+H</string>
+   </property>
+  </action>
+  <action name="actionOpenSymbols">
+   <property name="text">
+    <string>Open...</string>
+   </property>
+  </action>
+  <action name="actionSaveSymbols">
+   <property name="text">
+    <string>Save...</string>
    </property>
   </action>
  </widget>

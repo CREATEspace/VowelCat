@@ -7,6 +7,7 @@
 #include <inttypes.h>
 #include <pthread.h>
 #include <stddef.h>
+#include <stdio.h>
 #include <time.h>
 
 #include <QMainWindow>
@@ -142,6 +143,9 @@ private slots:
 
     void invertAxes();
 
+    void loadSymbols();
+    void saveSymbols();
+
     void newAudio();
     void startRecord();
     void stopAudio();
@@ -155,6 +159,9 @@ private slots:
     void mouseRelease();
 
 private:
+    void loadSymbols(FILE *stream);
+    void saveSymbols(FILE *stream) const;
+
     void setupPlot();
     void setupEnglishButtons();
     void setupEnglishSymbols();
