@@ -640,17 +640,13 @@ void MainWindow::resetButtonPushed(){
 void MainWindow::defaultSymbolsButtonPushed(){
     symbolToggle = !symbolToggle;
     if (!symbolToggle){
-        for (int i = 0; i < vowelSymbols.size(); i++){
-            ui->customPlot->removeItem(vowelSymbols[i]);
-        }
+        clearSymbols();
         chineseGroupBox->setVisible(true);
         englishGroupBox->setVisible(false);
         setupChineseSymbols();
     }
     else {
-        for (int i = 0; i < vowelSymbols.size(); i++){
-            ui->customPlot->removeItem(vowelSymbols[i]);
-        }
+        clearSymbols();
         chineseGroupBox->setVisible(false);
         englishGroupBox->setVisible(true);
         setupEnglishSymbols();
@@ -680,6 +676,11 @@ void MainWindow::invertAxes(){
     flags ^= INVERT_AXES;
     plot->yAxis->setRangeReversed(!(flags & INVERT_AXES));
     plot->replot();
+}
+
+void MainWindow::clearSymbols() {
+    for (int i = 0; i < vowelSymbols.size(); i++)
+        ui->customPlot->removeItem(vowelSymbols[i]);
 }
 
 void MainWindow::mouseMove(QMouseEvent *event){

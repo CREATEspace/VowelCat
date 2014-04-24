@@ -161,6 +161,7 @@ private:
     void setupChineseButtons();
     void setupChineseSymbols();
     void addSymbol(QString symbol);
+    void clearSymbols();
 
     void updateTracers(formant_sample_t x, formant_sample_t y);
     void pauseTracers(size_t offset);
