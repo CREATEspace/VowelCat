@@ -8,13 +8,19 @@
 #include <time.h>
 
 #include <QColor>
+#include <QFile>
+#include <QFileDialog>
 #include <QObject>
-#include <QWidget>
 #include <QSignalMapper>
+#include <QWidget>
 
 extern "C" {
 #include "audio.h"
 #include "formant.h"
+#include <fcntl.h>
+#include <unistd.h>
+#include <sys/stat.h>
+#include <sys/mman.h>
 }
 
 #include "mainwindow.h"
@@ -105,10 +111,11 @@ MainWindow::MainWindow(audio_t *a, Plotter *p):
     connect(ui->defaultSymbolsButton, SIGNAL(released()), this, SLOT(defaultSymbolsButtonPushed()));
     connect(ui->addSymbolButton, SIGNAL(released()), this, SLOT(addSymbolButtonPushed()));
 
+    connect(ui->actionOpen, SIGNAL(triggered()), this, SLOT(openFile())); //Open audio
+    connect(ui->actionSaveAs, SIGNAL(triggered()), this, SLOT(saveAsFile())); //SaveAs audio
     connect(ui->actionOpenSymbols, SIGNAL(triggered()), this, SLOT(loadSymbols()));
     connect(ui->actionSaveSymbols, SIGNAL(triggered()), this, SLOT(saveSymbols()));
     connect(ui->actionQuit, SIGNAL(triggered()), qApp, SLOT(quit()));
-
     connect(ui->actionResetPlot, SIGNAL(triggered()), this, SLOT(resetPlot()));
     connect(ui->actionInvertAxis, SIGNAL(triggered()), this, SLOT(invertAxis()));
 
@@ -122,6 +129,8 @@ MainWindow::MainWindow(audio_t *a, Plotter *p):
 
     timer.start(TIMER_INTERVAL);
 
+    ui->actionSaveAs->setEnabled(false);
+
     vowelButtons.resize(45);
     setupVowelButtons();
     setupEnglishButtons();
@@ -129,6 +138,66 @@ MainWindow::MainWindow(audio_t *a, Plotter *p):
 
     initButtons();
     setupPlot();
+}
+
+void MainWindow::openFile() {
+    timer.stop();
+    plotter->stop();
+    audio_reset(audio);
+    //*********
+ 	 int fd;
+ 	 struct stat st;
+ 	 audio_sample_t *buf;
+ 	 QString qfilename;
+    const char *filename;
+    //*********
+    qfilename = QFileDialog::getOpenFileName(this, tr("Open Audio File"), "", tr("Audio-Files(*.raw *.wav)"));
+    if(qfilename == NULL) {
+        newAudio();
+        return;
+    }
+    filename = qfilename.toStdString().c_str();
+    //*********
+	/* QFile file(qfilename);
+	 if(!file.open(QIODevice::ReadOnly))
+	     return;
+
+	 const unsigned char *buf = file.map(0, file.size());
+	 if(buf == NULL)
+	     return;*/
+    //*********
+	 fd = open(filename, O_RDONLY);
+    fstat(fd, &st);
+    buf = (audio_sample_t*) mmap(NULL, st.st_size, PROT_READ, MAP_SHARED, fd, 0);
+    ::close(fd);
+    //*********
+	 ui->recordButton->setVisible(false);
+	 ui->stopButton->setVisible(true);
+    ui->playButton->setVisible(true);
+    ui->pauseButton->setVisible(false);
+    ui->stopButton->setEnabled(false);
+    ui->beginButton->setEnabled(true);
+    ui->playButton->setEnabled(true);
+    ui->endButton->setEnabled(true);
+
+    ui->actionSaveAs->setEnabled(false);
+    //*********
+    audio_open(audio, buf, st.st_size);
+}
+void MainWindow::saveAsFile() {
+    int fd;
+    QString qfilename;
+    const char *filename;
+    //*********
+    qfilename = QFileDialog::getSaveFileName(this, tr("Save Audio File"), "", tr("Audio-Files(*.raw *.wav)"));
+    qfilename.append(".wav");
+    filename = qfilename.toStdString().c_str();
+    //*********
+	 fd = open(filename, O_WRONLY|O_CREAT,0666);
+    audio_save(audio, fd);
+    ::close(fd);
+    //*********
+    ui->actionSaveAs->setEnabled(false);
 }
 
 void MainWindow::initButtons() {
@@ -149,6 +218,7 @@ void MainWindow::newAudio() {
     timer.start(TIMER_INTERVAL);
 
     plotter->stop();
+    audio_reset(audio);
     plotter->listen();
 }
 
@@ -168,6 +238,8 @@ void MainWindow::stopAudio() {
     ui->beginButton->setEnabled(true);
     ui->playButton->setEnabled(true);
     ui->endButton->setEnabled(true);
+
+    ui->actionSaveAs->setEnabled(true);
 
     plotter->stop();
 

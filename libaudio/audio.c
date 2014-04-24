@@ -186,6 +186,24 @@ bool audio_init(audio_t *a, size_t sample_rate, size_t n_channels, size_t frames
    };
    a->flags &= ~SOURCE_DISK; 
 
+   //**************
+	a->wav = (wav_head){
+   	.chunk_id = WAV_RIFF,
+      .format = WAV_WAVE, 
+      .subchunk1_id = WAV_FMT_,  
+      .subchunk1_size =  16,   //Size of this subchunk
+      .audio_format = 1,       //Linear quantization - Other options avail
+      .n_channels = n_channels,
+      .sample_rate = sample_rate,
+      .byte_rate = sample_rate * n_channels * sizeof(audio_sample_t),
+      .block_align = n_channels * sizeof(audio_sample_t),
+      .bits_per_sample =  sizeof(audio_sample_t) * BYTE_SIZE,
+      .subchunk2_id = WAV_DATA
+   };
+      //.chunk_size            //File size - 8 // don't inclue chunk_id and file_dec
+      //.subchunk2_size        //sizeofraw * n_channels
+   //**************
+
    return true;
 }
 
@@ -205,9 +223,9 @@ void audio_destroy(audio_t *a)
 void audio_reset(audio_t *a)
 {
    if(a->flags & SOURCE_DISK)
-      munmap(a->prbuf, a->prbuf_size * sizeof(audio_sample_t));
-   if(a->prbuf != NULL)
-      free(a->prbuf);
+   	munmap(a->prbuf, a->prbuf_size * sizeof(audio_sample_t));
+	else if(a->prbuf != NULL)
+   	free(a->prbuf);
    
    a->prbuf = NULL;
    a->prbuf_size = 0;
@@ -224,16 +242,18 @@ void audio_open(audio_t *a, audio_sample_t *m_data, size_t m_size)
 {
    a->prbuf = m_data;
    a->flags |= SOURCE_DISK;
-   a->prbuf_size = m_size;
+   a->prbuf_size = m_size / sizeof(audio_sample_t);
    a->prbuf_offset = 0;
 }
 
-bool audio_save(audio_t *a, int fd)
+void audio_save(audio_t *a, int fd)
 {
-   if(write(fd, a->prbuf, a->prbuf_size * sizeof(audio_sample_t)) >= 0)
-     return true;
-   else
-     return false;
+    
+   a->wav.chunk_size = sizeof(wav_head) + a->prbuf_size * sizeof(audio_sample_t);
+   a->wav.subchunk2_size = a->prbuf_size * sizeof(audio_sample_t);
+
+	write(fd, &a->wav, sizeof(wav_head));
+   write(fd, a->prbuf, a->prbuf_size * sizeof(audio_sample_t));
 }
 //**
 //**

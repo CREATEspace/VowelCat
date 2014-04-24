@@ -14,6 +14,7 @@
 #include <limits.h>
 #include <unistd.h> 
 #include <pthread.h>
+#include <inttypes.h>
 #include "portaudio.h"
 #include "pa_ringbuffer.h"
 //***************************
@@ -24,7 +25,34 @@
 #define PLAY_FPB_DOWNSIZE 2 
 //***************************
 
+#define WAV_RIFF 0x52494646  
+#define WAV_WAVE 0x57415645  
+#define WAV_FMT_ 0x666d7420
+#define WAV_DATA 0x64617461
+#define BYTE_SIZE 8
+
 typedef short audio_sample_t;
+
+typedef struct wav_head
+{
+   uint32_t chunk_id;
+   uint32_t chunk_size;
+   uint32_t format;
+   
+   uint32_t subchunk1_id;
+   uint32_t subchunk1_size;
+
+   uint16_t audio_format;
+   uint16_t n_channels;
+   uint32_t sample_rate;
+   uint32_t byte_rate;
+   
+   uint16_t block_align;
+   uint16_t bits_per_sample;
+
+   uint32_t subchunk2_id;
+   uint32_t subchunk2_size;
+}wav_head;
 
 typedef struct audio_t 
 {
@@ -51,6 +79,7 @@ typedef struct audio_t
    PaUtilRingBuffer rb;
    void *rb_data;
 
+	wav_head wav;
 }audio_t;
 
 
@@ -59,7 +88,7 @@ void audio_destroy(audio_t *a);
 void audio_reset(audio_t *a);
 
 void audio_open(audio_t *a, audio_sample_t *m_data, size_t m_size);
-bool audio_save(audio_t *a, int fd);
+void audio_save(audio_t *a, int fd);
 
 bool audio_resize(audio_t *a, size_t n_samples);
 

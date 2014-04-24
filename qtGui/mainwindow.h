@@ -13,6 +13,8 @@
 #include <QMainWindow>
 #include <QTimer>
 #include <QPushButton>
+#include <QFileDialog>
+#include <QFile>
 
 extern "C" {
     #include "audio.h"
@@ -112,6 +114,8 @@ private:
     audio_t *audio;
     Plotter *plotter;
 
+    int aud_fd;
+
 public:
     explicit MainWindow(audio_t *a, Plotter *p);
     ~MainWindow();
@@ -140,6 +144,9 @@ private slots:
     void pauseAudio();
     void beginAudio();
     void endAudio();
+
+    void openFile();
+    void saveAsFile();
 
     void mouseMove(QMouseEvent*);
     void mouseRelease();
