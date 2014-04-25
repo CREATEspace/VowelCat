@@ -101,7 +101,6 @@ private:
 
     QPushButton *axisButton;
     QPushButton *resetButton;
-    QPushButton *chineseButton;
     QPushButton *defaultSymbolsButton;
     QPushButton *addSymbolButton;
     QPlainTextEdit *plainTextEdit;
@@ -141,7 +140,6 @@ private slots:
 
     void vowelButtonPushed(int vowelButtonPushed);
     void resetButtonPushed();
-    void chineseButtonPushed();
     void defaultSymbolsButtonPushed();
     void addSymbolButtonPushed();
 

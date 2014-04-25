@@ -83,7 +83,6 @@ MainWindow::MainWindow(audio_t *a) :
     symbolToggle = true;
     
     resetButton = ui->resetButton;
-    chineseButton = ui->chineseButton;
     defaultSymbolsButton = ui->defaultSymbolsButton;
     addSymbolButton = ui->addSymbolButton;
     plainTextEdit = ui->plainTextEdit;
@@ -98,7 +97,6 @@ MainWindow::MainWindow(audio_t *a) :
     connect(plot, SIGNAL(mouseMove(QMouseEvent*)), this, SLOT(mouseMove(QMouseEvent*)));
     connect(plot, SIGNAL(mouseRelease(QMouseEvent*)), this, SLOT(mouseRelease()));
     connect(resetButton, SIGNAL(released()), this, SLOT(resetButtonPushed()));
-    connect(chineseButton, SIGNAL(released()), this, SLOT(chineseButtonPushed()));
     connect(defaultSymbolsButton, SIGNAL(released()), this, SLOT(defaultSymbolsButtonPushed()));
     connect(addSymbolButton, SIGNAL(released()), this, SLOT(addSymbolButtonPushed()));
     connect(ui->actionInvertAxes, SIGNAL(triggered()), this, SLOT(invertAxes()));
@@ -647,24 +645,22 @@ void MainWindow::resetButtonPushed(){
     plot->replot();
 }
 
-void MainWindow::chineseButtonPushed(){
-    vowelToggle = !vowelToggle;
-    chineseGroupBox->setVisible(!vowelToggle);
-    englishGroupBox->setVisible(vowelToggle);
-}
-
 void MainWindow::defaultSymbolsButtonPushed(){
     symbolToggle = !symbolToggle;
     if (!symbolToggle){
         for (int i = 0; i < vowelSymbols.size(); i++){
             ui->customPlot->removeItem(vowelSymbols[i]);
         }
+        chineseGroupBox->setVisible(true);
+        englishGroupBox->setVisible(false);
         setupChineseSymbols();
     }
     else {
         for (int i = 0; i < vowelSymbols.size(); i++){
             ui->customPlot->removeItem(vowelSymbols[i]);
         }
+        chineseGroupBox->setVisible(false);
+        englishGroupBox->setVisible(true);
         setupEnglishSymbols();
     }
     plot->replot();
@@ -685,6 +681,7 @@ void MainWindow::addSymbol(QString symbol){
 
     vowelSymbols.push_back(userVowel);
     ui->customPlot->addItem(userVowel);
+    plot->replot();
 }
 
 void MainWindow::invertAxes(){
