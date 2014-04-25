@@ -20,7 +20,7 @@
    <widget class="QCustomPlot" name="customPlot" native="true">
     <property name="geometry">
      <rect>
-      <x>-10</x>
+      <x>0</x>
       <y>0</y>
       <width>1000</width>
       <height>600</height>
@@ -38,13 +38,12 @@
       <height>600</height>
      </size>
     </property>
-    <zorder>endButton</zorder>
    </widget>
    <widget class="QGroupBox" name="chineseGroupBox">
     <property name="geometry">
      <rect>
-      <x>1020</x>
-      <y>60</y>
+      <x>1034</x>
+      <y>50</y>
       <width>241</width>
       <height>260</height>
      </rect>
@@ -56,7 +55,7 @@
      </size>
     </property>
     <property name="title">
-     <string>                Add Vowel Symbols</string>
+     <string>              Add Vowel Symbols</string>
     </property>
     <widget class="QPushButton" name="pushButton_37">
      <property name="geometry">
@@ -210,7 +209,7 @@
      <rect>
       <x>1030</x>
       <y>50</y>
-      <width>211</width>
+      <width>241</width>
       <height>291</height>
      </rect>
     </property>
@@ -221,7 +220,7 @@
      </size>
     </property>
     <property name="title">
-     <string>                Add Vowel Symbols</string>
+     <string>               Add Vowel Symbols</string>
     </property>
     <widget class="QPushButton" name="pushButton">
      <property name="geometry">
