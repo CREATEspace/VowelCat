@@ -97,23 +97,19 @@ MainWindow::MainWindow(audio_t *a, Plotter *p):
     plot = ui->customPlot;
     graph = plot->addGraph();
 
+    connect(&timer, SIGNAL(timeout()), this, SLOT(plotNext()));
+
     connect(plot, SIGNAL(mouseMove(QMouseEvent*)), this, SLOT(mouseMove(QMouseEvent*)));
     connect(plot, SIGNAL(mouseRelease(QMouseEvent*)), this, SLOT(mouseRelease()));
-    connect(ui->actionResetPlot, SIGNAL(triggered()), this, SLOT(resetPlot()));
+
     connect(ui->defaultSymbolsButton, SIGNAL(released()), this, SLOT(defaultSymbolsButtonPushed()));
     connect(ui->addSymbolButton, SIGNAL(released()), this, SLOT(addSymbolButtonPushed()));
-    connect(ui->actionInvertAxes, SIGNAL(triggered()), this, SLOT(invertAxes()));
-    connect(&timer, SIGNAL(timeout()), this, SLOT(plotNext()));
 
     connect(ui->actionOpenSymbols, SIGNAL(triggered()), this, SLOT(loadSymbols()));
     connect(ui->actionSaveSymbols, SIGNAL(triggered()), this, SLOT(saveSymbols()));
 
-    timer.start(TIMER_INTERVAL);
-
-    vowelButtons.resize(45);
-    setupVowelButtons();
-    setupEnglishButtons();
-    setupChineseButtons();
+    connect(ui->actionResetPlot, SIGNAL(triggered()), this, SLOT(resetPlot()));
+    connect(ui->actionInvertAxes, SIGNAL(triggered()), this, SLOT(invertAxes()));
 
     connect(ui->playButton, SIGNAL(clicked()), this, SLOT(startPlay())); //Play
     connect(ui->recordButton, SIGNAL(clicked()), this, SLOT(startRecord())); //Record
@@ -122,6 +118,13 @@ MainWindow::MainWindow(audio_t *a, Plotter *p):
     connect(ui->beginButton, SIGNAL(clicked()), this, SLOT(beginAudio())); //Skip to Begin
     connect(ui->endButton, SIGNAL(clicked()), this, SLOT(endAudio())); //Skip to End
     connect(ui->actionNew, SIGNAL(triggered()), this, SLOT(newAudio())); //Clear audio
+
+    timer.start(TIMER_INTERVAL);
+
+    vowelButtons.resize(45);
+    setupVowelButtons();
+    setupEnglishButtons();
+    setupChineseButtons();
 
     initButtons();
     setupPlot();
