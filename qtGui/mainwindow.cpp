@@ -111,7 +111,7 @@ MainWindow::MainWindow(audio_t *a, Plotter *p):
 
     connect(plot, SIGNAL(mouseMove(QMouseEvent*)), this, SLOT(mouseMove(QMouseEvent*)));
     connect(plot, SIGNAL(mouseRelease(QMouseEvent*)), this, SLOT(mouseRelease()));
-    connect(resetButton, SIGNAL(released()), this, SLOT(resetButtonPushed()));
+    connect(resetButton, SIGNAL(released()), this, SLOT(resetPlot()));
     connect(defaultSymbolsButton, SIGNAL(released()), this, SLOT(defaultSymbolsButtonPushed()));
     connect(addSymbolButton, SIGNAL(released()), this, SLOT(addSymbolButtonPushed()));
     connect(ui->actionInvertAxes, SIGNAL(triggered()), this, SLOT(invertAxes()));
@@ -669,7 +669,7 @@ void MainWindow::vowelButtonPushed(int pushedVowelButton){
     addSymbol(vowelButtons[pushedVowelButton]->text());
 }
 
-void MainWindow::resetButtonPushed(){
+void MainWindow::resetPlot(){
     if (symbolToggle){
         vowelSymbols[0]->position->setCoords(750, 295);
         vowelSymbols[1]->position->setCoords(910, 334);

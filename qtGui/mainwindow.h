@@ -137,7 +137,7 @@ private slots:
     void plotNext();
 
     void vowelButtonPushed(int vowelButtonPushed);
-    void resetButtonPushed();
+    void resetPlot();
     void defaultSymbolsButtonPushed();
     void addSymbolButtonPushed();
 
