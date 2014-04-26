@@ -690,43 +690,6 @@
       <string>ɒ</string>
      </property>
     </widget>
-    <zorder>pushButton</zorder>
-    <zorder>pushButton_2</zorder>
-    <zorder>pushButton_3</zorder>
-    <zorder>pushButton_4</zorder>
-    <zorder>pushButton_5</zorder>
-    <zorder>pushButton_6</zorder>
-    <zorder>pushButton_7</zorder>
-    <zorder>pushButton_8</zorder>
-    <zorder>pushButton_9</zorder>
-    <zorder>pushButton_10</zorder>
-    <zorder>pushButton_11</zorder>
-    <zorder>pushButton_12</zorder>
-    <zorder>pushButton_13</zorder>
-    <zorder>pushButton_14</zorder>
-    <zorder>pushButton_15</zorder>
-    <zorder>pushButton_16</zorder>
-    <zorder>pushButton_17</zorder>
-    <zorder>pushButton_18</zorder>
-    <zorder>pushButton_19</zorder>
-    <zorder>pushButton_20</zorder>
-    <zorder>pushButton_21</zorder>
-    <zorder>pushButton_22</zorder>
-    <zorder>pushButton_23</zorder>
-    <zorder>pushButton_24</zorder>
-    <zorder>pushButton_25</zorder>
-    <zorder>pushButton_26</zorder>
-    <zorder>pushButton_27</zorder>
-    <zorder>pushButton_28</zorder>
-    <zorder>pushButton_29</zorder>
-    <zorder>pushButton_30</zorder>
-    <zorder>pushButton_31</zorder>
-    <zorder>pushButton_32</zorder>
-    <zorder>pushButton_33</zorder>
-    <zorder>pushButton_34</zorder>
-    <zorder>pushButton_35</zorder>
-    <zorder>pushButton_36</zorder>
-    <zorder>defaultSymbolsButton</zorder>
    </widget>
    <widget class="QPushButton" name="resetButton">
     <property name="geometry">
@@ -898,14 +861,13 @@
     </property>
    </widget>
   </widget>
-  <widget class="QStatusBar" name="statusBar"/>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
      <width>1300</width>
-     <height>25</height>
+     <height>19</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuView">
