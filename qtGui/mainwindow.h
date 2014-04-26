@@ -98,6 +98,7 @@ private:
 
     QVector<QCPItemText*> vowelSymbols;
     QVector<QPushButton*> vowelButtons;
+    QSignalMapper signalMapper;
 
     enum {
         DEFAULT     = 0,

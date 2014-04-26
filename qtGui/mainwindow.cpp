@@ -444,6 +444,17 @@ void MainWindow::setupVowelButtons() {
     vowelButtons[42] = ui->pushButton_43;
     vowelButtons[43] = ui->pushButton_44;
     vowelButtons[44] = ui->pushButton_45;
+
+    // Connect every button to a single function using a QSignalMapper
+    // Rather than define unique functions for every button, we use the
+    // mapper to pass in an integer argument that refers to the pushed
+    // button's place in the vowelButtons array.
+    for (int i = 0; i < vowelButtons.size(); i++){
+        connect(vowelButtons[i], SIGNAL(released()), &signalMapper, SLOT(map()));
+        signalMapper.setMapping(vowelButtons[i], i);
+    }
+
+    connect(&signalMapper, SIGNAL(mapped(int)), this, SLOT(vowelButtonPushed(int)));
 }
 
 void MainWindow::setupChineseButtons(){
@@ -457,14 +468,6 @@ void MainWindow::setupChineseButtons(){
     vowelButtons[39]->setToolTip("close back");
     vowelButtons[41]->setToolTip("close-mid back");
     vowelButtons[42]->setToolTip("open front");
-
-    QSignalMapper* signalMapper = new QSignalMapper (this) ;
-
-    for (int i = 0; i < vowelButtons.size(); i++){
-        connect(vowelButtons[i], SIGNAL(released()), signalMapper, SLOT(map()));
-        signalMapper->setMapping(vowelButtons[i], i);
-    }
-    connect (signalMapper, SIGNAL(mapped(int)), this, SLOT(vowelButtonPushed(int)));
 }
 
 void MainWindow::setupEnglishButtons(){
@@ -513,19 +516,6 @@ void MainWindow::setupEnglishButtons(){
     vowelButtons[32]->setToolTip("open central unrounded");
     vowelButtons[34]->setToolTip("open back unrounded");
     vowelButtons[35]->setToolTip("open back rounded");
-
-    // Connect every button to a single function using a QSignalMapper
-    // Rather than define unique functions for every button, we use the
-    // mapper to pass in an integer argument that refers to the pushed
-    // button's place in the vowelButtons array.
-    QSignalMapper* signalMapper = new QSignalMapper (this) ;
-
-    for (int i = 0; i < vowelButtons.size(); i++){
-        connect(vowelButtons[i], SIGNAL(released()), signalMapper, SLOT(map()));
-        signalMapper->setMapping(vowelButtons[i], i);
-    }
-    connect (signalMapper, SIGNAL(mapped(int)), this, SLOT(vowelButtonPushed(int)));
-
 }
 
 void MainWindow::plotFormant(formant_sample_t f1, formant_sample_t f2,
