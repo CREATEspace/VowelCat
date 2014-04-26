@@ -96,13 +96,7 @@ MainWindow::MainWindow(audio_t *a, Plotter *p):
     vowelToggle = true;
     symbolToggle = true;
 
-    defaultSymbolsButton = ui->defaultSymbolsButton;
-    addSymbolButton = ui->addSymbolButton;
-    plainTextEdit = ui->plainTextEdit;
-
-    englishGroupBox = ui->englishGroupBox;
-    chineseGroupBox = ui->chineseGroupBox;
-    chineseGroupBox->setVisible(false);
+    ui->chineseGroupBox->setVisible(false);
 
     plot = ui->customPlot;
     graph = plot->addGraph();
@@ -110,8 +104,8 @@ MainWindow::MainWindow(audio_t *a, Plotter *p):
     connect(plot, SIGNAL(mouseMove(QMouseEvent*)), this, SLOT(mouseMove(QMouseEvent*)));
     connect(plot, SIGNAL(mouseRelease(QMouseEvent*)), this, SLOT(mouseRelease()));
     connect(ui->actionResetPlot, SIGNAL(triggered()), this, SLOT(resetPlot()));
-    connect(defaultSymbolsButton, SIGNAL(released()), this, SLOT(defaultSymbolsButtonPushed()));
-    connect(addSymbolButton, SIGNAL(released()), this, SLOT(addSymbolButtonPushed()));
+    connect(ui->defaultSymbolsButton, SIGNAL(released()), this, SLOT(defaultSymbolsButtonPushed()));
+    connect(ui->addSymbolButton, SIGNAL(released()), this, SLOT(addSymbolButtonPushed()));
     connect(ui->actionInvertAxes, SIGNAL(triggered()), this, SLOT(invertAxes()));
     connect(&timer, SIGNAL(timeout()), this, SLOT(plotNext()));
 
@@ -706,21 +700,21 @@ void MainWindow::defaultSymbolsButtonPushed(){
     symbolToggle = !symbolToggle;
     if (!symbolToggle){
         clearSymbols();
-        chineseGroupBox->setVisible(true);
-        englishGroupBox->setVisible(false);
+        ui->chineseGroupBox->setVisible(true);
+        ui->englishGroupBox->setVisible(false);
         setupChineseSymbols();
     }
     else {
         clearSymbols();
-        chineseGroupBox->setVisible(false);
-        englishGroupBox->setVisible(true);
+        ui->chineseGroupBox->setVisible(false);
+        ui->englishGroupBox->setVisible(true);
         setupEnglishSymbols();
     }
     plot->replot();
 }
 
 void MainWindow::addSymbolButtonPushed(){
-    addSymbol(plainTextEdit->toPlainText());
+    addSymbol(ui->plainTextEdit->toPlainText());
 }
 
 void MainWindow::addSymbol(QString symbol){

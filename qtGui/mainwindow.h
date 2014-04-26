@@ -96,11 +96,6 @@ private:
     pthread_mutex_t plot_lock;
     QTimer timer;
 
-    QPushButton *defaultSymbolsButton;
-    QPushButton *addSymbolButton;
-    QPlainTextEdit *plainTextEdit;
-    QGroupBox *englishGroupBox;
-    QGroupBox *chineseGroupBox;
     bool vowelToggle;
     bool symbolToggle;
 
