@@ -2,10 +2,30 @@
 <ui version="4.0">
  <class>MainWindow</class>
  <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>933</width>
+    <height>683</height>
+   </rect>
+  </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QHBoxLayout" name="horizontalLayout_2">
     <property name="spacing">
      <number>9</number>
+    </property>
+    <property name="leftMargin">
+     <number>12</number>
+    </property>
+    <property name="topMargin">
+     <number>12</number>
+    </property>
+    <property name="rightMargin">
+     <number>12</number>
+    </property>
+    <property name="bottomMargin">
+     <number>12</number>
     </property>
     <item>
      <layout class="QVBoxLayout" name="hello">
@@ -186,7 +206,16 @@
         <property name="widgetResizable">
          <bool>true</bool>
         </property>
-        <widget class="QWidget" name="spectrogram"/>
+        <widget class="QWidget" name="spectrogram">
+         <property name="geometry">
+          <rect>
+           <x>0</x>
+           <y>0</y>
+           <width>634</width>
+           <height>94</height>
+          </rect>
+         </property>
+        </widget>
        </widget>
       </item>
      </layout>
@@ -893,7 +922,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>527</width>
+     <width>933</width>
      <height>19</height>
     </rect>
    </property>
