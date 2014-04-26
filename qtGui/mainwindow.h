@@ -66,8 +66,7 @@ private:
     static uint32_t rgba(double i);
 };
 
-class MainWindow : public QMainWindow
-{
+class MainWindow: public QMainWindow {
     Q_OBJECT
 
 public:
@@ -153,7 +152,6 @@ private slots:
     void pauseAudio();
     void beginAudio();
     void endAudio();
-
 
     void mouseMove(QMouseEvent*);
     void mouseRelease();

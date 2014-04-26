@@ -7,8 +7,8 @@
 #include <stdlib.h>
 
 extern "C" {
-    #include "audio.h"
-    #include "formant.h"
+#include "audio.h"
+#include "formant.h"
 }
 
 #include "mainwindow.h"
@@ -84,12 +84,11 @@ void Plotter::listen_run() {
         if(!audio_listen_read(audio, sound.samples))
             break;
         //***********************
-        
+
         if(noise())
            continue;
 
         formant(f1, f2);
-
         timespec_init(&after);
 
         dur = (timespec_diff(&before, &after) + count * dur) / (count + 1);
@@ -97,6 +96,7 @@ void Plotter::listen_run() {
 
         window->plotFormant(f1, f2, dur);
     }
+
     audio_stop(audio);
 }
 
@@ -122,7 +122,7 @@ void Plotter::record_run() {
         if(!audio_record_read(audio, sound.samples))
             break;
         //***********************
-        
+
         if(noise())
             continue;
 
@@ -162,7 +162,7 @@ void Plotter::play_run() {
         if(!audio_play_read(audio, sound.samples))
             break;
         //***********************
-        
+
         if(noise())
             continue;
 
@@ -178,8 +178,8 @@ void Plotter::play_run() {
 
     if(run)
         emit pauseSig();
-    audio_stop(audio);
 
+    audio_stop(audio);
 }
 
 void Plotter::pause(size_t offset, uintmax_t &f1, uintmax_t  &f2) {
@@ -191,11 +191,10 @@ void Plotter::pause(size_t offset, uintmax_t &f1, uintmax_t  &f2) {
     if(noise()) {
         f1 = f2 = 0;
         return;
-    } 
+    }
 
     formant(f1, f2);
 }
-    
 
 static void listen_helper(Plotter *p) {
     p->listen_run();
@@ -210,13 +209,13 @@ static void play_helper(Plotter *p) {
 }
 
 void Plotter::listen() {
-    audio_reset(audio); //**
+    audio_reset(audio);
     run = true;
 
     pthread_create(&tid, NULL, [] (void *data) -> void * {
         listen_helper((Plotter *) data);
         pthread_exit(NULL);
-        }, this); 
+    }, this);
 }
 
 void Plotter::record() {
@@ -225,7 +224,7 @@ void Plotter::record() {
     pthread_create(&tid, NULL, [] (void *data) -> void * {
         record_helper((Plotter *) data);
         pthread_exit(NULL);
-        }, this); 
+    }, this);
 }
 
 void Plotter::play() {
@@ -234,7 +233,7 @@ void Plotter::play() {
     pthread_create(&tid, NULL, [] (void *data) -> void * {
         play_helper((Plotter *) data);
         pthread_exit(NULL);
-        }, this); 
+    }, this);
 }
 
 void Plotter::begin() {

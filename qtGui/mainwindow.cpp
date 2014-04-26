@@ -26,7 +26,6 @@ extern "C" {
 #include "timespec.h"
 #include "ui_mainwindow.h"
 
-
 using namespace std;
 
 double Tracer::size(double x) {
@@ -51,7 +50,7 @@ Tracer::Tracer(QCustomPlot *plot, QCPGraph *graph, size_t i):
     setSize(size(i));
 }
 
-MainWindow::MainWindow(audio_t *a) :
+MainWindow::MainWindow(audio_t *a):
     ui(new Ui::MainWindow),
     tracer(Tracer::COUNT),
     plot_lock(PTHREAD_MUTEX_INITIALIZER),
@@ -81,7 +80,7 @@ MainWindow::MainWindow(audio_t *a) :
 
     vowelToggle = true;
     symbolToggle = true;
-    
+
     resetButton = ui->resetButton;
     defaultSymbolsButton = ui->defaultSymbolsButton;
     addSymbolButton = ui->addSymbolButton;
@@ -107,8 +106,6 @@ MainWindow::MainWindow(audio_t *a) :
     setupEnglishButtons();
     setupChineseButtons();
 
-
-    //** Media Connect
     connect(ui->playButton, SIGNAL(clicked()), this, SLOT(startPlay())); //Play
     connect(ui->recordButton, SIGNAL(clicked()), this, SLOT(startRecord())); //Record
     connect(ui->pauseButton, SIGNAL(clicked()), this, SLOT(pauseAudio())); //Pause
@@ -120,7 +117,6 @@ MainWindow::MainWindow(audio_t *a) :
     ui->beginButton->setEnabled(false);
     ui->playButton->setEnabled(false);
     ui->endButton->setEnabled(false);
-    //** 
 
     setupPlot();
     updateButtons();
@@ -134,9 +130,6 @@ void MainWindow::updateButtons() {
     ui->pauseButton->setVisible(mflags & PLAYING);
 }
 
-   
-
-//** MEDIA BUTTONS ****
 void MainWindow::newAudio() {
     timer.start(TIMER_INTERVAL);
     ui->recordButton->setVisible(true);
@@ -158,7 +151,6 @@ void MainWindow::startRecord() {
     ui->recordButton->setVisible(false);
     ui->stopButton->setVisible(true);
     ui->stopButton->setEnabled(true);
-
 
     plotter->stop();
     plotter->record();
@@ -187,7 +179,6 @@ void MainWindow::startPlay() {
     plotter->play();
 }
 
-
 void MainWindow::pauseAudio() {
     ui->pauseButton->setVisible(false);
     ui->playButton->setVisible(true);
@@ -212,10 +203,6 @@ void MainWindow::endAudio() {
 
     pauseTracers(audio->prbuf_size - audio->frames_per_buffer);
 }
-
-
-//** MEDIA BUTTONS ****
-
 
 void MainWindow::setupPlot()
 {
@@ -582,7 +569,7 @@ void MainWindow::pauseTracers(size_t offset) {
     timer.stop();
     plotter->pause(offset, f1, f2);
 
-    graph->addData(f2, f1); 
+    graph->addData(f2, f1);
     for (size_t i = 0; i <= Tracer::LAST; i += 1)
         tracers[i]->setGraphKey(f2);
 
@@ -628,7 +615,7 @@ void MainWindow::resetButtonPushed(){
         for (int i = 13; i < vowelSymbols.size(); i++){
             ui->customPlot->removeItem(vowelSymbols[i]);
         }
-        vowelSymbols.resize(13);   
+        vowelSymbols.resize(13);
     }
     else{
         vowelSymbols[0]->position->setCoords(2200, 240);
@@ -639,9 +626,9 @@ void MainWindow::resetButtonPushed(){
         for (int i = 5; i < vowelSymbols.size(); i++){
             ui->customPlot->removeItem(vowelSymbols[i]);
         }
-        vowelSymbols.resize(5);  
+        vowelSymbols.resize(5);
     }
-    
+
     plot->replot();
 }
 

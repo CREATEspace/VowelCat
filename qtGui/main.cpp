@@ -7,13 +7,12 @@
 #include <QApplication>
 
 extern "C" {
-    #include "audio.h"
+#include "audio.h"
 }
 
 #include "mainwindow.h"
 #include "plotter.h"
 #include "params.h"
-
 
 // Handle OS signals.
 static void sig(int s) {
@@ -40,11 +39,12 @@ int main(int argc, char *argv[])
 
     Plotter plotter(&audio);
     MainWindow window(&audio);
-    
+
     plotter.window = &window;
     window.plotter = &plotter;
 
-    QObject::connect(&plotter, SIGNAL(pauseSig()), &window, SLOT(pauseAudio()), Qt::QueuedConnection);
+    QObject::connect(&plotter, SIGNAL(pauseSig()),
+                     &window, SLOT(pauseAudio()));
 
     plotter.listen();
     window.show();

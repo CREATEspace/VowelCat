@@ -7,9 +7,10 @@
 #include <pthread.h>
 
 extern "C" {
-    #include "audio.h"
-    #include "formant.h"
+#include "audio.h"
+#include "formant.h"
 }
+
 #include "mainwindow.h"
 #include "params.h"
 #include "timespec.h"
@@ -27,7 +28,6 @@ static_assert(NOISE_SAMPLES > 0 && NOISE_SAMPLES < SAMPLES_PER_CHUNK,
 
 // Worker that processes formants in a separate thread.
 class Plotter : public QObject {
-
     Q_OBJECT
 
 public:
@@ -57,11 +57,10 @@ public:
 
 signals:
     void pauseSig();
-  
+
 private:
     // Thread ID.
     pthread_t tid;
-
     bool run;
 
     // Relevant structures.
