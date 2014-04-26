@@ -28,7 +28,7 @@ class Plotter;
 
 class Tracer: public QCPItemTracer {
 public:
-    enum { COUNT = 16 };
+    enum { COUNT = 8 };
     enum { LAST = COUNT - 1 };
 
 private:
