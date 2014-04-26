@@ -62,7 +62,7 @@ void wav_header_init(wav_header_t *h, const audio_t *a) {
 void audio_wakeup(audio_t *a)
 {
    pthread_mutex_lock(&a->wakeup_mutex);
-   a->wakeup_sig = true;
+   a->wakeup = true;
    pthread_cond_signal(&a->wakeup_cond);
    pthread_mutex_unlock(&a->wakeup_mutex);
 }
@@ -70,9 +70,9 @@ void audio_wakeup(audio_t *a)
 void audio_wait(audio_t *a)
 {
    pthread_mutex_lock(&a->wakeup_mutex);
-   if(!a->wakeup_sig)
+   if(!a->wakeup)
       pthread_cond_wait(&a->wakeup_cond, &a->wakeup_mutex);
-   a->wakeup_sig = false;
+   a->wakeup = false;
    pthread_mutex_unlock(&a->wakeup_mutex);
 }
 
@@ -208,7 +208,7 @@ bool audio_init(audio_t *a, size_t sample_rate, size_t n_channels, size_t frames
       .pstream = pstream,
       .rstream = rstream,
 
-      .wakeup_sig = false,
+      .wakeup = false,
       .wakeup_cond   = PTHREAD_COND_INITIALIZER,
       .wakeup_mutex  = PTHREAD_MUTEX_INITIALIZER,
 
@@ -294,7 +294,7 @@ void audio_stop(audio_t *a)
 {
    Pa_StopStream(a->pstream);
    Pa_StopStream(a->rstream);
-   a->wakeup_sig = false;
+   a->wakeup = false;
 }
 
 bool audio_play_read(audio_t *a, audio_sample_t *samples)

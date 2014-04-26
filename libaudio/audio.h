@@ -29,7 +29,7 @@ typedef struct audio_t
    PaStream *pstream;
    PaStream *rstream;
 
-   bool wakeup_sig;
+   bool wakeup;
    pthread_cond_t wakeup_cond;
    pthread_mutex_t wakeup_mutex;
 
