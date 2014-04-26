@@ -1,6 +1,8 @@
 // Copyright 2014 Formant Industries. See the Copying file at the top-level
 // directory of this project.
 
+#include <stdint.h>
+
 #include "audio.h"
 
 //***************************
@@ -8,21 +10,16 @@
 #define PLAY_FPB_DOWNSIZE 2
 //***************************
 
-#define WAV_RIFF 0x52494646
-#define WAV_WAVE 0x57415645
-#define WAV_FMT_ 0x666d7420
-#define WAV_DATA 0x64617461
-
 #ifndef min
 #define min(x,y) ((x) < (y) ? (x) : (y))
 #endif
 
 typedef struct {
-   uint32_t chunk_id;
+   uint8_t chunk_id[4];
    uint32_t chunk_size;
-   uint32_t format;
+   uint8_t format[4];
 
-   uint32_t subchunk1_id;
+   uint8_t subchunk1_id[4];
    uint32_t subchunk1_size;
 
    uint16_t audio_format;
@@ -33,17 +30,17 @@ typedef struct {
    uint16_t block_align;
    uint16_t bits_per_sample;
 
-   uint32_t subchunk2_id;
+   uint8_t subchunk2_id[4];
    uint32_t subchunk2_size;
 } wav_header_t;
 
 void wav_header_init(wav_header_t *h, const audio_t *a) {
    *h = (wav_header_t) {
-      .chunk_id = WAV_RIFF,
+      .chunk_id = {'R', 'I', 'F', 'F'},
       .chunk_size = sizeof(wav_header_t) + a->prbuf_size * sizeof(audio_sample_t),
-      .format = WAV_WAVE,
+      .format = {'W', 'A', 'V', 'E'},
 
-      .subchunk1_id = WAV_FMT_,
+      .subchunk1_id = {'f', 'm', 't', ' '},
       .subchunk1_size =  16,   //Size of this subchunk
 
       .audio_format = 1,       //Linear quantization - Other options avail
@@ -54,7 +51,7 @@ void wav_header_init(wav_header_t *h, const audio_t *a) {
       .block_align = a->n_channels * sizeof(audio_sample_t),
       .bits_per_sample = sizeof(audio_sample_t) * CHAR_BIT,
 
-      .subchunk2_id = WAV_DATA,
+      .subchunk2_id = {'d', 'a', 't', 'a'},
       .subchunk2_size = a->prbuf_size * sizeof(audio_sample_t),
    };
 }
