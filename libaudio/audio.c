@@ -92,7 +92,7 @@ static int playCallback( const void *inputBuffer, void *outputBuffer,
    size_t n_samples = min(a->prbuf_size - a->prbuf_offset, framesPerBuffer * a->n_channels);
    PaStreamCallbackResult ret = paContinue;
 
-   if(a->prbuf_size <= a->prbuf_offset){
+   if(a->prbuf_offset >= a->prbuf_size){
       a->prbuf_offset = a->prbuf_size;
       ret = paComplete;
    } else {
