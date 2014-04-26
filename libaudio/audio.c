@@ -185,8 +185,6 @@ bool audio_init(audio_t *a, size_t sample_rate, size_t n_channels, size_t frames
       .bits_per_sample =  sizeof(audio_sample_t) * CHAR_BIT,
       .subchunk2_id = WAV_DATA
    };
-      //.chunk_size            //File size - 8 // don't inclue chunk_id and file_dec
-      //.subchunk2_size        //sizeofraw * n_channels
 
    return true;
 }
