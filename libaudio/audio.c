@@ -303,7 +303,8 @@ void audio_stop(audio_t *a)
 
 bool audio_play_read(audio_t *a, audio_sample_t *samples)
 {
-   size_t offset;
+   size_t offset = a->prbuf_offset;
+
    for(size_t i = 0; i < PLAY_FPB_DOWNSIZE; i++) {
       if(Pa_IsStreamActive(a->pstream)) {
          audio_wait(a);
@@ -311,14 +312,13 @@ bool audio_play_read(audio_t *a, audio_sample_t *samples)
             return false;
       }
    }
-   offset = a->prbuf_offset;
 
    if(a->prbuf_size > offset) {
-      memcpy(&samples[0], &a->prbuf[offset - a->samples_per_chunk], a->samples_per_chunk * sizeof(audio_sample_t));
+      memcpy(&samples[0], &a->prbuf[offset], a->samples_per_chunk * sizeof(audio_sample_t));
       return true;
    }
    else if(a->prbuf_size == offset) {
-      memcpy(&samples[0], &a->prbuf[offset - a->samples_per_chunk], a->samples_per_chunk * sizeof(audio_sample_t));
+      memcpy(&samples[0], &a->prbuf[offset], a->samples_per_chunk * sizeof(audio_sample_t));
    }
    return false;
 }
