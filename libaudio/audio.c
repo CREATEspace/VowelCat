@@ -339,13 +339,13 @@ bool audio_record_read(audio_t *a, audio_sample_t *samples)
 
 bool audio_listen_read(audio_t *a, audio_sample_t *samples)
 {
-   if(Pa_IsStreamActive(a->rstream)) {
-      audio_wait(a);
+   if (!Pa_IsStreamActive(a->rstream))
+      return false;
 
-      PaUtil_ReadRingBuffer(&a->rb, &samples[0], a->frames_per_buffer * a->n_channels);
-      return true;
-   }
-   return false;
+   audio_wait(a);
+   PaUtil_ReadRingBuffer(&a->rb, &samples[0], a->frames_per_buffer * a->n_channels);
+
+   return true;
 }
 
 void audio_seek(audio_t *a, size_t index)
