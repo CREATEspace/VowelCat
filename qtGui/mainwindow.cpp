@@ -89,7 +89,6 @@ MainWindow::MainWindow(audio_t *a, Plotter *p):
     ui->pauseButton->setIcon(QIcon::fromTheme("media-playback-pause"));
     ui->endButton->setIcon(QIcon::fromTheme("media-skip-forward"));
 
-    setGeometry(400, 250, 1000, 1000);
     ui->englishGroupBox->setStyleSheet("QPushButton {font-size:18pt;}");
     ui->chineseGroupBox->setStyleSheet("QPushButton {font-size:18pt;}");
 
