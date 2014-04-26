@@ -17,8 +17,7 @@
 #define min(x,y) ((x) < (y) ? (x) : (y))
 #endif
 
-typedef struct wav_head
-{
+typedef struct {
    uint32_t chunk_id;
    uint32_t chunk_size;
    uint32_t format;
@@ -36,7 +35,29 @@ typedef struct wav_head
 
    uint32_t subchunk2_id;
    uint32_t subchunk2_size;
-} wav_head;
+} wav_header_t;
+
+void wav_header_init(wav_header_t *h, const audio_t *a) {
+   *h = (wav_header_t) {
+      .chunk_id = WAV_RIFF,
+      .chunk_size = sizeof(wav_header_t) + a->prbuf_size * sizeof(audio_sample_t),
+      .format = WAV_WAVE,
+
+      .subchunk1_id = WAV_FMT_,
+      .subchunk1_size =  16,   //Size of this subchunk
+
+      .audio_format = 1,       //Linear quantization - Other options avail
+      .n_channels = a->n_channels,
+      .sample_rate = a->sample_rate,
+      .byte_rate = a->sample_rate * a->n_channels * sizeof(audio_sample_t),
+
+      .block_align = a->n_channels * sizeof(audio_sample_t),
+      .bits_per_sample = sizeof(audio_sample_t) * CHAR_BIT,
+
+      .subchunk2_id = WAV_DATA,
+      .subchunk2_size = a->prbuf_size * sizeof(audio_sample_t),
+   };
+}
 
 void audio_sig_read(audio_t *a)
 {
@@ -245,23 +266,10 @@ void audio_open(audio_t *a, audio_sample_t *m_data, size_t m_size)
 
 void audio_save(audio_t *a, int fd)
 {
-   wav_head wav = (wav_head) {
-      .chunk_id = WAV_RIFF,
-      .format = WAV_WAVE,
-      .subchunk1_id = WAV_FMT_,
-      .subchunk1_size =  16,   //Size of this subchunk
-      .audio_format = 1,       //Linear quantization - Other options avail
-      .n_channels = a->n_channels,
-      .sample_rate = a->sample_rate,
-      .byte_rate = a->sample_rate * a->n_channels * sizeof(audio_sample_t),
-      .block_align = a->n_channels * sizeof(audio_sample_t),
-      .bits_per_sample =  sizeof(audio_sample_t) * CHAR_BIT,
-      .subchunk2_id = WAV_DATA,
-      .chunk_size = sizeof(wav_head) + a->prbuf_size * sizeof(audio_sample_t),
-      .subchunk2_size = a->prbuf_size * sizeof(audio_sample_t),
-   };
+   wav_header_t header;
+   wav_header_init(&header, a);
 
-   write(fd, &wav, sizeof(wav_head));
+   write(fd, &header, sizeof(wav_header_t));
    write(fd, a->prbuf, a->prbuf_size * sizeof(audio_sample_t));
 }
 
