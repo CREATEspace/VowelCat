@@ -956,7 +956,7 @@
    </widget>
    <widget class="QMenu" name="menuVowelSymbols">
     <property name="title">
-     <string>Vowel Symbols</string>
+     <string>Symbols</string>
     </property>
     <addaction name="actionOpenSymbols"/>
     <addaction name="actionSaveSymbols"/>
@@ -1056,7 +1056,7 @@
   </action>
   <action name="actionOpenSymbols">
    <property name="text">
-    <string>Open...</string>
+    <string>Load...</string>
    </property>
   </action>
   <action name="actionSaveSymbols">
