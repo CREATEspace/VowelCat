@@ -17,6 +17,27 @@
 #define min(x,y) ((x) < (y) ? (x) : (y))
 #endif
 
+typedef struct wav_head
+{
+   uint32_t chunk_id;
+   uint32_t chunk_size;
+   uint32_t format;
+
+   uint32_t subchunk1_id;
+   uint32_t subchunk1_size;
+
+   uint16_t audio_format;
+   uint16_t n_channels;
+   uint32_t sample_rate;
+   uint32_t byte_rate;
+
+   uint16_t block_align;
+   uint16_t bits_per_sample;
+
+   uint32_t subchunk2_id;
+   uint32_t subchunk2_size;
+} wav_head;
+
 void audio_sig_read(audio_t *a)
 {
    pthread_mutex_lock(&a->wakeup_mutex);
