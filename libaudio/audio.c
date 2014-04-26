@@ -100,7 +100,6 @@ static int playCallback( const void *inputBuffer, void *outputBuffer,
       a->prbuf_offset += n_samples;
    }
 
-   a->play_offset = a->prbuf_offset;
    audio_sig_read(a);
 
    return ret;
@@ -218,7 +217,6 @@ bool audio_init(audio_t *a, size_t sample_rate, size_t n_channels, size_t frames
       .prbuf = NULL,
       .prbuf_size = 0,
       .prbuf_offset = 0,
-      .play_offset = 0,
 
       .rb = rb,
       .rb_data = rb_data
@@ -250,7 +248,6 @@ void audio_reset(audio_t *a)
    a->prbuf = NULL;
    a->prbuf_size = 0;
    a->prbuf_offset = 0;
-   a->play_offset = 0;
    a->flags &= ~SOURCE_DISK;
 
    PaUtil_FlushRingBuffer(&a->rb);
@@ -310,7 +307,7 @@ bool audio_play_read(audio_t *a, audio_sample_t *samples)
             return false;
       }
    }
-   offset = a->play_offset;
+   offset = a->prbuf_offset;
 
    if(a->prbuf_size > offset) {
       memcpy(&samples[0], &a->prbuf[offset - a->frames_per_buffer], a->frames_per_buffer * sizeof(audio_sample_t));

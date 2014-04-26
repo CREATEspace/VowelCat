@@ -41,7 +41,6 @@ typedef struct audio_t
    audio_sample_t *prbuf;
    size_t prbuf_size;
    size_t prbuf_offset;
-   size_t play_offset;
 
    PaUtilRingBuffer rb;
    void *rb_data;
