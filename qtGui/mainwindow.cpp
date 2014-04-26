@@ -97,7 +97,6 @@ MainWindow::MainWindow(audio_t *a, Plotter *p):
     vowelToggle = true;
     symbolToggle = true;
 
-    resetButton = ui->resetButton;
     defaultSymbolsButton = ui->defaultSymbolsButton;
     addSymbolButton = ui->addSymbolButton;
     plainTextEdit = ui->plainTextEdit;
@@ -111,7 +110,7 @@ MainWindow::MainWindow(audio_t *a, Plotter *p):
 
     connect(plot, SIGNAL(mouseMove(QMouseEvent*)), this, SLOT(mouseMove(QMouseEvent*)));
     connect(plot, SIGNAL(mouseRelease(QMouseEvent*)), this, SLOT(mouseRelease()));
-    connect(resetButton, SIGNAL(released()), this, SLOT(resetPlot()));
+    connect(ui->actionResetPlot, SIGNAL(triggered()), this, SLOT(resetPlot()));
     connect(defaultSymbolsButton, SIGNAL(released()), this, SLOT(defaultSymbolsButtonPushed()));
     connect(addSymbolButton, SIGNAL(released()), this, SLOT(addSymbolButtonPushed()));
     connect(ui->actionInvertAxes, SIGNAL(triggered()), this, SLOT(invertAxes()));

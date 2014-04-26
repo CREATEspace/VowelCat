@@ -97,7 +97,6 @@ private:
     QTimer timer;
 
     QPushButton *axisButton;
-    QPushButton *resetButton;
     QPushButton *defaultSymbolsButton;
     QPushButton *addSymbolButton;
     QPlainTextEdit *plainTextEdit;
