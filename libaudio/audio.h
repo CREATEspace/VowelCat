@@ -39,7 +39,9 @@ typedef struct audio_t
    } flags;
 
    audio_sample_t *prbuf;
+   // Number of samples in prbuf.
    size_t prbuf_size;
+   // Current sample offset in prbuf.
    size_t prbuf_offset;
 
    PaUtilRingBuffer rb;
