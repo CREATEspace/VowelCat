@@ -134,32 +134,26 @@ MainWindow::MainWindow(audio_t *a, Plotter *p):
     connect(ui->endButton, SIGNAL(clicked()), this, SLOT(endAudio())); //Skip to End
     connect(ui->actionNew, SIGNAL(triggered()), this, SLOT(newAudio())); //Clear audio
 
-    ui->beginButton->setEnabled(false);
-    ui->playButton->setEnabled(false);
-    ui->endButton->setEnabled(false);
-
+    initButtons();
     setupPlot();
-    updateButtons();
 }
 
-void MainWindow::updateButtons() {
-    ui->recordButton->setVisible(!(mflags & RECORDING));
-    ui->stopButton->setVisible(mflags & RECORDING);
-
-    ui->playButton->setVisible(!(mflags & PLAYING));
-    ui->pauseButton->setVisible(mflags & PLAYING);
-}
-
-void MainWindow::newAudio() {
-    timer.start(TIMER_INTERVAL);
+void MainWindow::initButtons() {
     ui->recordButton->setVisible(true);
     ui->stopButton->setVisible(false);
     ui->playButton->setVisible(true);
     ui->pauseButton->setVisible(false);
 
+    ui->recordButton->setEnabled(true);
     ui->beginButton->setEnabled(false);
     ui->playButton->setEnabled(false);
     ui->endButton->setEnabled(false);
+}
+
+void MainWindow::newAudio() {
+    initButtons();
+
+    timer.start(TIMER_INTERVAL);
 
     plotter->stop();
     plotter->listen();

@@ -159,6 +159,7 @@ private slots:
     void mouseRelease();
 
 private:
+    void initButtons();
     void loadSymbols(FILE *stream);
     void saveSymbols(FILE *stream) const;
 
@@ -175,7 +176,6 @@ private:
     void clearTracer();
 
     void updateFPS() const;
-    void updateButtons();
 };
 
 #endif // MAINWINDOW_H
