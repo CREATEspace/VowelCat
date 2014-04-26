@@ -181,7 +181,7 @@ bool audio_init(audio_t *a, size_t sample_rate, size_t n_channels, size_t frames
       .sample_rate = sample_rate,
       .byte_rate = sample_rate * n_channels * sizeof(audio_sample_t),
       .block_align = n_channels * sizeof(audio_sample_t),
-      .bits_per_sample =  sizeof(audio_sample_t) * BYTE_SIZE,
+      .bits_per_sample =  sizeof(audio_sample_t) * CHAR_BIT,
       .subchunk2_id = WAV_DATA
    };
       //.chunk_size            //File size - 8 // don't inclue chunk_id and file_dec
