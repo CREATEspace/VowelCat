@@ -107,6 +107,7 @@ MainWindow::MainWindow(audio_t *a, Plotter *p):
 
     connect(ui->actionOpenSymbols, SIGNAL(triggered()), this, SLOT(loadSymbols()));
     connect(ui->actionSaveSymbols, SIGNAL(triggered()), this, SLOT(saveSymbols()));
+    connect(ui->actionQuit, SIGNAL(triggered()), qApp, SLOT(quit()));
 
     connect(ui->actionResetPlot, SIGNAL(triggered()), this, SLOT(resetPlot()));
     connect(ui->actionInvertAxis, SIGNAL(triggered()), this, SLOT(invertAxis()));
