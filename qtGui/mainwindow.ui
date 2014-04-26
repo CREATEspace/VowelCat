@@ -171,6 +171,12 @@
       </item>
       <item>
        <widget class="QScrollArea" name="scrollArea">
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>96</height>
+         </size>
+        </property>
         <property name="maximumSize">
          <size>
           <width>16777215</width>
@@ -180,16 +186,7 @@
         <property name="widgetResizable">
          <bool>true</bool>
         </property>
-        <widget class="QWidget" name="spectrogram">
-         <property name="geometry">
-          <rect>
-           <x>0</x>
-           <y>0</y>
-           <width>1007</width>
-           <height>94</height>
-          </rect>
-         </property>
-        </widget>
+        <widget class="QWidget" name="spectrogram"/>
        </widget>
       </item>
      </layout>
