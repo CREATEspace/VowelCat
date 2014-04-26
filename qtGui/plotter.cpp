@@ -25,7 +25,9 @@ Plotter::Plotter(audio_t *a) :
 
     formant_opts_init(&opts);
     opts.pre_emph_factor = 1;
-    formant_opts_process(&opts);
+
+    if (!formant_opts_process(&opts))
+        abort();
 }
 
 Plotter::~Plotter() {
@@ -45,8 +47,8 @@ bool Plotter::noise() {
 }
 
 void Plotter::formant(uintmax_t &f1, uintmax_t &f2) {
-    bool ret = sound_calc_formants(&sound, &opts);
-    assert(ret);
+    if (!sound_calc_formants(&sound, &opts))
+        abort();
 
     f1 = 0;
 
@@ -63,17 +65,12 @@ void Plotter::formant(uintmax_t &f1, uintmax_t &f2) {
 }
 
 void Plotter::listen_run() {
-    bool ret;
-#ifdef NDEBUG
-    (void) ret;
-#endif
-
     uintmax_t f1, f2;
     timespec_t before, after;
     uintmax_t dur = 0, count = 0;
 
-    ret = audio_record(audio);
-    assert(ret);
+    if (!audio_record(audio))
+        abort();
 
     while(run) {
         timespec_init(&before);
@@ -101,17 +98,12 @@ void Plotter::listen_run() {
 }
 
 void Plotter::record_run() {
-    bool ret;
-#ifdef NDEBUG
-    (void) ret;
-#endif
-
     uintmax_t f1, f2;
     timespec_t before, after;
     uintmax_t dur = 0, count = 0;
 
-    ret = audio_record(audio);
-    assert(ret);
+    if (!audio_record(audio))
+        abort();
 
     while(run) { //Pa_IsStreamActive does not seem to work quick enough
         timespec_init(&before);
@@ -141,17 +133,12 @@ void Plotter::record_run() {
 }
 
 void Plotter::play_run() {
-    bool ret;
-#ifdef NDEBUG
-    (void) ret;
-#endif
-
     uintmax_t f1, f2;
     timespec_t before, after;
     uintmax_t dur = 0, count = 0;
 
-    ret = audio_play(audio);
-    assert(ret);
+    if (!audio_play(audio))
+        abort();
 
     while(run) { //Pa_IsStreamActive does not seem to work quick enough
         timespec_init(&before);

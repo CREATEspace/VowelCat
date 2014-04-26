@@ -35,7 +35,9 @@ int main(int argc, char *argv[])
     QApplication app(argc, argv);
 
     audio_t audio;
-    audio_init(&audio, SAMPLE_RATE, CHANNELS, SAMPLES_PER_CHUNK);
+
+    if (!audio_init(&audio, SAMPLE_RATE, CHANNELS, SAMPLES_PER_CHUNK))
+        abort();
 
     Plotter plotter(&audio);
     MainWindow window(&audio, &plotter);
