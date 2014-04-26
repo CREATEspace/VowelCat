@@ -37,13 +37,14 @@ typedef struct {
 void wav_header_init(wav_header_t *h, const audio_t *a) {
    *h = (wav_header_t) {
       .chunk_id = {'R', 'I', 'F', 'F'},
-      .chunk_size = sizeof(wav_header_t) + a->prbuf_size * sizeof(audio_sample_t),
+      .chunk_size = sizeof(wav_header_t) + a->prbuf_size * a->n_channels *
+         sizeof(audio_sample_t),
       .format = {'W', 'A', 'V', 'E'},
 
       .subchunk1_id = {'f', 'm', 't', ' '},
-      .subchunk1_size =  16,   //Size of this subchunk
+      .subchunk1_size = 16,
 
-      .audio_format = 1,       //Linear quantization - Other options avail
+      .audio_format = a->n_channels,
       .n_channels = a->n_channels,
       .sample_rate = a->sample_rate,
       .byte_rate = a->sample_rate * a->n_channels * sizeof(audio_sample_t),
@@ -52,7 +53,7 @@ void wav_header_init(wav_header_t *h, const audio_t *a) {
       .bits_per_sample = sizeof(audio_sample_t) * CHAR_BIT,
 
       .subchunk2_id = {'d', 'a', 't', 'a'},
-      .subchunk2_size = a->prbuf_size * sizeof(audio_sample_t),
+      .subchunk2_size = a->prbuf_size * a->n_channels * sizeof(audio_sample_t),
    };
 }
 
