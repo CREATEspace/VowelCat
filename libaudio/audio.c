@@ -320,22 +320,21 @@ bool audio_play_read(audio_t *a, audio_sample_t *samples)
 
 bool audio_record_read(audio_t *a, audio_sample_t *samples)
 {
-   if(Pa_IsStreamActive(a->rstream)) {
-      audio_wait(a);
+   if(!Pa_IsStreamActive(a->rstream))
+      return false;
 
-      if(!audio_resize(a, a->frames_per_buffer * a->n_channels))
-         return false;
+   audio_wait(a);
 
-      PaUtil_ReadRingBuffer(&a->rb, &a->prbuf[a->prbuf_offset], a->frames_per_buffer * a->n_channels);
-      memcpy(&samples[0], &a->prbuf[a->prbuf_offset], a->frames_per_buffer * a->n_channels * sizeof(audio_sample_t));
+   if(!audio_resize(a, a->frames_per_buffer * a->n_channels))
+      return false;
 
-      a->prbuf_size = a->prbuf_offset + a->frames_per_buffer;
-      a->prbuf_offset = a->prbuf_size;
+   PaUtil_ReadRingBuffer(&a->rb, &a->prbuf[a->prbuf_offset], a->frames_per_buffer * a->n_channels);
+   memcpy(&samples[0], &a->prbuf[a->prbuf_offset], a->frames_per_buffer * a->n_channels * sizeof(audio_sample_t));
 
-      return true;
-   }
-   return false;
+   a->prbuf_size = a->prbuf_offset + a->frames_per_buffer;
+   a->prbuf_offset = a->prbuf_size;
 
+   return true;
 }
 
 bool audio_listen_read(audio_t *a, audio_sample_t *samples)
