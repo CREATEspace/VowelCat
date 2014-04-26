@@ -30,7 +30,7 @@ typedef struct audio_t
    PaStream *rstream;
 
    bool wakeup;
-   pthread_cond_t wakeup_cond;
+   pthread_cond_t wakeup_sig;
    pthread_mutex_t wakeup_mutex;
 
    enum {
