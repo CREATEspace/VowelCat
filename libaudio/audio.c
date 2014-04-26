@@ -303,7 +303,7 @@ bool audio_play_read(audio_t *a, audio_sample_t *samples)
    for(size_t i = 0; i < PLAY_FPB_DOWNSIZE; i++) {
       if(Pa_IsStreamActive(a->pstream)) {
          audio_sig_write(a);
-         if(i < 3 && a->prbuf_size == a->prbuf_offset)
+         if(i < PLAY_FPB_DOWNSIZE - 1 && a->prbuf_size == a->prbuf_offset)
             return false;
       }
    }
