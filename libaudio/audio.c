@@ -242,7 +242,7 @@ void audio_reset(audio_t *a)
 {
    if(a->flags & SOURCE_DISK)
       munmap(a->prbuf, a->prbuf_size * sizeof(audio_sample_t));
-   else if(a->prbuf != NULL)
+   else
       free(a->prbuf);
 
    a->prbuf = NULL;
