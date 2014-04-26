@@ -96,7 +96,6 @@ private:
     pthread_mutex_t plot_lock;
     QTimer timer;
 
-    QPushButton *axisButton;
     QPushButton *defaultSymbolsButton;
     QPushButton *addSymbolButton;
     QPlainTextEdit *plainTextEdit;
