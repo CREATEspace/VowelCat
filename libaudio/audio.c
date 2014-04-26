@@ -67,7 +67,7 @@ void audio_wakeup(audio_t *a)
    pthread_mutex_unlock(&a->wakeup_mutex);
 }
 
-void audio_sig_write(audio_t *a)
+void audio_wait(audio_t *a)
 {
    pthread_mutex_lock(&a->wakeup_mutex);
    if(!a->wakeup_sig)
@@ -302,7 +302,7 @@ bool audio_play_read(audio_t *a, audio_sample_t *samples)
    size_t offset;
    for(size_t i = 0; i < PLAY_FPB_DOWNSIZE; i++) {
       if(Pa_IsStreamActive(a->pstream)) {
-         audio_sig_write(a);
+         audio_wait(a);
          if(i < PLAY_FPB_DOWNSIZE - 1 && a->prbuf_size == a->prbuf_offset)
             return false;
       }
@@ -322,7 +322,7 @@ bool audio_play_read(audio_t *a, audio_sample_t *samples)
 bool audio_record_read(audio_t *a, audio_sample_t *samples)
 {
    if(Pa_IsStreamActive(a->rstream)) {
-      audio_sig_write(a);
+      audio_wait(a);
 
       if(!audio_resize(a, a->frames_per_buffer * a->n_channels))
          return false;
@@ -342,7 +342,7 @@ bool audio_record_read(audio_t *a, audio_sample_t *samples)
 bool audio_listen_read(audio_t *a, audio_sample_t *samples)
 {
    if(Pa_IsStreamActive(a->rstream)) {
-      audio_sig_write(a);
+      audio_wait(a);
 
       PaUtil_ReadRingBuffer(&a->rb, &samples[0], a->frames_per_buffer * a->n_channels);
       return true;
