@@ -939,6 +939,7 @@
     </property>
     <addaction name="actionRecordStop"/>
     <addaction name="actionPlayPause"/>
+    <addaction name="separator"/>
     <addaction name="actionSkipBeginning"/>
     <addaction name="actionSkipEnd"/>
    </widget>
