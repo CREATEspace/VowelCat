@@ -18,16 +18,6 @@
 #include "pa_ringbuffer.h"
 //***************************
 
-//***************************
-#define RB_MULTIPLIER 2
-#define PLAY_FPB_DOWNSIZE 2
-//***************************
-
-#define WAV_RIFF 0x52494646
-#define WAV_WAVE 0x57415645
-#define WAV_FMT_ 0x666d7420
-#define WAV_DATA 0x64617461
-
 typedef short audio_sample_t;
 
 typedef struct wav_head
