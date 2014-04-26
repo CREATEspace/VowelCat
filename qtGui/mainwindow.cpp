@@ -557,7 +557,7 @@ void MainWindow::plotNext() {
     diff = timespec_diff(&start, &now);
 
     if (diff > dur) {
-        timer.setInterval(50);
+        timer.setInterval(TIMER_SLOWDOWN);
 
         if (tracer == Tracer::COUNT) {
             pthread_mutex_unlock(&plot_lock);

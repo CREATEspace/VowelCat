@@ -72,6 +72,7 @@ class MainWindow: public QMainWindow {
 
 private:
     enum { TIMER_INTERVAL = 10 };
+    enum { TIMER_SLOWDOWN = 50 };
 
     typedef struct {
         formant_sample_t x, y;
