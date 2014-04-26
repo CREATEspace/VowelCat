@@ -96,15 +96,15 @@ private:
     pthread_mutex_t plot_lock;
     QTimer timer;
 
-    bool symbolToggle;
-
     QVector<QCPItemText*> vowelSymbols;
     QVector<QPushButton*> vowelButtons;
 
     enum {
         DEFAULT     = 0,
         INVERT_AXES = 1 << 0,
+        CHINESE_SYMBOLS = 1 << 1,
     };
+
     uint32_t flags;
 
     audio_t *audio;

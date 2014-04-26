@@ -92,8 +92,6 @@ MainWindow::MainWindow(audio_t *a, Plotter *p):
     ui->englishGroupBox->setStyleSheet("QPushButton {font-size:18pt;}");
     ui->chineseGroupBox->setStyleSheet("QPushButton {font-size:18pt;}");
 
-    symbolToggle = true;
-
     ui->chineseGroupBox->setVisible(false);
 
     plot = ui->customPlot;
@@ -660,7 +658,7 @@ void MainWindow::vowelButtonPushed(int pushedVowelButton){
 }
 
 void MainWindow::resetPlot(){
-    if (symbolToggle){
+    if (!(flags & CHINESE_SYMBOLS)){
         vowelSymbols[0]->position->setCoords(750, 295);
         vowelSymbols[1]->position->setCoords(910, 334);
         vowelSymbols[2]->position->setCoords(727, 406);
@@ -695,8 +693,8 @@ void MainWindow::resetPlot(){
 }
 
 void MainWindow::defaultSymbolsButtonPushed(){
-    symbolToggle = !symbolToggle;
-    if (!symbolToggle){
+    flags ^= CHINESE_SYMBOLS;
+    if (flags & CHINESE_SYMBOLS){
         clearSymbols();
         ui->chineseGroupBox->setVisible(true);
         ui->englishGroupBox->setVisible(false);
