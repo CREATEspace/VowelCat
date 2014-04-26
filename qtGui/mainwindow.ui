@@ -930,7 +930,7 @@
     <property name="title">
      <string>&amp;View</string>
     </property>
-    <addaction name="actionInvertAxes"/>
+    <addaction name="actionInvertAxis"/>
     <addaction name="actionResetPlot"/>
    </widget>
    <widget class="QMenu" name="menuControls">
@@ -999,9 +999,9 @@
     <string>Ctrl+Q</string>
    </property>
   </action>
-  <action name="actionInvertAxes">
+  <action name="actionInvertAxis">
    <property name="text">
-    <string>Invert Axes</string>
+    <string>Invert Vertical Axis</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+I</string>

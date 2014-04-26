@@ -102,7 +102,7 @@ private:
 
     enum {
         DEFAULT     = 0,
-        INVERT_AXES = 1 << 0,
+        INVERT_AXIS = 1 << 0,
         CHINESE_SYMBOLS = 1 << 1,
     };
 
@@ -126,7 +126,7 @@ private slots:
     void defaultSymbolsButtonPushed();
     void addSymbolButtonPushed();
 
-    void invertAxes();
+    void invertAxis();
 
     void loadSymbols();
     void saveSymbols();

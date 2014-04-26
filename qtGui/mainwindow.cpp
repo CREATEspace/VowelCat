@@ -109,7 +109,7 @@ MainWindow::MainWindow(audio_t *a, Plotter *p):
     connect(ui->actionSaveSymbols, SIGNAL(triggered()), this, SLOT(saveSymbols()));
 
     connect(ui->actionResetPlot, SIGNAL(triggered()), this, SLOT(resetPlot()));
-    connect(ui->actionInvertAxes, SIGNAL(triggered()), this, SLOT(invertAxes()));
+    connect(ui->actionInvertAxis, SIGNAL(triggered()), this, SLOT(invertAxis()));
 
     connect(ui->playButton, SIGNAL(clicked()), this, SLOT(startPlay())); //Play
     connect(ui->recordButton, SIGNAL(clicked()), this, SLOT(startRecord())); //Record
@@ -723,9 +723,9 @@ void MainWindow::addSymbol(QString symbol){
     plot->replot();
 }
 
-void MainWindow::invertAxes(){
-    flags ^= INVERT_AXES;
-    plot->yAxis->setRangeReversed(!(flags & INVERT_AXES));
+void MainWindow::invertAxis(){
+    flags ^= INVERT_AXIS;
+    plot->yAxis->setRangeReversed(!(flags & INVERT_AXIS));
     plot->replot();
 }
 
