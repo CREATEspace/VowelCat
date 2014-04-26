@@ -35,9 +35,11 @@ typedef struct {
 } wav_header_t;
 
 void wav_header_init(wav_header_t *h, const audio_t *a) {
+   enum { CHUNK_SIZE = sizeof(*h) - sizeof(h->chunk_id) - sizeof(h->chunk_size) };
+
    *h = (wav_header_t) {
       .chunk_id = {'R', 'I', 'F', 'F'},
-      .chunk_size = sizeof(wav_header_t) + a->prbuf_size * a->n_channels *
+      .chunk_size = CHUNK_SIZE + a->prbuf_size * a->n_channels *
          sizeof(audio_sample_t),
       .format = {'W', 'A', 'V', 'E'},
 
