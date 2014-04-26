@@ -65,6 +65,7 @@ typedef struct audio_t
    pthread_mutex_t wakeup_mutex;
 
    enum {
+      DEFAULT = 0,
       SOURCE_DISK = 1 << 0,
    } flags;
 

@@ -161,6 +161,8 @@ bool audio_init(audio_t *a, size_t sample_rate, size_t n_channels, size_t frames
       .wakeup_cond   = PTHREAD_COND_INITIALIZER,
       .wakeup_mutex  = PTHREAD_MUTEX_INITIALIZER,
 
+      .flags = DEFAULT,
+
       .prbuf = NULL,
       .prbuf_size = 0,
       .prbuf_offset = 0,
@@ -169,7 +171,6 @@ bool audio_init(audio_t *a, size_t sample_rate, size_t n_channels, size_t frames
       .rb = rb,
       .rb_data = rb_data
    };
-   a->flags &= ~SOURCE_DISK;
 
    a->wav = (wav_head) {
       .chunk_id = WAV_RIFF,
