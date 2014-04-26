@@ -29,7 +29,7 @@ static int playCallback( const void *inputBuffer, void *outputBuffer,
                          void *userData)
 {
    //****************
-   (void) inputBuffer;  
+   (void) inputBuffer;
    (void) timeInfo;
    (void) statusFlags;
    //****************
@@ -67,7 +67,7 @@ static int recordCallback( const void *inputBuffer, void *outputBuffer,
                            void *userData)
 {
 
-   (void) outputBuffer;  
+   (void) outputBuffer;
    (void) timeInfo;
    (void) statusFlags;
 
@@ -85,20 +85,20 @@ static int recordCallback( const void *inputBuffer, void *outputBuffer,
 //**
 
 //**
-bool audio_init(audio_t *a, size_t sample_rate, size_t n_channels, size_t frames_per_buffer) 
+bool audio_init(audio_t *a, size_t sample_rate, size_t n_channels, size_t frames_per_buffer)
 {
    //***Initialize PA internal data structures******
    if(Pa_Initialize() != paNoError)
       return false;
    //*******************
 
-   //******Initialize input device******* 
+   //******Initialize input device*******
    PaStreamParameters inparams;
    PaDeviceIndex dev;
    PaTime lat;
    //**************
    dev = Pa_GetDefaultInputDevice();
-   if(dev == paNoDevice) 
+   if(dev == paNoDevice)
       return false;
    lat = Pa_GetDeviceInfo(dev)->defaultLowInputLatency;
    //***************
@@ -111,11 +111,11 @@ bool audio_init(audio_t *a, size_t sample_rate, size_t n_channels, size_t frames
    };
    //***************
 
-   //******Initialize output device******* 
+   //******Initialize output device*******
    PaStreamParameters outparams;
    //**************
    dev = Pa_GetDefaultOutputDevice();
-   if(dev == paNoDevice) 
+   if(dev == paNoDevice)
       return false;
    lat = Pa_GetDeviceInfo(dev)->defaultLowInputLatency;
    //***************
@@ -128,7 +128,7 @@ bool audio_init(audio_t *a, size_t sample_rate, size_t n_channels, size_t frames
    };
    //***************
 
-   //********Open play stream******* 
+   //********Open play stream*******
    PaStream *pstream=NULL;
    if(Pa_OpenStream(
       &pstream,
@@ -140,7 +140,7 @@ bool audio_init(audio_t *a, size_t sample_rate, size_t n_channels, size_t frames
       playCallback,
       a) != paNoError) return false; //**************
 
-   //********Open record and listen stream******* 
+   //********Open record and listen stream*******
    PaStream *rstream=NULL;
    if(Pa_OpenStream(
       &rstream,
@@ -153,7 +153,7 @@ bool audio_init(audio_t *a, size_t sample_rate, size_t n_channels, size_t frames
       a) != paNoError) return false;
    //**************
 
-   //*****Initialize communication ring buffers******************** 
+   //*****Initialize communication ring buffers********************
    PaUtilRingBuffer rb;
    void *rb_data;
    size_t rb_size;
@@ -163,34 +163,34 @@ bool audio_init(audio_t *a, size_t sample_rate, size_t n_channels, size_t frames
    PaUtil_InitializeRingBuffer(&rb, sizeof(audio_sample_t), rb_size, rb_data);
    //**************
 
-  
+
    *a = (audio_t) {
       .sample_rate = sample_rate,
       .n_channels = n_channels,
       .frames_per_buffer = frames_per_buffer,
-      
+
       .pstream = pstream,
       .rstream = rstream,
 
       .wakeup_sig = false,
       .wakeup_cond   = PTHREAD_COND_INITIALIZER,
       .wakeup_mutex  = PTHREAD_MUTEX_INITIALIZER,
-      
+
       .prbuf = NULL,
       .prbuf_size = 0,
       .prbuf_offset = 0,
       .play_offset = 0,
 
       .rb = rb,
-      .rb_data = rb_data 
+      .rb_data = rb_data
    };
-   a->flags &= ~SOURCE_DISK; 
+   a->flags &= ~SOURCE_DISK;
 
    //**************
 	a->wav = (wav_head){
    	.chunk_id = WAV_RIFF,
-      .format = WAV_WAVE, 
-      .subchunk1_id = WAV_FMT_,  
+      .format = WAV_WAVE,
+      .subchunk1_id = WAV_FMT_,
       .subchunk1_size =  16,   //Size of this subchunk
       .audio_format = 1,       //Linear quantization - Other options avail
       .n_channels = n_channels,
@@ -211,7 +211,7 @@ void audio_destroy(audio_t *a)
 {
    Pa_CloseStream(a->pstream);
    Pa_CloseStream(a->rstream);
-   Pa_Terminate(); 
+   Pa_Terminate();
    //*******************
    pthread_cond_destroy(&a->wakeup_cond);
    pthread_mutex_destroy(&a->wakeup_mutex);
@@ -226,12 +226,12 @@ void audio_reset(audio_t *a)
    	munmap(a->prbuf, a->prbuf_size * sizeof(audio_sample_t));
 	else if(a->prbuf != NULL)
    	free(a->prbuf);
-   
+
    a->prbuf = NULL;
    a->prbuf_size = 0;
    a->prbuf_offset = 0;
    a->play_offset = 0;
-   a->flags &= ~SOURCE_DISK; 
+   a->flags &= ~SOURCE_DISK;
 
    PaUtil_FlushRingBuffer(&a->rb);
 }
@@ -248,7 +248,7 @@ void audio_open(audio_t *a, audio_sample_t *m_data, size_t m_size)
 
 void audio_save(audio_t *a, int fd)
 {
-    
+
    a->wav.chunk_size = sizeof(wav_head) + a->prbuf_size * sizeof(audio_sample_t);
    a->wav.subchunk2_size = a->prbuf_size * sizeof(audio_sample_t);
 
@@ -260,11 +260,11 @@ void audio_save(audio_t *a, int fd)
 bool audio_resize(audio_t *a, size_t n_samples)
 {
    audio_sample_t *new_add;
-   new_add = realloc(a->prbuf, (a->prbuf_offset + n_samples) * sizeof(audio_sample_t)); 
+   new_add = realloc(a->prbuf, (a->prbuf_offset + n_samples) * sizeof(audio_sample_t));
    if(new_add == NULL)
-      return false; 
-   a->prbuf = new_add; 
-   return true; 
+      return false;
+   a->prbuf = new_add;
+   return true;
 }
 //**
 
@@ -285,7 +285,7 @@ void audio_stop(audio_t *a)
    Pa_StopStream(a->rstream);
    a->wakeup_sig = false;
 }
-//** 
+//**
 
 //**
 bool audio_play_read(audio_t *a, audio_sample_t *samples)
@@ -300,7 +300,7 @@ bool audio_play_read(audio_t *a, audio_sample_t *samples)
       }
    }
    offset = a->play_offset;
-   
+
    if(a->prbuf_size > offset) {
       memcpy(&samples[0], &a->prbuf[offset - a->frames_per_buffer], a->frames_per_buffer * sizeof(audio_sample_t));
       return true;
@@ -316,22 +316,22 @@ bool audio_record_read(audio_t *a, audio_sample_t *samples)
    //***************************
    if(Pa_IsStreamActive(a->rstream)) {
       audio_sig_write(a);
-      //***************************   
+      //***************************
       if(!audio_resize(a, a->frames_per_buffer * a->n_channels))
          return false;
-      //***************************   
+      //***************************
       PaUtil_ReadRingBuffer(&a->rb, &a->prbuf[a->prbuf_offset], a->frames_per_buffer * a->n_channels);
       memcpy(&samples[0], &a->prbuf[a->prbuf_offset], a->frames_per_buffer * a->n_channels * sizeof(audio_sample_t));
-      //***************************   
+      //***************************
       a->prbuf_size = a->prbuf_offset + a->frames_per_buffer;
       a->prbuf_offset = a->prbuf_size;
 
-      return true; 
-   }   
+      return true;
+   }
    return false;
 
 }
-      
+
 bool audio_listen_read(audio_t *a, audio_sample_t *samples)
 {
    if(Pa_IsStreamActive(a->rstream)) {

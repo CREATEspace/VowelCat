@@ -1,6 +1,6 @@
 //************************************************************************
 //
-//***************************************************************************** 
+//*****************************************************************************
 
 //*************
 #ifndef AUDIO_H
@@ -12,7 +12,7 @@
 #include <string.h>
 #include <sys/mman.h>
 #include <limits.h>
-#include <unistd.h> 
+#include <unistd.h>
 #include <pthread.h>
 #include <inttypes.h>
 #include "portaudio.h"
@@ -21,12 +21,12 @@
 
 
 //***************************
-#define RB_MULTIPLIER 2       //Used to calculate ring buffer size      
-#define PLAY_FPB_DOWNSIZE 2 
+#define RB_MULTIPLIER 2       //Used to calculate ring buffer size
+#define PLAY_FPB_DOWNSIZE 2
 //***************************
 
-#define WAV_RIFF 0x52494646  
-#define WAV_WAVE 0x57415645  
+#define WAV_RIFF 0x52494646
+#define WAV_WAVE 0x57415645
 #define WAV_FMT_ 0x666d7420
 #define WAV_DATA 0x64617461
 #define BYTE_SIZE 8
@@ -38,7 +38,7 @@ typedef struct wav_head
    uint32_t chunk_id;
    uint32_t chunk_size;
    uint32_t format;
-   
+
    uint32_t subchunk1_id;
    uint32_t subchunk1_size;
 
@@ -46,7 +46,7 @@ typedef struct wav_head
    uint16_t n_channels;
    uint32_t sample_rate;
    uint32_t byte_rate;
-   
+
    uint16_t block_align;
    uint16_t bits_per_sample;
 
@@ -54,7 +54,7 @@ typedef struct wav_head
    uint32_t subchunk2_size;
 }wav_head;
 
-typedef struct audio_t 
+typedef struct audio_t
 {
    size_t sample_rate;
    size_t n_channels;
