@@ -59,9 +59,6 @@ bool audio_play(audio_t *a);
 bool audio_record(audio_t *a);
 void audio_stop(audio_t *a);
 
-void audio_sig_read(audio_t *a);
-void audio_sig_write(audio_t *a);
-
 bool audio_play_read(audio_t *a, audio_sample_t *samples);
 bool audio_record_read(audio_t *a, audio_sample_t *samples);
 bool audio_listen_read(audio_t *a, audio_sample_t *samples);
