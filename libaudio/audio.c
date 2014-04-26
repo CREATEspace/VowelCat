@@ -59,7 +59,7 @@ void wav_header_init(wav_header_t *h, const audio_t *a) {
    };
 }
 
-void audio_sig_read(audio_t *a)
+void audio_wakeup(audio_t *a)
 {
    pthread_mutex_lock(&a->wakeup_mutex);
    a->wakeup_sig = true;
@@ -100,7 +100,7 @@ static int playCallback( const void *inputBuffer, void *outputBuffer,
       a->prbuf_offset += n_samples;
    }
 
-   audio_sig_read(a);
+   audio_wakeup(a);
 
    return ret;
 }
@@ -122,7 +122,7 @@ static int recordCallback( const void *inputBuffer, void *outputBuffer,
    //********Pull samples from input buffer***************************
    PaUtil_WriteRingBuffer(&a->rb, &rptr[0], framesPerBuffer * a->n_channels);
 
-   audio_sig_read(a);
+   audio_wakeup(a);
 
    return paContinue;
 }
