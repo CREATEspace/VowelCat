@@ -92,7 +92,6 @@ MainWindow::MainWindow(audio_t *a, Plotter *p):
     ui->englishGroupBox->setStyleSheet("QPushButton {font-size:18pt;}");
     ui->chineseGroupBox->setStyleSheet("QPushButton {font-size:18pt;}");
 
-    vowelToggle = true;
     symbolToggle = true;
 
     ui->chineseGroupBox->setVisible(false);

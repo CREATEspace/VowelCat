@@ -96,7 +96,6 @@ private:
     pthread_mutex_t plot_lock;
     QTimer timer;
 
-    bool vowelToggle;
     bool symbolToggle;
 
     QVector<QCPItemText*> vowelSymbols;
