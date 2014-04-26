@@ -70,7 +70,6 @@ MainWindow::MainWindow(audio_t *a, Plotter *p):
     tracer(Tracer::COUNT),
     plot_lock(PTHREAD_MUTEX_INITIALIZER),
     flags(DEFAULT),
-    mflags(LISTENING),
     audio(a),
     plotter(p)
 {

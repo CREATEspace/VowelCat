@@ -113,14 +113,6 @@ private:
     };
     uint32_t flags;
 
-    enum {
-        LISTENING  = 0,
-        PLAYING    = 1 << 0,
-        RECORDING  = 1 << 1,
-        PAUSING    = 1 << 2
-    };
-    uint32_t mflags;
-
     audio_t *audio;
     Plotter *plotter;
 
