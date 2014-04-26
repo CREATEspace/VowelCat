@@ -7,7 +7,7 @@
 
 //***************************
 #define RB_MULTIPLIER 2
-#define PLAY_FPB_DOWNSIZE 2
+#define PLAY_FPB_DOWNSIZE 4
 //***************************
 
 #ifndef min
@@ -175,7 +175,7 @@ bool audio_init(audio_t *a, size_t sample_rate, size_t n_channels, size_t frames
       NULL,
       &outparams,
       sample_rate,
-      (frames_per_buffer >> PLAY_FPB_DOWNSIZE),
+      frames_per_buffer / PLAY_FPB_DOWNSIZE,
       paClipOff,
       playCallback,
       a) != paNoError) return false; //**************
@@ -303,7 +303,7 @@ void audio_stop(audio_t *a)
 bool audio_play_read(audio_t *a, audio_sample_t *samples)
 {
    size_t offset;
-   for(size_t i = 0; i < 1 << PLAY_FPB_DOWNSIZE; i++) {
+   for(size_t i = 0; i < PLAY_FPB_DOWNSIZE; i++) {
       if(Pa_IsStreamActive(a->pstream)) {
          audio_sig_write(a);
          if(i < 3 && a->prbuf_size == a->prbuf_offset)
