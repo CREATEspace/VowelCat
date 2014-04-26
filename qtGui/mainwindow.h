@@ -148,6 +148,7 @@ private:
     void saveSymbols(FILE *stream) const;
 
     void setupPlot();
+    void setupVowelButtons();
     void setupEnglishButtons();
     void setupEnglishSymbols();
     void setupChineseButtons();

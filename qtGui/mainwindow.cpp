@@ -111,6 +111,7 @@ MainWindow::MainWindow(audio_t *a, Plotter *p):
     timer.start(TIMER_INTERVAL);
 
     vowelButtons.resize(45);
+    setupVowelButtons();
     setupEnglishButtons();
     setupChineseButtons();
 
@@ -396,38 +397,7 @@ void MainWindow::setupEnglishSymbols(){
     }
 }
 
-void MainWindow::setupChineseButtons(){
-    vowelButtons[36] = ui->pushButton_37;
-    vowelButtons[37] = ui->pushButton_38;
-    vowelButtons[38] = ui->pushButton_39;
-    vowelButtons[39] = ui->pushButton_40;
-    vowelButtons[40] = ui->pushButton_41;
-    vowelButtons[41] = ui->pushButton_42;
-    vowelButtons[42] = ui->pushButton_43;
-    vowelButtons[43] = ui->pushButton_44;
-    vowelButtons[44] = ui->pushButton_45;
-
-    vowelButtons[38]->setEnabled(false);
-    vowelButtons[40]->setEnabled(false);
-    vowelButtons[43]->setEnabled(false);
-    vowelButtons[44]->setEnabled(false);
-
-    vowelButtons[36]->setToolTip("close front");
-    vowelButtons[37]->setToolTip("close front");
-    vowelButtons[39]->setToolTip("close back");
-    vowelButtons[41]->setToolTip("close-mid back");
-    vowelButtons[42]->setToolTip("open front");
-
-    QSignalMapper* signalMapper = new QSignalMapper (this) ;
-
-    for (int i = 0; i < vowelButtons.size(); i++){
-        connect(vowelButtons[i], SIGNAL(released()), signalMapper, SLOT(map()));
-        signalMapper->setMapping(vowelButtons[i], i);
-    }
-    connect (signalMapper, SIGNAL(mapped(int)), this, SLOT(vowelButtonPushed(int)));
-}
-
-void MainWindow::setupEnglishButtons(){
+void MainWindow::setupVowelButtons() {
     vowelButtons[0] = ui->pushButton;
     vowelButtons[1] = ui->pushButton_2;
     vowelButtons[2] = ui->pushButton_3;
@@ -465,6 +435,39 @@ void MainWindow::setupEnglishButtons(){
     vowelButtons[34] = ui->pushButton_35;
     vowelButtons[35] = ui->pushButton_36;
 
+    vowelButtons[36] = ui->pushButton_37;
+    vowelButtons[37] = ui->pushButton_38;
+    vowelButtons[38] = ui->pushButton_39;
+    vowelButtons[39] = ui->pushButton_40;
+    vowelButtons[40] = ui->pushButton_41;
+    vowelButtons[41] = ui->pushButton_42;
+    vowelButtons[42] = ui->pushButton_43;
+    vowelButtons[43] = ui->pushButton_44;
+    vowelButtons[44] = ui->pushButton_45;
+}
+
+void MainWindow::setupChineseButtons(){
+    vowelButtons[38]->setEnabled(false);
+    vowelButtons[40]->setEnabled(false);
+    vowelButtons[43]->setEnabled(false);
+    vowelButtons[44]->setEnabled(false);
+
+    vowelButtons[36]->setToolTip("close front");
+    vowelButtons[37]->setToolTip("close front");
+    vowelButtons[39]->setToolTip("close back");
+    vowelButtons[41]->setToolTip("close-mid back");
+    vowelButtons[42]->setToolTip("open front");
+
+    QSignalMapper* signalMapper = new QSignalMapper (this) ;
+
+    for (int i = 0; i < vowelButtons.size(); i++){
+        connect(vowelButtons[i], SIGNAL(released()), signalMapper, SLOT(map()));
+        signalMapper->setMapping(vowelButtons[i], i);
+    }
+    connect (signalMapper, SIGNAL(mapped(int)), this, SLOT(vowelButtonPushed(int)));
+}
+
+void MainWindow::setupEnglishButtons(){
     // Disable portions of the chart that have no vowel symbol
     vowelButtons[8]->setEnabled(false);
     vowelButtons[9]->setEnabled(false);
