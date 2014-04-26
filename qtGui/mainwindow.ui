@@ -933,16 +933,6 @@
     <addaction name="actionInvertAxis"/>
     <addaction name="actionResetPlot"/>
    </widget>
-   <widget class="QMenu" name="menuControls">
-    <property name="title">
-     <string>&amp;Controls</string>
-    </property>
-    <addaction name="actionRecordStop"/>
-    <addaction name="actionPlayPause"/>
-    <addaction name="separator"/>
-    <addaction name="actionSkipBeginning"/>
-    <addaction name="actionSkipEnd"/>
-   </widget>
    <widget class="QMenu" name="menuFile">
     <property name="title">
      <string>&amp;File</string>
@@ -964,7 +954,6 @@
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuView"/>
-   <addaction name="menuControls"/>
    <addaction name="menuVowelSymbols"/>
   </widget>
   <action name="actionOpen">
