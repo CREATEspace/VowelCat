@@ -208,7 +208,7 @@ void MainWindow::beginAudio() {
     plotter->stop();
     plotter->begin();
 
-    pauseTracers(audio->frames_per_buffer);
+    pauseTracers(0);
 }
 
 void MainWindow::endAudio() {
