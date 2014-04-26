@@ -182,20 +182,6 @@ bool audio_init(audio_t *a, size_t sample_rate, size_t n_channels, size_t frames
       .rb_data = rb_data
    };
 
-   a->wav = (wav_head) {
-      .chunk_id = WAV_RIFF,
-      .format = WAV_WAVE,
-      .subchunk1_id = WAV_FMT_,
-      .subchunk1_size =  16,   //Size of this subchunk
-      .audio_format = 1,       //Linear quantization - Other options avail
-      .n_channels = n_channels,
-      .sample_rate = sample_rate,
-      .byte_rate = sample_rate * n_channels * sizeof(audio_sample_t),
-      .block_align = n_channels * sizeof(audio_sample_t),
-      .bits_per_sample =  sizeof(audio_sample_t) * CHAR_BIT,
-      .subchunk2_id = WAV_DATA
-   };
-
    return true;
 }
 
@@ -238,11 +224,23 @@ void audio_open(audio_t *a, audio_sample_t *m_data, size_t m_size)
 
 void audio_save(audio_t *a, int fd)
 {
+   wav_head wav = (wav_head) {
+      .chunk_id = WAV_RIFF,
+      .format = WAV_WAVE,
+      .subchunk1_id = WAV_FMT_,
+      .subchunk1_size =  16,   //Size of this subchunk
+      .audio_format = 1,       //Linear quantization - Other options avail
+      .n_channels = a->n_channels,
+      .sample_rate = a->sample_rate,
+      .byte_rate = a->sample_rate * a->n_channels * sizeof(audio_sample_t),
+      .block_align = a->n_channels * sizeof(audio_sample_t),
+      .bits_per_sample =  sizeof(audio_sample_t) * CHAR_BIT,
+      .subchunk2_id = WAV_DATA,
+      .chunk_size = sizeof(wav_head) + a->prbuf_size * sizeof(audio_sample_t),
+      .subchunk2_size = a->prbuf_size * sizeof(audio_sample_t),
+   };
 
-   a->wav.chunk_size = sizeof(wav_head) + a->prbuf_size * sizeof(audio_sample_t);
-   a->wav.subchunk2_size = a->prbuf_size * sizeof(audio_sample_t);
-
-   write(fd, &a->wav, sizeof(wav_head));
+   write(fd, &wav, sizeof(wav_head));
    write(fd, a->prbuf, a->prbuf_size * sizeof(audio_sample_t));
 }
 

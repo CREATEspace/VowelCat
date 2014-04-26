@@ -66,8 +66,6 @@ typedef struct audio_t
 
    PaUtilRingBuffer rb;
    void *rb_data;
-
-   wav_head wav;
 } audio_t;
 
 bool audio_init(audio_t *a, size_t sample_rate, size_t n_channels, size_t frames_per_buffer);
