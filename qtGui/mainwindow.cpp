@@ -144,59 +144,50 @@ void MainWindow::openFile() {
     timer.stop();
     plotter->stop();
     audio_reset(audio);
-    //*********
- 	 int fd;
- 	 struct stat st;
- 	 audio_sample_t *buf;
- 	 QString qfilename;
+
+    int fd;
+    struct stat st;
+    audio_sample_t *buf;
+    QString qfilename;
     const char *filename;
-    //*********
+
     qfilename = QFileDialog::getOpenFileName(this, tr("Open Audio File"), "", tr("Audio-Files(*.raw *.wav)"));
     if(qfilename == NULL) {
         newAudio();
         return;
     }
     filename = qfilename.toStdString().c_str();
-    //*********
-	/* QFile file(qfilename);
-	 if(!file.open(QIODevice::ReadOnly))
-	     return;
-
-	 const unsigned char *buf = file.map(0, file.size());
-	 if(buf == NULL)
-	     return;*/
-    //*********
-	 fd = open(filename, O_RDONLY);
+    fd = open(filename, O_RDONLY);
     fstat(fd, &st);
     buf = (audio_sample_t*) mmap(NULL, st.st_size, PROT_READ, MAP_SHARED, fd, 0);
     ::close(fd);
-    //*********
-	 ui->recordButton->setVisible(false);
-	 ui->stopButton->setVisible(true);
+
+    ui->recordButton->setVisible(false);
+    ui->stopButton->setVisible(true);
     ui->playButton->setVisible(true);
     ui->pauseButton->setVisible(false);
     ui->stopButton->setEnabled(false);
     ui->beginButton->setEnabled(true);
     ui->playButton->setEnabled(true);
     ui->endButton->setEnabled(true);
-
     ui->actionSaveAs->setEnabled(false);
-    //*********
+
     audio_open(audio, buf, st.st_size);
 }
+
 void MainWindow::saveAsFile() {
     int fd;
     QString qfilename;
     const char *filename;
-    //*********
+
     qfilename = QFileDialog::getSaveFileName(this, tr("Save Audio File"), "", tr("Audio-Files(*.raw *.wav)"));
     qfilename.append(".wav");
     filename = qfilename.toStdString().c_str();
-    //*********
-	 fd = open(filename, O_WRONLY|O_CREAT,0666);
+
+    fd = open(filename, O_WRONLY|O_CREAT,0666);
     audio_save(audio, fd);
     ::close(fd);
-    //*********
+
     ui->actionSaveAs->setEnabled(false);
 }
 
