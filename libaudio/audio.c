@@ -90,19 +90,18 @@ static int playCallback( const void *inputBuffer, void *outputBuffer,
    audio_sample_t *wptr = outputBuffer;
 
    size_t n_samples = min(a->prbuf_size - a->prbuf_offset, framesPerBuffer * a->n_channels);
-   PaStreamCallbackResult ret = paContinue;
 
-   if(a->prbuf_offset >= a->prbuf_size){
-      a->prbuf_offset = a->prbuf_size;
-      ret = paComplete;
-   } else {
-      memcpy(&wptr[0], &a->prbuf[a->prbuf_offset], n_samples * sizeof(audio_sample_t));
-      a->prbuf_offset += n_samples;
+   if(a->prbuf_offset == a->prbuf_size) {
+      audio_wakeup(a);
+      return paComplete;
    }
+
+   memcpy(&wptr[0], &a->prbuf[a->prbuf_offset], n_samples * sizeof(audio_sample_t));
+   a->prbuf_offset += n_samples;
 
    audio_wakeup(a);
 
-   return ret;
+   return paContinue;
 }
 
 static int recordCallback( const void *inputBuffer, void *outputBuffer,
