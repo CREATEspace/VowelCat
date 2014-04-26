@@ -173,7 +173,7 @@ void Plotter::pause(size_t offset, uintmax_t &f1, uintmax_t  &f2) {
     sound_reset(&sound, SAMPLE_RATE, CHANNELS);
     sound_resize(&sound, SAMPLES_PER_CHUNK);
 
-    memcpy(&sound.samples[0], &audio->prbuf[offset], audio->frames_per_buffer * sizeof(audio_sample_t));
+    memcpy(&sound.samples[0], &audio->prbuf[offset], audio->samples_per_chunk * sizeof(audio_sample_t));
 
     if(noise()) {
         f1 = f2 = 0;

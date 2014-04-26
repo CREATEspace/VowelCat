@@ -190,19 +190,21 @@ bool audio_init(audio_t *a, size_t sample_rate, size_t n_channels, size_t frames
       recordCallback,
       a) != paNoError) return false;
 
+   size_t samples_per_chunk = frames_per_buffer * n_channels;
+
    //*****Initialize communication ring buffers********************
    PaUtilRingBuffer rb;
    void *rb_data;
    size_t rb_size;
 
-   rb_size = 1 << (sizeof(frames_per_buffer) * CHAR_BIT - __builtin_clz(frames_per_buffer * RB_MULTIPLIER));
+   rb_size = 1 << (sizeof(samples_per_chunk) * CHAR_BIT - __builtin_clz(samples_per_chunk * RB_MULTIPLIER));
    rb_data = malloc(sizeof(audio_sample_t) * rb_size);
    PaUtil_InitializeRingBuffer(&rb, sizeof(audio_sample_t), rb_size, rb_data);
 
    *a = (audio_t) {
       .sample_rate = sample_rate,
       .n_channels = n_channels,
-      .frames_per_buffer = frames_per_buffer,
+      .samples_per_chunk = samples_per_chunk,
 
       .pstream = pstream,
       .rstream = rstream,
@@ -309,11 +311,11 @@ bool audio_play_read(audio_t *a, audio_sample_t *samples)
    offset = a->prbuf_offset;
 
    if(a->prbuf_size > offset) {
-      memcpy(&samples[0], &a->prbuf[offset - a->frames_per_buffer], a->frames_per_buffer * sizeof(audio_sample_t));
+      memcpy(&samples[0], &a->prbuf[offset - a->samples_per_chunk], a->samples_per_chunk * sizeof(audio_sample_t));
       return true;
    }
    else if(a->prbuf_size == offset) {
-      memcpy(&samples[0], &a->prbuf[offset - a->frames_per_buffer], a->frames_per_buffer * sizeof(audio_sample_t));
+      memcpy(&samples[0], &a->prbuf[offset - a->samples_per_chunk], a->samples_per_chunk * sizeof(audio_sample_t));
    }
    return false;
 }
@@ -325,13 +327,13 @@ bool audio_record_read(audio_t *a, audio_sample_t *samples)
 
    audio_wait(a);
 
-   if(!audio_resize(a, a->frames_per_buffer * a->n_channels))
+   if(!audio_resize(a, a->samples_per_chunk))
       return false;
 
-   PaUtil_ReadRingBuffer(&a->rb, &a->prbuf[a->prbuf_offset], a->frames_per_buffer * a->n_channels);
-   memcpy(&samples[0], &a->prbuf[a->prbuf_offset], a->frames_per_buffer * a->n_channels * sizeof(audio_sample_t));
+   PaUtil_ReadRingBuffer(&a->rb, &a->prbuf[a->prbuf_offset], a->samples_per_chunk);
+   memcpy(&samples[0], &a->prbuf[a->prbuf_offset], a->samples_per_chunk * sizeof(audio_sample_t));
 
-   a->prbuf_size = a->prbuf_offset + a->frames_per_buffer;
+   a->prbuf_size = a->prbuf_offset + a->samples_per_chunk;
    a->prbuf_offset = a->prbuf_size;
 
    return true;
@@ -343,7 +345,7 @@ bool audio_listen_read(audio_t *a, audio_sample_t *samples)
       return false;
 
    audio_wait(a);
-   PaUtil_ReadRingBuffer(&a->rb, &samples[0], a->frames_per_buffer * a->n_channels);
+   PaUtil_ReadRingBuffer(&a->rb, &samples[0], a->samples_per_chunk);
 
    return true;
 }

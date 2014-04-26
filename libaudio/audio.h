@@ -24,7 +24,7 @@ typedef struct audio_t
 {
    size_t sample_rate;
    size_t n_channels;
-   size_t frames_per_buffer;
+   size_t samples_per_chunk;
 
    PaStream *pstream;
    PaStream *rstream;
