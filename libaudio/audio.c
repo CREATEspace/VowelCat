@@ -235,24 +235,31 @@ void audio_destroy(audio_t *a)
    pthread_cond_destroy(&a->wakeup_sig);
    pthread_mutex_destroy(&a->wakeup_mutex);
 
-   audio_reset(a);
+   audio_clear(a);
    free(a->rb_data);
 }
 
 void audio_reset(audio_t *a)
+{
+   // Clear the wakeup flag in case it was set by audio_stop but no thread was
+   // sleeping and so didn't clear it.
+   a->wakeup = false;
+   PaUtil_FlushRingBuffer(&a->rb);
+}
+
+void audio_clear(audio_t *a)
 {
    if(a->flags & SOURCE_DISK)
       munmap(a->prbuf, a->prbuf_size * sizeof(audio_sample_t));
    else
       free(a->prbuf);
 
-   a->wakeup = false;
    a->prbuf = NULL;
    a->prbuf_size = 0;
    a->prbuf_offset = 0;
    a->flags &= ~SOURCE_DISK;
 
-   PaUtil_FlushRingBuffer(&a->rb);
+   audio_reset(a);
 }
 
 void audio_open(audio_t *a, audio_sample_t *m_data, size_t m_size)

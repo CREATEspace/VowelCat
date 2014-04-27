@@ -49,8 +49,15 @@ typedef struct audio_t
 } audio_t;
 
 bool audio_init(audio_t *a, size_t sample_rate, size_t n_channels, size_t samples_per_chunk);
-void audio_destroy(audio_t *a);
+// Reset the audio buffer to a safe state. Call this before calling audio_play,
+// audio_record, or audio_stop.
 void audio_reset(audio_t *a);
+// Reset the audio buffer and clear any buffers it holds. Call this when you
+// want to reuse the audio buffer, but start fresh.
+void audio_clear(audio_t *a);
+// Free all memory held by the audio buffer. Call this when you're done with the
+// audio buffer.
+void audio_destroy(audio_t *a);
 
 void audio_open(audio_t *a, audio_sample_t *m_data, size_t m_size);
 void audio_save(audio_t *a, int fd);
