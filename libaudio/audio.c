@@ -278,6 +278,7 @@ bool audio_resize(audio_t *a, size_t n_samples)
    if(new_add == NULL)
       return false;
    a->prbuf = new_add;
+   a->prbuf_size += n_samples;
    return true;
 }
 
@@ -333,7 +334,6 @@ bool audio_record_read(audio_t *a, audio_sample_t *samples)
    PaUtil_ReadRingBuffer(&a->rb, &a->prbuf[a->prbuf_offset], a->samples_per_chunk);
    memcpy(&samples[0], &a->prbuf[a->prbuf_offset], a->samples_per_chunk * sizeof(audio_sample_t));
 
-   a->prbuf_size = a->prbuf_offset + a->samples_per_chunk;
    a->prbuf_offset = a->prbuf_size;
 
    return true;
