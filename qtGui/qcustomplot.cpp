@@ -16634,8 +16634,7 @@ void QCPItemTracer::updatePosition()
       {
         QCPDataMap::const_iterator it = mGraph->data()->constBegin();
         position->setCoords(it.key(), it.value().value);
-      } else
-        qDebug() << Q_FUNC_INFO << "graph has no data";
+      }
     } else
       qDebug() << Q_FUNC_INFO << "graph not contained in QCustomPlot instance (anymore)";
   }
