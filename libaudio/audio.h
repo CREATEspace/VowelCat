@@ -55,8 +55,6 @@ void audio_reset(audio_t *a);
 void audio_open(audio_t *a, audio_sample_t *m_data, size_t m_size);
 void audio_save(audio_t *a, int fd);
 
-bool audio_resize(audio_t *a, size_t n_samples);
-
 bool audio_play(audio_t *a);
 bool audio_record(audio_t *a);
 void audio_stop(audio_t *a);
