@@ -232,6 +232,7 @@ void MainWindow::startRecord() {
     ui->stopButton->setEnabled(true);
 
     plotter->stop();
+    audio_reset(audio);
     plotter->record();
 }
 
