@@ -154,7 +154,7 @@ MainWindow::MainWindow(audio_t *a, Plotter *p):
 void MainWindow::openFile() {
     timer.stop();
     plotter->stop();
-    audio_reset(audio);
+    audio_clear(audio);
 
     int fd;
     struct stat st;
@@ -220,7 +220,7 @@ void MainWindow::newAudio() {
     initButtons();
 
     plotter->stop();
-    audio_reset(audio);
+    audio_clear(audio);
     plotter->listen();
 }
 
