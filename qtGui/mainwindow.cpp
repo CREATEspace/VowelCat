@@ -363,6 +363,11 @@ void MainWindow::showTracers() {
         tracers[i]->show();
 }
 
+void MainWindow::hideTracers() {
+    for (size_t i = 0; i < Tracer::COUNT; i += 1)
+        tracers[i]->hide();
+}
+
 void MainWindow::setupChineseSymbols(){
     QCPItemText *closeFront = new QCPItemText(ui->customPlot);
     closeFront->position->setCoords(2200, 240);

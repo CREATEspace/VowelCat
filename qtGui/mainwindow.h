@@ -165,6 +165,7 @@ private:
 
     void setupPlot();
     void showTracers();
+    void hideTracers();
     void setupVowelButtons();
     void setupEnglishButtons();
     void setupEnglishSymbols();
