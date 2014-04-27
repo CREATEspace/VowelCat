@@ -223,14 +223,6 @@ void Plotter::play() {
     }, this);
 }
 
-void Plotter::begin() {
-    audio_seek(audio, 0);
-}
-
-void Plotter::end() {
-    audio_seek(audio, audio->prbuf_size);
-}
-
 void Plotter::stop() {
     run = false;
     pthread_join(tid, NULL);

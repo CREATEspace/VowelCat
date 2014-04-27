@@ -40,8 +40,6 @@ public:
     void listen();
     void record();
     void play();
-    void begin();
-    void end();
 
     void pause(size_t offset, uintmax_t &f1, uintmax_t &f2);
 

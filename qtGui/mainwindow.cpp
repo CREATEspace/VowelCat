@@ -272,8 +272,7 @@ void MainWindow::beginAudio() {
     ui->playButton->setEnabled(true);
 
     plotter->stop();
-    plotter->begin();
-
+    audio_seek(audio, 0);
     pauseTracers(0);
 }
 
@@ -281,8 +280,7 @@ void MainWindow::endAudio() {
     ui->playButton->setEnabled(false);
 
     plotter->stop();
-    plotter->end();
-
+    audio_seek(audio, audio->prbuf_size);
     pauseTracers(audio->prbuf_size - audio->samples_per_chunk);
 }
 
