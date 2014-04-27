@@ -32,6 +32,7 @@ class Plotter;
 class Tracer: public QCPItemTracer {
 public:
     enum { COUNT = 8 };
+    // The main tracer -- the biggest and most opaque.
     enum { LAST = COUNT - 1 };
 
 private:
