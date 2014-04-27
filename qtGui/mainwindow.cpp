@@ -355,7 +355,7 @@ void MainWindow::setupPlot()
     for (size_t i = 0; i < Tracer::COUNT; i += 1)
         tracers[i] = new Tracer(plot, graph, i);
 
-    showTracers();
+    hideTracers();
 }
 
 void MainWindow::showTracers() {
