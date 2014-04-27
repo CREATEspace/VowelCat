@@ -274,7 +274,7 @@ void audio_save(audio_t *a, int fd)
 bool audio_resize(audio_t *a, size_t n_samples)
 {
    audio_sample_t *new_add;
-   new_add = realloc(a->prbuf, (a->prbuf_offset + n_samples) * sizeof(audio_sample_t));
+   new_add = realloc(a->prbuf, (a->prbuf_size + n_samples) * sizeof(audio_sample_t));
    if(new_add == NULL)
       return false;
    a->prbuf = new_add;
