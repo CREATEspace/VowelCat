@@ -1,7 +1,6 @@
 // Copyright 2014 Formant Industries. See the Copying file at the top-level
 // directory of this project.
 
-#include <float.h>
 #include <inttypes.h>
 #include <math.h>
 #include <stdio.h>
@@ -43,13 +42,21 @@ uint32_t Tracer::rgba(double x) {
 }
 
 Tracer::Tracer(QCustomPlot *plot, QCPGraph *graph, size_t i):
-    QCPItemTracer(plot)
+    QCPItemTracer(plot),
+    brush(QColor::fromRgba(rgba(i)))
 {
     setGraph(graph);
     setStyle(QCPItemTracer::tsCircle);
     setPen(Qt::NoPen);
-    setBrush(QColor::fromRgba(rgba(i)));
     setSize(size(i));
+}
+
+void Tracer::show() {
+    setBrush(brush);
+}
+
+void Tracer::hide() {
+    setBrush(Qt::NoBrush);
 }
 
 class VowelSymbol: public QCPItemText {
@@ -332,7 +339,6 @@ void MainWindow::setupPlot()
 {
     plot->setInteractions(QCP::iRangeZoom | QCP::iSelectItems);
     graph->setPen(Qt::NoPen);
-    graph->addData(DBL_MAX, DBL_MAX);
 
     plot->xAxis->grid()->setZeroLinePen(Qt::NoPen);
     plot->xAxis->setRange(2400, 700);
@@ -348,6 +354,13 @@ void MainWindow::setupPlot()
 
     for (size_t i = 0; i < Tracer::COUNT; i += 1)
         tracers[i] = new Tracer(plot, graph, i);
+
+    showTracers();
+}
+
+void MainWindow::showTracers() {
+    for (size_t i = 0; i < Tracer::COUNT; i += 1)
+        tracers[i]->show();
 }
 
 void MainWindow::setupChineseSymbols(){
@@ -605,6 +618,8 @@ void MainWindow::plotFormant(formant_sample_t f1, formant_sample_t f2,
     slope = (to.y - from.y) / x_range;
 
     tracer = 0;
+    showTracers();
+
     timespec_init(&start);
 
     pthread_mutex_unlock(&plot_lock);
@@ -668,9 +683,7 @@ void MainWindow::updateFPS() const {
 }
 
 void MainWindow::updateTracers(formant_sample_t f2, formant_sample_t f1) {
-    if (tracers[0]->graphKey() != DBL_MAX)
-        graph->removeData(tracers[0]->graphKey());
-
+    graph->removeData(tracers[0]->graphKey());
     graph->addData(f2, f1);
 
     for (size_t i = 0; i < Tracer::LAST; i += 1)
@@ -697,16 +710,14 @@ void MainWindow::pauseTracers(size_t offset) {
 }
 
 void MainWindow::clearTracer() {
-    if (tracers[0]->graphKey() != DBL_MAX)
-        graph->removeData(tracers[0]->graphKey());
+    graph->removeData(tracers[0]->graphKey());
 
     for (size_t i = 0; i < Tracer::LAST; i += 1)
         tracers[i]->setGraphKey(tracers[i + 1]->graphKey());
 
-    if (tracers[Tracer::LAST - tracer]->graphKey() != DBL_MAX)
-        graph->removeData(tracers[Tracer::LAST - tracer]->graphKey());
+    graph->removeData(tracers[Tracer::LAST - tracer]->graphKey());
+    tracers[Tracer::LAST - tracer]->hide();
 
-    tracers[Tracer::LAST - tracer]->setGraphKey(DBL_MAX);
     plot->replot();
 }
 

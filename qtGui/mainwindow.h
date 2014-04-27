@@ -10,11 +10,12 @@
 #include <stdio.h>
 #include <time.h>
 
-#include <QMainWindow>
-#include <QTimer>
-#include <QPushButton>
-#include <QFileDialog>
+#include <QBrush>
 #include <QFile>
+#include <QFileDialog>
+#include <QMainWindow>
+#include <QPushButton>
+#include <QTimer>
 
 extern "C" {
     #include "audio.h"
@@ -45,8 +46,13 @@ private:
     enum { ALPHA_MIN = 0 };
     enum { ALPHA_RANGE = ALPHA_MAX - ALPHA_MIN };
 
+    const QBrush brush;
+
 public:
     Tracer(QCustomPlot *plot, QCPGraph *graph, size_t i);
+
+    void hide();
+    void show();
 
 private:
     // Calculate a tracer diameter f(x) for the tracer x s.t.
@@ -157,6 +163,7 @@ private:
     void saveSymbols(FILE *stream) const;
 
     void setupPlot();
+    void showTracers();
     void setupVowelButtons();
     void setupEnglishButtons();
     void setupEnglishSymbols();
