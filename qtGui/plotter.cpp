@@ -195,7 +195,6 @@ static void play_helper(Plotter *p) {
 }
 
 void Plotter::listen() {
-    audio_reset(audio);
     run = true;
 
     pthread_create(&tid, NULL, [] (void *data) -> void * {
