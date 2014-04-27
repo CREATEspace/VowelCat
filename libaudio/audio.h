@@ -48,7 +48,7 @@ typedef struct audio_t
    void *rb_data;
 } audio_t;
 
-bool audio_init(audio_t *a, size_t sample_rate, size_t n_channels, size_t frames_per_buffer);
+bool audio_init(audio_t *a, size_t sample_rate, size_t n_channels, size_t samples_per_chunk);
 void audio_destroy(audio_t *a);
 void audio_reset(audio_t *a);
 

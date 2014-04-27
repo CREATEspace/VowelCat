@@ -126,11 +126,13 @@ static int recordCallback( const void *inputBuffer, void *outputBuffer,
    return paContinue;
 }
 
-bool audio_init(audio_t *a, size_t sample_rate, size_t n_channels, size_t frames_per_buffer)
+bool audio_init(audio_t *a, size_t sample_rate, size_t n_channels, size_t samples_per_chunk)
 {
    //***Initialize PA internal data structures******
    if(Pa_Initialize() != paNoError)
       return false;
+
+   size_t frames_per_buffer = samples_per_chunk / n_channels;
 
    //******Initialize input device*******
    PaStreamParameters inparams;
@@ -189,8 +191,6 @@ bool audio_init(audio_t *a, size_t sample_rate, size_t n_channels, size_t frames
       paClipOff,
       recordCallback,
       a) != paNoError) return false;
-
-   size_t samples_per_chunk = frames_per_buffer * n_channels;
 
    //*****Initialize communication ring buffers********************
    PaUtilRingBuffer rb;
