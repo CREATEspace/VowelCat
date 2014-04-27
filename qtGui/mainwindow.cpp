@@ -716,7 +716,7 @@ void MainWindow::pauseTracers(size_t offset) {
 
     hideTracers();
 
-    if (!plotter->pause(offset, f1, f2))
+    if (!plotter->calcFormant(offset, f1, f2))
         return;
 
     graph->addData(f2, f1);

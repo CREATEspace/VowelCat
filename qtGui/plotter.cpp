@@ -168,7 +168,7 @@ void Plotter::play_run() {
     audio_stop(audio);
 }
 
-bool Plotter::pause(size_t offset, uintmax_t &f1, uintmax_t  &f2) {
+bool Plotter::calcFormant(size_t offset, uintmax_t &f1, uintmax_t  &f2) {
     sound_reset(&sound, SAMPLE_RATE, CHANNELS);
     sound_resize(&sound, SAMPLES_PER_CHUNK);
 
