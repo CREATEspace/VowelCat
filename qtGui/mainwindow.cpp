@@ -709,11 +709,19 @@ void MainWindow::pauseTracers(size_t offset) {
         return;
 
     timer.stop();
-    plotter->pause(offset, f1, f2);
+
+    // First remove all the tracers, in case the chunk is just noise.
+    for (size_t i = 0; i < Tracer::COUNT; i += 1)
+        graph->removeData(tracers[i]->graphKey());
+
+    hideTracers();
+
+    if (!plotter->pause(offset, f1, f2))
+        return;
 
     graph->addData(f2, f1);
-    for (size_t i = 0; i <= Tracer::LAST; i += 1)
-        tracers[i]->setGraphKey(f2);
+    tracers[Tracer::LAST]->show();
+    tracers[Tracer::LAST]->setGraphKey(f2);
 
     plot->replot();
 }

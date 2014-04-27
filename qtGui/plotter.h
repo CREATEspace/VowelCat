@@ -41,7 +41,9 @@ public:
     void record();
     void play();
 
-    void pause(size_t offset, uintmax_t &f1, uintmax_t &f2);
+    // Get the F1 and F2 values at the given sample offset. Return true if the
+    // chunk is valid audio and false if it's noise.
+    bool pause(size_t offset, uintmax_t &f1, uintmax_t &f2);
 
     void listen_run();
     void record_run();

@@ -168,18 +168,18 @@ void Plotter::play_run() {
     audio_stop(audio);
 }
 
-void Plotter::pause(size_t offset, uintmax_t &f1, uintmax_t  &f2) {
+bool Plotter::pause(size_t offset, uintmax_t &f1, uintmax_t  &f2) {
     sound_reset(&sound, SAMPLE_RATE, CHANNELS);
     sound_resize(&sound, SAMPLES_PER_CHUNK);
 
     memcpy(&sound.samples[0], &audio->prbuf[offset], audio->samples_per_chunk * sizeof(audio_sample_t));
 
-    if(noise()) {
-        f1 = f2 = 0;
-        return;
-    }
+    if (noise())
+        return false;
 
     formant(f1, f2);
+
+    return true;
 }
 
 static void listen_helper(Plotter *p) {
