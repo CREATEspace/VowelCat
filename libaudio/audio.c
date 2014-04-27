@@ -271,7 +271,9 @@ void audio_save(audio_t *a, int fd)
    write(fd, a->prbuf, a->prbuf_size * sizeof(audio_sample_t));
 }
 
-static bool audio_resize(audio_t *a, size_t n_samples)
+// Grow the given audio buffer so it can hold the given additional number of
+// samples.
+static bool audio_grow(audio_t *a, size_t n_samples)
 {
    audio_sample_t *new_add;
    new_add = realloc(a->prbuf, (a->prbuf_size + n_samples) * sizeof(audio_sample_t));
@@ -328,7 +330,7 @@ bool audio_record_read(audio_t *a, audio_sample_t *samples)
 
    audio_wait(a);
 
-   if(!audio_resize(a, a->samples_per_chunk))
+   if(!audio_grow(a, a->samples_per_chunk))
       return false;
 
    PaUtil_ReadRingBuffer(&a->rb, &a->prbuf[a->prbuf_offset], a->samples_per_chunk);
