@@ -259,6 +259,7 @@ void MainWindow::startPlay() {
     ui->endButton->setEnabled(false);
 
     plotter->stop();
+    audio_reset(audio);
     plotter->play();
 }
 
