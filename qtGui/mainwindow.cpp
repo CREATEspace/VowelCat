@@ -242,7 +242,7 @@ void MainWindow::stopAudio() {
     plotter->stop();
     audio_seek(audio, 0);
 
-    pauseTracers(audio->prbuf_size - audio->samples_per_chunk);
+    pauseTracers(audio->prbuf_offset);
 }
 
 void MainWindow::startPlay() {
@@ -274,7 +274,7 @@ void MainWindow::beginAudio() {
 
     plotter->stop();
     audio_seek(audio, 0);
-    pauseTracers(0);
+    pauseTracers(audio->prbuf_offset);
 }
 
 void MainWindow::endAudio() {
@@ -282,7 +282,7 @@ void MainWindow::endAudio() {
 
     plotter->stop();
     audio_seek(audio, audio->prbuf_size);
-    pauseTracers(audio->prbuf_size - audio->samples_per_chunk);
+    pauseTracers(audio->prbuf_offset - audio->samples_per_chunk);
 }
 
 void MainWindow::loadSymbols() {
