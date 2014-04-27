@@ -211,9 +211,9 @@ void MainWindow::initButtons() {
 }
 
 void MainWindow::newAudio() {
-    initButtons();
-
     timer.start(TIMER_INTERVAL);
+
+    initButtons();
 
     plotter->stop();
     audio_reset(audio);
