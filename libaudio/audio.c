@@ -298,7 +298,9 @@ void audio_stop(audio_t *a)
 {
    Pa_StopStream(a->pstream);
    Pa_StopStream(a->rstream);
-   a->wakeup = false;
+
+   // Wakeup any waiting threads so they can acknowledge the stopped streams.
+   audio_wakeup(a);
 }
 
 bool audio_play_read(audio_t *a, audio_sample_t *samples)
