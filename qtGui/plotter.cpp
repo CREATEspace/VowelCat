@@ -128,7 +128,6 @@ void Plotter::record_run() {
         emit newFormant(f1, f2, dur);
     }
 
-    audio_seek(audio, 0);
     audio_stop(audio);
 }
 

@@ -240,6 +240,7 @@ void MainWindow::stopAudio() {
     ui->actionSaveAs->setEnabled(true);
 
     plotter->stop();
+    audio_seek(audio, 0);
 
     pauseTracers(audio->prbuf_size - audio->samples_per_chunk);
 }
