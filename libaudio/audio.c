@@ -246,6 +246,7 @@ void audio_reset(audio_t *a)
    else
       free(a->prbuf);
 
+   a->wakeup = false;
    a->prbuf = NULL;
    a->prbuf_size = 0;
    a->prbuf_offset = 0;
