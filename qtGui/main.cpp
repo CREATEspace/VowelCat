@@ -8,11 +8,13 @@
 
 extern "C" {
 #include "audio.h"
+#include "formant.h"
 }
 
+#include "formants.h"
 #include "mainwindow.h"
-#include "plotter.h"
 #include "params.h"
+#include "plotter.h"
 
 // Handle OS signals.
 static void sig(int s) {
@@ -39,8 +41,12 @@ int main(int argc, char *argv[])
     if (!audio_init(&audio, SAMPLE_RATE, CHANNELS, SAMPLES_PER_CHUNK))
         abort();
 
-    Plotter plotter(&audio);
-    MainWindow window(&audio, &plotter);
+    sound_t sound;
+    sound_init(&sound);
+
+    Formants formants(&audio, &sound);
+    Plotter plotter(&audio, &sound, &formants);
+    MainWindow window(&audio, &formants, &plotter);
 
     QObject::connect(&plotter, SIGNAL(pauseSig()),
                      &window, SLOT(pauseAudio()));
@@ -57,5 +63,6 @@ int main(int argc, char *argv[])
     // QCoreApplication::quit is called.
     QCoreApplication::exec();
 
+    sound_destroy(&sound);
     audio_destroy(&audio);
 }

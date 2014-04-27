@@ -78,12 +78,13 @@ public:
     }
 };
 
-MainWindow::MainWindow(audio_t *a, Plotter *p):
+MainWindow::MainWindow(audio_t *a, Formants *f, Plotter *p):
     ui(new Ui::MainWindow),
     tracer(Tracer::COUNT),
     plot_lock(PTHREAD_MUTEX_INITIALIZER),
     flags(DEFAULT),
     audio(a),
+    formants(f),
     plotter(p)
 {
     // Start at the origin for lack of a better place.
@@ -911,8 +912,6 @@ void MainWindow::updateTracers(formant_sample_t f2, formant_sample_t f1) {
 }
 
 void MainWindow::pauseTracers(size_t offset) {
-    uintmax_t f1, f2;
-
     if (offset >= audio->prbuf_size)
         return;
 
@@ -924,12 +923,12 @@ void MainWindow::pauseTracers(size_t offset) {
 
     hideTracers();
 
-    if (!plotter->calcFormant(offset, f1, f2))
+    if (!formants->calc(offset))
         return;
 
-    graph->addData(f2, f1);
+    graph->addData(formants->f2, formants->f1);
     tracers[Tracer::LAST]->show();
-    tracers[Tracer::LAST]->setGraphKey(f2);
+    tracers[Tracer::LAST]->setGraphKey(formants->f2);
 
     plot->replot();
 }

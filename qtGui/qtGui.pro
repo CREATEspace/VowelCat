@@ -11,6 +11,7 @@ TARGET = qtGui
 TEMPLATE = app
 
 SOURCES += \
+    formants.cpp \
     main.cpp \
     mainwindow.cpp \
     plotter.cpp \
@@ -18,6 +19,7 @@ SOURCES += \
     timespec.cpp \
 
 HEADERS += \
+    formants.h \
     mainwindow.h \
     plotter.h \
     qcustomplot.h \

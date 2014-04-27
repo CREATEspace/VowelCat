@@ -13,59 +13,19 @@ extern "C" {
 #include "formant.h"
 }
 
+#include "formants.h"
 #include "params.h"
 #include "plotter.h"
 #include "timespec.h"
 
-Plotter::Plotter(audio_t *a) :
+Plotter::Plotter(audio_t *a, sound_t *s, Formants *f) :
     run(false),
-    audio(a)
-{
-    sound_init(&sound);
-
-    formant_opts_init(&opts);
-    opts.pre_emph_factor = 1;
-
-    if (!formant_opts_process(&opts))
-        abort();
-}
-
-Plotter::~Plotter() {
-    sound_destroy(&sound);
-}
-
-#define ABS(x) ((x) > 0 ? (x) : -(x))
-
-bool Plotter::noise() {
-    enum { NOISE_STRIDE = SAMPLES_PER_CHUNK / NOISE_SAMPLES };
-    uintmax_t avg = 0;
-
-    for (size_t i = 0; i < sound.n_samples; i += NOISE_STRIDE)
-        avg += ABS(sound.samples[i]);
-
-    return avg < NOISE_THRESHOLD * NOISE_SAMPLES;
-}
-
-void Plotter::formant(uintmax_t &f1, uintmax_t &f2) {
-    if (!sound_calc_formants(&sound, &opts))
-        abort();
-
-    f1 = 0;
-
-    for (size_t i = 0; i < sound.n_samples; i += 1)
-        f1 += sound_get_f1(&sound, i);
-
-    f2 = 0;
-
-    for (size_t i = 0; i < sound.n_samples; i += 1)
-        f2 += sound_get_f2(&sound, i);
-
-    f1 /= sound.n_samples;
-    f2 /= sound.n_samples;
-}
+    audio(a),
+    sound(s),
+    formants(f)
+{}
 
 void Plotter::listen_run() {
-    uintmax_t f1, f2;
     timespec_t before, after;
     uintmax_t dur = 0, count = 0;
 
@@ -74,29 +34,26 @@ void Plotter::listen_run() {
 
     while(run) {
         timespec_init(&before);
-        sound_reset(&sound, SAMPLE_RATE, CHANNELS);
-        sound_resize(&sound, SAMPLES_PER_CHUNK);
+        formants->reset();
 
         //***********************
-        if(!audio_listen_read(audio, sound.samples))
+        if(!audio_listen_read(audio, sound->samples))
             break;
         //***********************
 
-        if(noise())
+        if(!formants->calc())
            continue;
 
-        formant(f1, f2);
         timespec_init(&after);
 
         dur = (timespec_diff(&before, &after) + count * dur) / (count + 1);
         count += 1;
 
-        emit newFormant(f1, f2, dur);
+        emit newFormant(formants->f1, formants->f2, dur);
     }
 }
 
 void Plotter::record_run() {
-    uintmax_t f1, f2;
     timespec_t before, after;
     uintmax_t dur = 0, count = 0;
 
@@ -105,30 +62,26 @@ void Plotter::record_run() {
 
     while(run) { //Pa_IsStreamActive does not seem to work quick enough
         timespec_init(&before);
-        sound_reset(&sound, SAMPLE_RATE, CHANNELS);
-        sound_resize(&sound, SAMPLES_PER_CHUNK);
+        formants->reset();
 
         //***********************
-        if(!audio_record_read(audio, sound.samples))
+        if(!audio_record_read(audio, sound->samples))
             break;
         //***********************
 
-        if(noise())
+        if(!formants->calc())
             continue;
-
-        formant(f1, f2);
 
         timespec_init(&after);
 
         dur = (timespec_diff(&before, &after) + count * dur) / (count + 1);
         count += 1;
 
-        emit newFormant(f1, f2, dur);
+        emit newFormant(formants->f1, formants->f2, dur);
     }
 }
 
 void Plotter::play_run() {
-    uintmax_t f1, f2;
     timespec_t before, after;
     uintmax_t dur = 0, count = 0;
 
@@ -137,43 +90,26 @@ void Plotter::play_run() {
 
     while(run) { //Pa_IsStreamActive does not seem to work quick enough
         timespec_init(&before);
-        sound_reset(&sound, SAMPLE_RATE, CHANNELS);
-        sound_resize(&sound, SAMPLES_PER_CHUNK);
+        formants->reset();
 
         //***********************
-        if(!audio_play_read(audio, sound.samples))
+        if(!audio_play_read(audio, sound->samples))
             break;
         //***********************
 
-        if(noise())
+        if(!formants->calc())
             continue;
-
-        formant(f1, f2);
 
         timespec_init(&after);
 
         dur = (timespec_diff(&before, &after) + count * dur) / (count + 1);
         count += 1;
 
-        emit newFormant(f1, f2, dur);
+        emit newFormant(formants->f1, formants->f2, dur);
     }
 
     if(run)
         emit pauseSig();
-}
-
-bool Plotter::calcFormant(size_t offset, uintmax_t &f1, uintmax_t  &f2) {
-    sound_reset(&sound, SAMPLE_RATE, CHANNELS);
-    sound_resize(&sound, SAMPLES_PER_CHUNK);
-
-    memcpy(&sound.samples[0], &audio->prbuf[offset], audio->samples_per_chunk * sizeof(audio_sample_t));
-
-    if (noise())
-        return false;
-
-    formant(f1, f2);
-
-    return true;
 }
 
 static void listen_helper(Plotter *p) {

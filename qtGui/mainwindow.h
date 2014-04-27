@@ -22,6 +22,7 @@ extern "C" {
     #include "formant.h"
 }
 
+#include "formants.h"
 #include "plotter.h"
 #include "qcustomplot.h"
 #include "timespec.h"
@@ -124,12 +125,13 @@ private:
     uint32_t flags;
 
     audio_t *audio;
+    Formants *formants;
     Plotter *plotter;
 
     int aud_fd;
 
 public:
-    explicit MainWindow(audio_t *a, Plotter *p);
+    explicit MainWindow(audio_t *a, Formants *f, Plotter *p);
     ~MainWindow();
 
 public slots:
