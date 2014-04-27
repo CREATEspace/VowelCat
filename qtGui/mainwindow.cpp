@@ -163,7 +163,7 @@ void MainWindow::openFile() {
         newAudio();
         return;
     }
-    filename = qfilename.toStdString().c_str();
+    filename = qfilename.toUtf8().constData();
     fd = open(filename, O_RDONLY);
     fstat(fd, &st);
     buf = (audio_sample_t*) mmap(NULL, st.st_size, PROT_READ, MAP_SHARED, fd, 0);
@@ -189,7 +189,7 @@ void MainWindow::saveAsFile() {
 
     qfilename = QFileDialog::getSaveFileName(this, tr("Save Audio File"), "", tr("Audio-Files(*.raw *.wav)"));
     qfilename.append(".wav");
-    filename = qfilename.toStdString().c_str();
+    filename = qfilename.toUtf8().constData();
 
     fd = open(filename, O_WRONLY|O_CREAT,0666);
     audio_save(audio, fd);
