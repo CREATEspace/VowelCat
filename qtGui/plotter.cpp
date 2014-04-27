@@ -93,8 +93,6 @@ void Plotter::listen_run() {
 
         emit newFormant(f1, f2, dur);
     }
-
-    audio_stop(audio);
 }
 
 void Plotter::record_run() {
@@ -127,8 +125,6 @@ void Plotter::record_run() {
 
         emit newFormant(f1, f2, dur);
     }
-
-    audio_stop(audio);
 }
 
 void Plotter::play_run() {
@@ -164,8 +160,6 @@ void Plotter::play_run() {
 
     if(run)
         emit pauseSig();
-
-    audio_stop(audio);
 }
 
 bool Plotter::calcFormant(size_t offset, uintmax_t &f1, uintmax_t  &f2) {
@@ -222,6 +216,11 @@ void Plotter::play() {
 }
 
 void Plotter::stop() {
+    // Prevent the plotter thread from doing any more work.
     run = false;
+
+    // Wakeup the plotter thread in case it's sleeping, then wait for it to
+    // finish.
+    audio_stop(audio);
     pthread_join(tid, NULL);
 }
