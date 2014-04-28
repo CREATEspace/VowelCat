@@ -49,6 +49,10 @@ Tracer::Tracer(QCustomPlot *plot, QCPGraph *graph, size_t i):
     setStyle(QCPItemTracer::tsCircle);
     setPen(Qt::NoPen);
     setSize(size(i));
+
+    setSelectable(false);
+    setSelectedBrush(brush);
+    setSelectedPen(Qt::NoPen);
 }
 
 void Tracer::show() {
