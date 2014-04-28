@@ -820,9 +820,7 @@ void MainWindow::setupEnglishButtons(){
     vowelButtons[35]->setToolTip("open back rounded");
 }
 
-void MainWindow::plotFormant(formant_sample_t f1, formant_sample_t f2,
-                             uintmax_t dur_)
-{
+void MainWindow::plotFormant(formant_sample_t f1, formant_sample_t f2) {
     pthread_mutex_lock(&plot_lock);
 
     // Copy the raw formants into our pairs structure.
@@ -830,8 +828,6 @@ void MainWindow::plotFormant(formant_sample_t f1, formant_sample_t f2,
         .x = f2,
         .y = f1,
     };
-
-    dur = dur_;
 
     // Set the last-drawn point as the initial point.
     from = cur;
@@ -856,7 +852,7 @@ void MainWindow::plotNext() {
     timespec_init(&now);
     diff = timespec_diff(&start, &now);
 
-    if (diff > dur) {
+    if (diff > DUR) {
         timer.setInterval(TIMER_SLOWDOWN);
 
         if (tracer == Tracer::COUNT) {
@@ -872,7 +868,7 @@ void MainWindow::plotNext() {
         return;
     }
 
-    cur.x = from.x + x_range * diff / dur;
+    cur.x = from.x + x_range * diff / DUR;
     cur.y = from.y + slope * (cur.x - from.x);
 
     pthread_mutex_unlock(&plot_lock);

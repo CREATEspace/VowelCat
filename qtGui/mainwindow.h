@@ -84,6 +84,10 @@ private:
     enum { TIMER_INTERVAL = 10 };
     enum { TIMER_SLOWDOWN = 50 };
 
+    enum { DUR_BASE = SAMPLES_PER_CHUNK * 1000000000 / SAMPLE_RATE };
+    enum { DUR_FUDGE = DUR_BASE };
+    enum { DUR = DUR_BASE + DUR_FUDGE };
+
     typedef struct {
         formant_sample_t x, y;
     } pair_t;
@@ -91,7 +95,6 @@ private:
     pair_t from, to;
     pair_t cur;
 
-    uintmax_t dur;
     timespec_t start;
 
     double slope;
@@ -135,7 +138,7 @@ public:
     ~MainWindow();
 
 public slots:
-    void plotFormant(formant_sample_t f1, formant_sample_t f2, uintmax_t dur_);
+    void plotFormant(formant_sample_t f1, formant_sample_t f2);
 
 private slots:
     void plotNext();

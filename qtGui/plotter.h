@@ -38,7 +38,7 @@ public:
 
 signals:
     void pauseSig();
-    void newFormant(formant_sample_t f1, formant_sample_t f2, uintmax_t dur);
+    void newFormant(formant_sample_t f1, formant_sample_t f2);
 
 private:
     // Thread ID.

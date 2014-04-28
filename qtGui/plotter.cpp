@@ -26,14 +26,10 @@ Plotter::Plotter(audio_t *a, sound_t *s, Formants *f) :
 {}
 
 void Plotter::listen_run() {
-    timespec_t before, after;
-    uintmax_t dur = 0, count = 0;
-
     if (!audio_record(audio))
         abort();
 
     while(run) {
-        timespec_init(&before);
         formants->reset();
 
         //***********************
@@ -44,24 +40,15 @@ void Plotter::listen_run() {
         if(!formants->calc())
            continue;
 
-        timespec_init(&after);
-
-        dur = (timespec_diff(&before, &after) + count * dur) / (count + 1);
-        count += 1;
-
-        emit newFormant(formants->f1, formants->f2, dur);
+        emit newFormant(formants->f1, formants->f2);
     }
 }
 
 void Plotter::record_run() {
-    timespec_t before, after;
-    uintmax_t dur = 0, count = 0;
-
     if (!audio_record(audio))
         abort();
 
     while(run) { //Pa_IsStreamActive does not seem to work quick enough
-        timespec_init(&before);
         formants->reset();
 
         //***********************
@@ -72,24 +59,15 @@ void Plotter::record_run() {
         if(!formants->calc())
             continue;
 
-        timespec_init(&after);
-
-        dur = (timespec_diff(&before, &after) + count * dur) / (count + 1);
-        count += 1;
-
-        emit newFormant(formants->f1, formants->f2, dur);
+        emit newFormant(formants->f1, formants->f2);
     }
 }
 
 void Plotter::play_run() {
-    timespec_t before, after;
-    uintmax_t dur = 0, count = 0;
-
     if (!audio_play(audio))
         abort();
 
     while(run) { //Pa_IsStreamActive does not seem to work quick enough
-        timespec_init(&before);
         formants->reset();
 
         //***********************
@@ -100,12 +78,7 @@ void Plotter::play_run() {
         if(!formants->calc())
             continue;
 
-        timespec_init(&after);
-
-        dur = (timespec_diff(&before, &after) + count * dur) / (count + 1);
-        count += 1;
-
-        emit newFormant(formants->f1, formants->f2, dur);
+        emit newFormant(formants->f1, formants->f2);
     }
 
     if(run)
