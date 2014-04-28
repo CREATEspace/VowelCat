@@ -56,7 +56,7 @@ bool Formants::calc() {
     f1 /= sound->n_samples;
     f2 /= sound->n_samples;
 
-    return true;
+    return f1 >= F1_MIN && f1 <= F1_MAX && f2 >= F2_MIN && f2 <= F2_MAX;
 }
 
 bool Formants::calc(size_t offset) {
