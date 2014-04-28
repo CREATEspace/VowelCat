@@ -901,13 +901,10 @@ void MainWindow::updateFPS() const {
 }
 
 void MainWindow::updateTracers(formant_sample_t f2, formant_sample_t f1) {
-    graph->removeData(tracers[0]->graphKey());
-    graph->addData(f2, f1);
-
     for (size_t i = 0; i < Tracer::LAST; i += 1)
-        tracers[i]->setGraphKey(tracers[i + 1]->graphKey());
+        tracers[i]->position->setCoords(tracers[i + 1]->position->coords());
 
-    tracers[Tracer::LAST]->setGraphKey(f2);
+    tracers[Tracer::LAST]->position->setCoords(f2, f1);
     plot->replot();
 }
 
@@ -916,32 +913,22 @@ void MainWindow::pauseTracers(size_t offset) {
         return;
 
     timer.stop();
-
-    // First remove all the tracers, in case the chunk is just noise.
-    for (size_t i = 0; i < Tracer::COUNT; i += 1)
-        graph->removeData(tracers[i]->graphKey());
-
     hideTracers();
 
     if (!formants->calc(offset))
         return;
 
-    graph->addData(formants->f2, formants->f1);
     tracers[Tracer::LAST]->show();
-    tracers[Tracer::LAST]->setGraphKey(formants->f2);
+    tracers[Tracer::LAST]->position->setCoords(formants->f2, formants->f1);
 
     plot->replot();
 }
 
 void MainWindow::clearTracer() {
-    graph->removeData(tracers[0]->graphKey());
-
     for (size_t i = 0; i < Tracer::LAST; i += 1)
-        tracers[i]->setGraphKey(tracers[i + 1]->graphKey());
+        tracers[i]->position->setCoords(tracers[i + 1]->position->coords());
 
-    graph->removeData(tracers[Tracer::LAST - tracer]->graphKey());
     tracers[Tracer::LAST - tracer]->hide();
-
     plot->replot();
 }
 
