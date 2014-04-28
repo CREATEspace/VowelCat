@@ -16,6 +16,7 @@ SOURCES += \
     mainwindow.cpp \
     plotter.cpp \
     qcustomplot.cpp \
+    spectrogram.cpp \
     timespec.cpp \
 
 HEADERS += \
@@ -23,6 +24,7 @@ HEADERS += \
     mainwindow.h \
     plotter.h \
     qcustomplot.h \
+    spectrogram.h \
     timespec.h \
 
 FORMS += \
@@ -33,4 +35,6 @@ RESOURCES += \
 
 QMAKE_CXXFLAGS += -std=c++11
 QMAKE_CXXFLAGS += $$(CFLAGS)
+
+LIBS += -lm
 LIBS += $(LDFLAGS)

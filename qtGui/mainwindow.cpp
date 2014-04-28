@@ -24,6 +24,7 @@ extern "C" {
 
 #include "mainwindow.h"
 #include "plotter.h"
+#include "spectrogram.h"
 #include "timespec.h"
 #include "ui_mainwindow.h"
 
@@ -82,7 +83,7 @@ public:
     }
 };
 
-MainWindow::MainWindow(audio_t *a, Formants *f, Plotter *p):
+MainWindow::MainWindow(audio_t *a, Formants *f, Plotter *p, Spectrogram *s):
     ui(new Ui::MainWindow),
     tracer(Tracer::COUNT),
     plot_lock(PTHREAD_MUTEX_INITIALIZER),
@@ -98,6 +99,7 @@ MainWindow::MainWindow(audio_t *a, Formants *f, Plotter *p):
     };
 
     ui->setupUi(this);
+    ui->specContainer->addWidget(s);
 
     QIcon::setThemeName("tango");
     ui->beginButton->setIcon(QIcon::fromTheme("media-skip-backward"));
@@ -219,6 +221,10 @@ void MainWindow::initButtons() {
     ui->endButton->setEnabled(false);
 }
 
+void MainWindow::seekAudio(size_t offset) {
+    audio_seek(audio, offset);
+}
+
 void MainWindow::newAudio() {
     timer.start(TIMER_INTERVAL);
 
@@ -226,6 +232,7 @@ void MainWindow::newAudio() {
 
     plotter->stop();
     audio_clear(audio);
+    emit clearAudio();
     plotter->listen();
 }
 
@@ -250,9 +257,8 @@ void MainWindow::stopAudio() {
     ui->actionSaveAs->setEnabled(true);
 
     plotter->stop();
-    audio_seek(audio, 0);
-
-    pauseTracers(audio->prbuf_offset);
+    emit audioSeek(0);
+    pauseTracers(0);
 }
 
 void MainWindow::startPlay() {
@@ -286,8 +292,8 @@ void MainWindow::beginAudio() {
     ui->endButton->setEnabled(true);
 
     plotter->stop();
-    audio_seek(audio, 0);
-    pauseTracers(audio->prbuf_offset);
+    emit audioSeek(0);
+    pauseTracers(0);
 }
 
 void MainWindow::endAudio() {
@@ -296,8 +302,8 @@ void MainWindow::endAudio() {
     ui->endButton->setEnabled(false);
 
     plotter->stop();
-    audio_seek(audio, audio->prbuf_size);
-    pauseTracers(audio->prbuf_offset - audio->samples_per_chunk);
+    emit audioSeek(audio->prbuf_size);
+    pauseTracers(audio->prbuf_size - audio->samples_per_chunk);
 }
 
 void MainWindow::loadSymbols() {
@@ -934,6 +940,19 @@ void MainWindow::clearTracer() {
 
     tracers[Tracer::LAST - tracer]->hide();
     plot->replot();
+}
+
+void MainWindow::spectroClicked(size_t offset) {
+    if (offset > audio->prbuf_size)
+        return;
+
+    emit audioSeek(offset);
+
+    ui->playButton->setEnabled(audio->prbuf_offset != audio->prbuf_size);
+    ui->endButton->setEnabled(audio->prbuf_offset != audio->prbuf_size);
+    ui->beginButton->setEnabled(audio->prbuf_offset != 0);
+
+    pauseTracers(offset);
 }
 
 // When a vowel Button is pushed, we want to create a new

@@ -25,6 +25,7 @@ extern "C" {
 #include "formants.h"
 #include "plotter.h"
 #include "qcustomplot.h"
+#include "spectrogram.h"
 #include "timespec.h"
 #include "ui_mainwindow.h"
 
@@ -134,11 +135,17 @@ private:
     int aud_fd;
 
 public:
-    explicit MainWindow(audio_t *a, Formants *f, Plotter *p);
+    explicit MainWindow(audio_t *a, Formants *f, Plotter *p, Spectrogram *s);
     ~MainWindow();
+
+signals:
+    void clearAudio();
+    void audioSeek(size_t offset);
 
 public slots:
     void plotFormant(formant_sample_t f1, formant_sample_t f2);
+    void spectroClicked(size_t offset);
+    void seekAudio(size_t offset);
 
 private slots:
     void plotNext();
@@ -187,8 +194,8 @@ private:
     void clearSymbols();
 
     void updateTracers(formant_sample_t x, formant_sample_t y);
-    void pauseTracers(size_t offset);
     void clearTracer();
+    void pauseTracers(size_t offset);
 
     void updateFPS() const;
 };

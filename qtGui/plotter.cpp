@@ -17,6 +17,7 @@ extern "C" {
 #include "params.h"
 #include "plotter.h"
 #include "timespec.h"
+#include "util.h"
 
 Plotter::Plotter(audio_t *a, sound_t *s, Formants *f) :
     run(false),
@@ -56,6 +57,8 @@ void Plotter::record_run() {
             break;
         //***********************
 
+        emit newSamples(audio->prbuf_offset - audio->samples_per_chunk);
+
         if(!formants->calc())
             continue;
 
@@ -74,6 +77,8 @@ void Plotter::play_run() {
         if(!audio_play_read(audio, sound->samples))
             break;
         //***********************
+
+        emit newSamples(audio->prbuf_offset - audio->samples_per_chunk);
 
         if(!formants->calc())
             continue;

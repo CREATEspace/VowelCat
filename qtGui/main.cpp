@@ -15,6 +15,7 @@ extern "C" {
 #include "mainwindow.h"
 #include "params.h"
 #include "plotter.h"
+#include "spectrogram.h"
 
 // Handle OS signals.
 static void sig(int s) {
@@ -46,7 +47,8 @@ int main(int argc, char *argv[])
 
     Formants formants(&audio, &sound);
     Plotter plotter(&audio, &sound, &formants);
-    MainWindow window(&audio, &formants, &plotter);
+    auto spectro = new Spectrogram(&audio);
+    MainWindow window(&audio, &formants, &plotter, spectro);
 
     QObject::connect(&plotter, SIGNAL(pauseSig()),
                      &window, SLOT(pauseAudio()));
@@ -55,6 +57,19 @@ int main(int argc, char *argv[])
     QObject::connect(&plotter, &Plotter::newFormant,
                      &window, &MainWindow::plotFormant,
                      Qt::DirectConnection);
+    QObject::connect(&window, &MainWindow::audioSeek,
+                     &window, &MainWindow::seekAudio);
+
+    QObject::connect(&plotter, &Plotter::newSamples,
+                     spectro, &Spectrogram::update,
+                     Qt::QueuedConnection);
+    QObject::connect(&window, &MainWindow::audioSeek,
+                     spectro, &Spectrogram::update,
+                     Qt::QueuedConnection);
+    QObject::connect(spectro, &Spectrogram::clicked,
+                     &window, &MainWindow::spectroClicked);
+    QObject::connect(&window, SIGNAL(clearAudio()),
+                     spectro, SLOT(update()));
 
     plotter.listen();
     window.show();
@@ -63,6 +78,7 @@ int main(int argc, char *argv[])
     // QCoreApplication::quit is called.
     QCoreApplication::exec();
 
+    delete spectro;
     plotter.stop();
     sound_destroy(&sound);
     audio_destroy(&audio);
