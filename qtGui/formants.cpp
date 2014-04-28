@@ -19,6 +19,7 @@ Formants::Formants(audio_t *a, sound_t *s):
 {
     formant_opts_init(&opts);
     opts.pre_emph_factor = 1;
+    opts.window_type = WINDOW_TYPE_HAMMING;
 
     if (!formant_opts_process(&opts))
         abort();
