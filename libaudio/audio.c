@@ -7,7 +7,6 @@
 
 //***************************
 #define RB_MULTIPLIER 2
-#define PLAY_FPB_DOWNSIZE 4
 //***************************
 
 #ifndef min
@@ -175,7 +174,7 @@ bool audio_init(audio_t *a, size_t sample_rate, size_t n_channels, size_t sample
       NULL,
       &outparams,
       sample_rate,
-      frames_per_buffer / PLAY_FPB_DOWNSIZE,
+      frames_per_buffer,
       paClipOff,
       playCallback,
       a) != paNoError) return false; //**************
@@ -313,24 +312,24 @@ void audio_stop(audio_t *a)
 
 bool audio_play_read(audio_t *a, audio_sample_t *samples)
 {
+   // Copy here in case prbuf_offset is modified by the play thread while this
+   // function is running.
    size_t offset = a->prbuf_offset;
 
-   for(size_t i = 0; i < PLAY_FPB_DOWNSIZE; i++) {
-      if(Pa_IsStreamActive(a->pstream)) {
-         audio_wait(a);
-         if(i < PLAY_FPB_DOWNSIZE - 1 && a->prbuf_size == a->prbuf_offset)
-            return false;
-      }
-   }
+   // If there aren't enough samples left to make up a chunk, bail.
+   if (a->prbuf_size - offset < a->samples_per_chunk)
+      return false;
 
-   if(a->prbuf_size > offset) {
-      memcpy(&samples[0], &a->prbuf[offset], a->samples_per_chunk * sizeof(audio_sample_t));
-      return true;
-   }
-   else if(a->prbuf_size == offset) {
-      memcpy(&samples[0], &a->prbuf[offset], a->samples_per_chunk * sizeof(audio_sample_t));
-   }
-   return false;
+   if (!Pa_IsStreamActive(a->pstream))
+      return false;
+
+   audio_wait(a);
+
+   // If we get here, then there are enough samples to make up a chunk, and the
+   // user hasn't stopped playback, so copy out the samples for this chunk.
+   memcpy(&samples[0], &a->prbuf[offset], a->samples_per_chunk * sizeof(audio_sample_t));
+
+   return true;
 }
 
 bool audio_record_read(audio_t *a, audio_sample_t *samples)
