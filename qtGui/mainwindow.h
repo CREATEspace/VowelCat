@@ -108,12 +108,17 @@ private:
 
     QVector<QCPItemText*> vowelSymbols;
     QVector<QPushButton*> vowelButtons;
+    QVector<QCPItemLine*> vowelLines;
     QSignalMapper signalMapper;
+    int accentToggle;
+    bool vowelToggle;
 
     enum {
         DEFAULT     = 0,
         INVERT_AXIS = 1 << 0,
         CHINESE_SYMBOLS = 1 << 1,
+        BRITISH_RECEIVED = 1 << 2,
+        ENGLISH_IPA = 1 << 3
     };
 
     uint32_t flags;
@@ -137,6 +142,7 @@ private slots:
     void resetPlot();
     void defaultSymbolsButtonPushed();
     void addSymbolButtonPushed();
+    void accentButtonPushed();
 
     void invertAxis();
 
@@ -171,6 +177,7 @@ private:
     void setupEnglishSymbols();
     void setupChineseButtons();
     void setupChineseSymbols();
+    void setupEnglishReceivedSymbols();
     void addSymbol(QString symbol);
     void clearSymbols();
 

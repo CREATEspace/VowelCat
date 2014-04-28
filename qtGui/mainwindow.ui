@@ -857,7 +857,7 @@
       <item>
        <widget class="QPushButton" name="defaultSymbolsButton">
         <property name="text">
-         <string>Toggle Language</string>
+         <string>Toggle Accent Profile</string>
         </property>
        </widget>
       </item>
@@ -867,7 +867,7 @@
          <number>9</number>
         </property>
         <property name="sizeConstraint">
-         <enum>QLayout::SetMinimumSize</enum>
+         <enum>QLayout::SetMinimumSize</enum>ggleg
         </property>
         <item>
          <widget class="QPushButton" name="addSymbolButton">
@@ -901,6 +901,13 @@
        </layout>
       </item>
       <item>
+       <widget class="QPushButton" name="accentToggleButton">
+        <property name="text">
+         <string>Toggle Symbol Language</string>
+        </property>
+       </widget>
+      </item>
+      <item>
        <spacer name="verticalSpacer">
         <property name="orientation">
          <enum>Qt::Vertical</enum>
@@ -923,7 +930,7 @@
      <x>0</x>
      <y>0</y>
      <width>939</width>
-     <height>19</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuView">

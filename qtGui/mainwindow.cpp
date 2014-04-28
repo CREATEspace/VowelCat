@@ -106,6 +106,9 @@ MainWindow::MainWindow(audio_t *a, Plotter *p):
     ui->chineseGroupBox->setStyleSheet("QPushButton {font-size:18pt;}");
 
     ui->chineseGroupBox->setVisible(false);
+    accentToggle = 0;
+    vowelToggle = true;
+    connect(ui->accentToggleButton, SIGNAL(clicked()), this, SLOT(accentButtonPushed()));
 
     plot = ui->customPlot;
     graph = plot->addGraph();
@@ -486,6 +489,112 @@ void MainWindow::setupEnglishSymbols(){
     }
 }
 
+void MainWindow::setupEnglishReceivedSymbols(){
+    QCPItemText *one = new QCPItemText(ui->customPlot);
+    one->position->setCoords(1850, 360);
+    one->setText("ɪɘ");
+
+    QCPItemText *two = new QCPItemText(ui->customPlot);
+    two->position->setCoords(1100, 360);
+    two->setText("ʊɘ");
+
+    QCPItemText *three = new QCPItemText(ui->customPlot);
+    three->position->setCoords(1950, 500);
+    three->setText("eɪ");
+
+    QCPItemText *four = new QCPItemText(ui->customPlot);
+    four->position->setCoords(1450, 500);
+    four->setText("ɘʊ");
+
+    QCPItemText *five = new QCPItemText(ui->customPlot);
+    five->position->setCoords(950, 500);
+    five->setText("ɔɪ");
+
+    QCPItemText *six = new QCPItemText(ui->customPlot);
+    six->position->setCoords(1850, 600);
+    six->setText("eɘ");
+
+    QCPItemText *seven = new QCPItemText(ui->customPlot);
+    seven->position->setCoords(1550, 800);
+    seven->setText("aɪ");
+
+    QCPItemText *eight = new QCPItemText(ui->customPlot);
+    eight->position->setCoords(1300, 800);
+    eight->setText("aʊ");
+
+    vowelSymbols.resize(8);
+    vowelSymbols[0] = one;
+    vowelSymbols[1] = two;
+    vowelSymbols[2] = three;
+    vowelSymbols[3] = four;
+    vowelSymbols[4] = five;
+    vowelSymbols[5] = six;
+    vowelSymbols[6] = seven;
+    vowelSymbols[7] = eight;
+
+    for (int i = 0; i < 8; i++){
+        ui->customPlot->addItem(vowelSymbols[i]);
+        vowelSymbols[i]->setFont(QFont(font().family(), 40));
+        vowelSymbols[i]->setColor(QColor(34, 34, 34));
+        vowelSymbols[i]->setSelectedColor(Qt::blue);
+        vowelSymbols[i]->setSelectedFont(QFont(font().family(), 40));
+    }
+
+    QCPItemLine *oneLine = new QCPItemLine(plot);
+    oneLine->start->setParentAnchor(one->position);
+    oneLine->end->setCoords(1650, 450);
+
+    QCPItemLine *twoLine = new QCPItemLine(plot);
+    twoLine->start->setParentAnchor(two->position);
+    twoLine->end->setCoords(1250, 450);
+
+    QCPItemLine *threeLine = new QCPItemLine(plot);
+    threeLine->start->setParentAnchor(three->position);
+    threeLine->end->setCoords(1750, 410);
+
+    QCPItemLine *fourLine = new QCPItemLine(plot);
+    fourLine->start->setParentAnchor(four->position);
+    fourLine->end->setCoords(1200, 410);
+
+    QCPItemLine *fiveLine = new QCPItemLine(plot);
+    fiveLine->start->setParentAnchor(five->position);
+    fiveLine->end->setCoords(1550, 425);
+
+    QCPItemLine *sixLine = new QCPItemLine(plot);
+    sixLine->start->setParentAnchor(six->position);
+    sixLine->end->setCoords(1650, 550);
+
+    QCPItemLine *sevenLine = new QCPItemLine(plot);
+    sevenLine->start->setParentAnchor(seven->position);
+    sevenLine->end->setCoords(1650, 400);
+
+    QCPItemLine *eightLine = new QCPItemLine(plot);
+    eightLine->start->setParentAnchor(eight->position);
+    eightLine->end->setCoords(1300, 425);
+
+    vowelLines.resize(8);
+    vowelLines[0] = oneLine;
+    vowelLines[1] = twoLine;
+    vowelLines[2] = threeLine;
+    vowelLines[3] = fourLine;
+    vowelLines[4] = fiveLine;
+    vowelLines[5] = sixLine;
+    vowelLines[6] = sevenLine;
+    vowelLines[7] = eightLine;
+
+    QPen pen;
+    pen.setWidth(4);
+
+    for (int i = 0; i < 8; i++){
+        plot->addItem(vowelLines[i]);
+        vowelLines[i]->setHead(QCPLineEnding::esSpikeArrow);
+        vowelLines[i]->setPen(pen);
+        vowelLines[i]->setSelectable(false);
+    }
+
+    //ui->accentLabel->setText("English Received (British)");
+}
+
 void MainWindow::setupVowelButtons() {
     vowelButtons[0] = ui->pushButton;
     vowelButtons[1] = ui->pushButton_2;
@@ -746,7 +855,7 @@ void MainWindow::vowelButtonPushed(int pushedVowelButton){
 }
 
 void MainWindow::resetPlot(){
-    if (!(flags & CHINESE_SYMBOLS)){
+    if (accentToggle == 0){
         vowelSymbols[0]->position->setCoords(750, 295);
         vowelSymbols[1]->position->setCoords(910, 334);
         vowelSymbols[2]->position->setCoords(727, 406);
@@ -765,7 +874,7 @@ void MainWindow::resetPlot(){
         }
         vowelSymbols.resize(13);
     }
-    else{
+    else if (accentToggle == 1){
         vowelSymbols[0]->position->setCoords(2200, 240);
         vowelSymbols[1]->position->setCoords(2000, 235);
         vowelSymbols[2]->position->setCoords(850, 300);
@@ -776,24 +885,44 @@ void MainWindow::resetPlot(){
         }
         vowelSymbols.resize(5);
     }
+    else if (accentToggle == 2){
+        vowelSymbols[0]->position->setCoords(1850, 360);
+        vowelSymbols[1]->position->setCoords(1100, 360);
+        vowelSymbols[2]->position->setCoords(1950, 500);
+        vowelSymbols[3]->position->setCoords(1450, 500);
+        vowelSymbols[4]->position->setCoords(950, 500);
+        vowelSymbols[5]->position->setCoords(1850, 600);
+        vowelSymbols[6]->position->setCoords(1550, 800);
+        vowelSymbols[7]->position->setCoords(1300, 800);
+        for (int i = 8; i < vowelSymbols.size(); i++){
+            ui->customPlot->removeItem(vowelSymbols[i]);
+        }
+        vowelSymbols.resize(8);
+    }
 
     plot->replot();
 }
 
+void MainWindow::accentButtonPushed(){
+    vowelToggle = !vowelToggle;
+    ui->chineseGroupBox->setVisible(!vowelToggle);
+    ui->englishGroupBox->setVisible(vowelToggle);
+}
+
 void MainWindow::defaultSymbolsButtonPushed(){
-    flags ^= CHINESE_SYMBOLS;
-    if (flags & CHINESE_SYMBOLS){
-        clearSymbols();
-        ui->chineseGroupBox->setVisible(true);
-        ui->englishGroupBox->setVisible(false);
-        setupChineseSymbols();
+    if (accentToggle < 2) accentToggle++;
+    else accentToggle = 0;
+
+    for (int i = 0; i < vowelSymbols.size(); i++){
+        ui->customPlot->removeItem(vowelSymbols[i]);
     }
-    else {
-        clearSymbols();
-        ui->chineseGroupBox->setVisible(false);
-        ui->englishGroupBox->setVisible(true);
-        setupEnglishSymbols();
+    for (int i = 0; i < vowelLines.size(); i++){
+        ui->customPlot->removeItem(vowelLines[i]);
     }
+
+    if (accentToggle == 0) setupEnglishSymbols();
+    else if (accentToggle == 1) setupChineseSymbols();
+    else if (accentToggle == 2) setupEnglishReceivedSymbols();
     plot->replot();
 }
 
