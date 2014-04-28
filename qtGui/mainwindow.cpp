@@ -869,7 +869,7 @@ void MainWindow::plotNext() {
     }
 
     cur.x = from.x + x_range * diff / DUR;
-    cur.y = from.y + slope * (cur.x - from.x);
+    cur.y = from.y + (formant_sample_t)(slope * (cur.x - from.x));
 
     pthread_mutex_unlock(&plot_lock);
 
