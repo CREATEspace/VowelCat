@@ -243,7 +243,7 @@ void MainWindow::startRecord() {
 
 void MainWindow::stopAudio() {
     ui->stopButton->setEnabled(false);
-    ui->beginButton->setEnabled(true);
+    ui->beginButton->setEnabled(false);
     ui->playButton->setEnabled(true);
     ui->endButton->setEnabled(true);
 
@@ -273,7 +273,7 @@ void MainWindow::pauseAudio() {
     ui->playButton->setVisible(true);
     ui->playButton->setEnabled(audio->prbuf_offset != audio->prbuf_size);
     ui->beginButton->setEnabled(true);
-    ui->endButton->setEnabled(true);
+    ui->endButton->setEnabled(audio->prbuf_offset != audio->prbuf_size);
 
     plotter->stop();
 
@@ -282,6 +282,8 @@ void MainWindow::pauseAudio() {
 
 void MainWindow::beginAudio() {
     ui->playButton->setEnabled(true);
+    ui->beginButton->setEnabled(false);
+    ui->endButton->setEnabled(true);
 
     plotter->stop();
     audio_seek(audio, 0);
@@ -290,6 +292,8 @@ void MainWindow::beginAudio() {
 
 void MainWindow::endAudio() {
     ui->playButton->setEnabled(false);
+    ui->beginButton->setEnabled(true);
+    ui->endButton->setEnabled(false);
 
     plotter->stop();
     audio_seek(audio, audio->prbuf_size);
