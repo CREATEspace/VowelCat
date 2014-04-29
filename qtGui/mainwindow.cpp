@@ -542,35 +542,35 @@ void MainWindow::setupEnglishSymbols(){
 
 void MainWindow::setupEnglishReceivedSymbols(){
     QCPItemText *one = new QCPItemText(ui->customPlot);
-    one->position->setCoords(1850, 360);
+    one->position->setCoords(1850, 350);
     one->setText("ɪɘ");
 
     QCPItemText *two = new QCPItemText(ui->customPlot);
-    two->position->setCoords(1100, 360);
+    two->position->setCoords(1100, 350);
     two->setText("ʊɘ");
 
     QCPItemText *three = new QCPItemText(ui->customPlot);
-    three->position->setCoords(1950, 500);
+    three->position->setCoords(1950, 480);
     three->setText("eɪ");
 
     QCPItemText *four = new QCPItemText(ui->customPlot);
-    four->position->setCoords(1450, 500);
+    four->position->setCoords(1450, 480);
     four->setText("ɘʊ");
 
     QCPItemText *five = new QCPItemText(ui->customPlot);
-    five->position->setCoords(950, 500);
+    five->position->setCoords(950, 480);
     five->setText("ɔɪ");
 
     QCPItemText *six = new QCPItemText(ui->customPlot);
-    six->position->setCoords(1850, 600);
+    six->position->setCoords(1920, 560);
     six->setText("eɘ");
 
     QCPItemText *seven = new QCPItemText(ui->customPlot);
-    seven->position->setCoords(1550, 800);
+    seven->position->setCoords(1520, 730);
     seven->setText("aɪ");
 
     QCPItemText *eight = new QCPItemText(ui->customPlot);
-    eight->position->setCoords(1300, 800);
+    eight->position->setCoords(1225, 730);
     eight->setText("aʊ");
 
     vowelSymbols.resize(8);
@@ -597,23 +597,23 @@ void MainWindow::setupEnglishReceivedSymbols(){
 
     QCPItemLine *twoLine = new QCPItemLine(plot);
     twoLine->start->setParentAnchor(two->position);
-    twoLine->end->setCoords(1250, 450);
+    twoLine->end->setCoords(1300, 440);
 
     QCPItemLine *threeLine = new QCPItemLine(plot);
     threeLine->start->setParentAnchor(three->position);
-    threeLine->end->setCoords(1750, 410);
+    threeLine->end->setCoords(1900, 400);
 
     QCPItemLine *fourLine = new QCPItemLine(plot);
     fourLine->start->setParentAnchor(four->position);
-    fourLine->end->setCoords(1200, 410);
+    fourLine->end->setCoords(1250, 400);
 
     QCPItemLine *fiveLine = new QCPItemLine(plot);
     fiveLine->start->setParentAnchor(five->position);
-    fiveLine->end->setCoords(1550, 425);
+    fiveLine->end->setCoords(1550, 410);
 
     QCPItemLine *sixLine = new QCPItemLine(plot);
     sixLine->start->setParentAnchor(six->position);
-    sixLine->end->setCoords(1650, 550);
+    sixLine->end->setCoords(1700, 520);
 
     QCPItemLine *sevenLine = new QCPItemLine(plot);
     sevenLine->start->setParentAnchor(seven->position);
@@ -621,7 +621,7 @@ void MainWindow::setupEnglishReceivedSymbols(){
 
     QCPItemLine *eightLine = new QCPItemLine(plot);
     eightLine->start->setParentAnchor(eight->position);
-    eightLine->end->setCoords(1300, 425);
+    eightLine->end->setCoords(1225, 425);
 
     vowelLines.resize(8);
     vowelLines[0] = oneLine;
