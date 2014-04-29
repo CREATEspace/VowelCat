@@ -63,6 +63,7 @@ int main(int argc, char *argv[])
     // QCoreApplication::quit is called.
     QCoreApplication::exec();
 
+    plotter.stop();
     sound_destroy(&sound);
     audio_destroy(&audio);
 }
