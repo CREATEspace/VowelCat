@@ -263,7 +263,8 @@ void audio_clear(audio_t *a)
 
 void audio_open(audio_t *a, audio_sample_t *m_data, size_t m_size)
 {
-   a->prbuf = m_data;
+   // HACK: skip over the wav header, and come up with a better solution soon.
+   a->prbuf = (audio_sample_t *)((uint8_t *) m_data + sizeof(wav_header_t));
    a->flags |= SOURCE_DISK;
    a->prbuf_size = m_size / sizeof(audio_sample_t);
    a->prbuf_offset = 0;
