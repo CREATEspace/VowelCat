@@ -170,10 +170,10 @@ void MainWindow::openFile() {
     const char *filename;
 
     qfilename = QFileDialog::getOpenFileName(this, tr("Open Audio File"), "", tr("Audio-Files(*.raw *.wav)"));
-    if(qfilename == NULL) {
-        newAudio();
+
+    if (qfilename == NULL)
         return;
-    }
+
     filename = qfilename.toUtf8().constData();
     fd = open(filename, O_RDONLY);
     fstat(fd, &st);
