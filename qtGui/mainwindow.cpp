@@ -106,6 +106,7 @@ MainWindow::MainWindow(audio_t *a, Plotter *p):
     ui->chineseGroupBox->setStyleSheet("QPushButton {font-size:18pt;}");
 
     ui->chineseGroupBox->setVisible(false);
+    ui->label->setAlignment(Qt::AlignRight);
     accentToggle = 0;
     vowelToggle = true;
     connect(ui->accentToggleButton, SIGNAL(clicked()), this, SLOT(accentButtonPushed()));
@@ -410,6 +411,8 @@ void MainWindow::setupChineseSymbols(){
         vowelSymbols[i]->setSelectedColor(Qt::blue);
         vowelSymbols[i]->setSelectedFont(QFont(font().family(), 40));
     }
+
+    ui->label->setText("Chinese");
 }
 
 void MainWindow::setupEnglishSymbols(){
@@ -487,6 +490,8 @@ void MainWindow::setupEnglishSymbols(){
         vowelSymbols[i]->setSelectedColor(Qt::blue);
         vowelSymbols[i]->setSelectedFont(QFont(font().family(), 40));
     }
+
+    ui->label->setText("International Phonetic Alphabet");
 }
 
 void MainWindow::setupEnglishReceivedSymbols(){
@@ -592,7 +597,7 @@ void MainWindow::setupEnglishReceivedSymbols(){
         vowelLines[i]->setSelectable(false);
     }
 
-    //ui->accentLabel->setText("English Received (British)");
+    ui->label->setText("English Received (British)");
 }
 
 void MainWindow::setupVowelButtons() {
@@ -873,6 +878,7 @@ void MainWindow::resetPlot(){
             ui->customPlot->removeItem(vowelSymbols[i]);
         }
         vowelSymbols.resize(13);
+        vowelLines.resize(0);
     }
     else if (accentToggle == 1){
         vowelSymbols[0]->position->setCoords(2200, 240);
@@ -884,6 +890,7 @@ void MainWindow::resetPlot(){
             ui->customPlot->removeItem(vowelSymbols[i]);
         }
         vowelSymbols.resize(5);
+        vowelLines.resize(0);
     }
     else if (accentToggle == 2){
         vowelSymbols[0]->position->setCoords(1850, 360);
@@ -919,6 +926,9 @@ void MainWindow::defaultSymbolsButtonPushed(){
     for (int i = 0; i < vowelLines.size(); i++){
         ui->customPlot->removeItem(vowelLines[i]);
     }
+
+    vowelSymbols.resize(0);
+    vowelLines.resize(0);
 
     if (accentToggle == 0) setupEnglishSymbols();
     else if (accentToggle == 1) setupChineseSymbols();
