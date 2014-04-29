@@ -191,6 +191,7 @@ void MainWindow::openFile() {
     ui->actionSaveAs->setEnabled(false);
 
     audio_open(audio, buf, st.st_size);
+    emit clearAudio();
 }
 
 void MainWindow::saveAsFile() {
