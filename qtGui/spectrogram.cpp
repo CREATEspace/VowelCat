@@ -1,6 +1,8 @@
 // Copyright 2014 Formant Industries. See the Copying file at the top-level
 // directory of this project.
 
+#include <math.h>
+
 #include <QPainter>
 #include <QPaintEvent>
 #include <QPen>
