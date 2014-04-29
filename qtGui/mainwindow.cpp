@@ -349,7 +349,7 @@ void MainWindow::setupPlot()
     graph->setPen(Qt::NoPen);
 
     plot->xAxis->grid()->setZeroLinePen(Qt::NoPen);
-    plot->xAxis->setRange(2400, 700);
+    plot->xAxis->setRange(2400, 680);
     plot->xAxis->setRangeReversed(true);
     plot->xAxis->setLabel("F2 (Hz)");
 
@@ -492,6 +492,52 @@ void MainWindow::setupEnglishSymbols(){
     }
 
     ui->label->setText("International Phonetic Alphabet");
+
+    // h is for horizontal, from the bottommost line to the top line
+    // of the IPA chart (4 lines)
+    QCPItemLine *h0Line = new QCPItemLine(plot);
+    h0Line->start->setCoords(800, 793); // ɑ
+    h0Line->end->setCoords(1632, 793); // a
+
+    QCPItemLine *h1Line = new QCPItemLine(plot);
+    h1Line->start->setCoords(800, 541); // ɔ
+    h1Line->end->setCoords(1998, 541); // ɛ
+
+    QCPItemLine *h2Line = new QCPItemLine(plot);
+    h2Line->start->setCoords(2148, 420); // e
+    h2Line->end->setCoords(800, 420); // o
+
+    QCPItemLine *h3Line = new QCPItemLine(plot);
+    h3Line->start->setCoords(800, 295); // u
+    h3Line->end->setCoords(2343, 295); // i
+
+    // v is for vertical, from left to right
+    // of the IPA chart (3 lines)
+    QCPItemLine *v0Line = new QCPItemLine(plot);
+    v0Line->start->setCoords(2343, 295);
+    v0Line->end->setCoords(1632, 793);
+
+    QCPItemLine *v1Line = new QCPItemLine(plot);
+    v1Line->start->setCoords(1500, 300);
+    v1Line->end->setCoords(1400, 793);
+
+    QCPItemLine *v2Line = new QCPItemLine(plot);
+    v2Line->start->setCoords(800, 793);
+    v2Line->end->setCoords(800, 295);
+
+    vowelLines.resize(7);
+    vowelLines[0] = h0Line;
+    vowelLines[1] = h1Line;
+    vowelLines[2] = h2Line;
+    vowelLines[3] = h3Line;
+    vowelLines[4] = v0Line;
+    vowelLines[5] = v1Line;
+    vowelLines[6] = v2Line;
+
+    for (int i = 0; i < 7; i++){
+        plot->addItem(vowelLines[i]);
+        vowelLines[i]->setSelectable(false);
+    }
 }
 
 void MainWindow::setupEnglishReceivedSymbols(){
@@ -598,6 +644,52 @@ void MainWindow::setupEnglishReceivedSymbols(){
     }
 
     ui->label->setText("English Received (British)");
+
+        // h is for horizontal, from the bottommost line to the top line
+    // of the IPA chart (4 lines)
+    QCPItemLine *h0Line = new QCPItemLine(plot);
+    h0Line->start->setCoords(800, 793); // ɑ
+    h0Line->end->setCoords(1632, 793); // a
+
+    QCPItemLine *h1Line = new QCPItemLine(plot);
+    h1Line->start->setCoords(800, 541); // ɔ
+    h1Line->end->setCoords(1998, 541); // ɛ
+
+    QCPItemLine *h2Line = new QCPItemLine(plot);
+    h2Line->start->setCoords(2148, 420); // e
+    h2Line->end->setCoords(800, 420); // o
+
+    QCPItemLine *h3Line = new QCPItemLine(plot);
+    h3Line->start->setCoords(800, 295); // u
+    h3Line->end->setCoords(2343, 295); // i
+
+    // v is for vertical, from left to right
+    // of the IPA chart (3 lines)
+    QCPItemLine *v0Line = new QCPItemLine(plot);
+    v0Line->start->setCoords(2343, 295);
+    v0Line->end->setCoords(1632, 793);
+
+    QCPItemLine *v1Line = new QCPItemLine(plot);
+    v1Line->start->setCoords(1500, 300);
+    v1Line->end->setCoords(1400, 793);
+
+    QCPItemLine *v2Line = new QCPItemLine(plot);
+    v2Line->start->setCoords(800, 793);
+    v2Line->end->setCoords(800, 295);
+
+    vowelLines.resize(15);
+    vowelLines[8] = h0Line;
+    vowelLines[9] = h1Line;
+    vowelLines[10] = h2Line;
+    vowelLines[11] = h3Line;
+    vowelLines[12] = v0Line;
+    vowelLines[13] = v1Line;
+    vowelLines[14] = v2Line;
+
+    for (int i = 8; i < 15; i++){
+        plot->addItem(vowelLines[i]);
+        vowelLines[i]->setSelectable(false);
+    }
 }
 
 void MainWindow::setupVowelButtons() {
