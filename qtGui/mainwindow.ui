@@ -865,12 +865,23 @@
           <string/>
          </property>
         </widget>
+        <zorder>pushButton_37</zorder>
+        <zorder>pushButton_38</zorder>
+        <zorder>pushButton_39</zorder>
+        <zorder>pushButton_40</zorder>
+        <zorder>pushButton_41</zorder>
+        <zorder>pushButton_42</zorder>
+        <zorder>pushButton_43</zorder>
+        <zorder>pushButton_44</zorder>
+        <zorder>pushButton_45</zorder>
+        <zorder>accentToggleButton</zorder>
+        <zorder>accentToggleButton</zorder>
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="defaultSymbolsButton">
+       <widget class="QPushButton" name="accentToggleButton">
         <property name="text">
-         <string>Toggle Accent Profile</string>
+         <string>Toggle Symbol Language</string>
         </property>
        </widget>
       </item>
@@ -914,9 +925,9 @@
        </layout>
       </item>
       <item>
-       <widget class="QPushButton" name="accentToggleButton">
+       <widget class="QPushButton" name="defaultSymbolsButton">
         <property name="text">
-         <string>Toggle Symbol Language</string>
+         <string>Toggle Accent Profile</string>
         </property>
        </widget>
       </item>
