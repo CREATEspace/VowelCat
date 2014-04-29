@@ -926,8 +926,10 @@ void MainWindow::pauseTracers(size_t offset) {
     timer.stop();
     hideTracers();
 
-    if (!formants->calc(offset))
+    if (!formants->calc(offset)) {
+        plot->replot();
         return;
+    }
 
     tracers[Tracer::LAST]->show();
     tracers[Tracer::LAST]->position->setCoords(formants->f2, formants->f1);
