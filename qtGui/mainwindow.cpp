@@ -109,7 +109,6 @@ MainWindow::MainWindow(audio_t *a, Plotter *p):
     ui->label->setAlignment(Qt::AlignRight);
     accentToggle = 0;
     vowelToggle = true;
-    connect(ui->accentToggleButton, SIGNAL(clicked()), this, SLOT(accentButtonPushed()));
 
     plot = ui->customPlot;
     graph = plot->addGraph();
@@ -121,6 +120,7 @@ MainWindow::MainWindow(audio_t *a, Plotter *p):
 
     connect(ui->defaultSymbolsButton, SIGNAL(released()), this, SLOT(defaultSymbolsButtonPushed()));
     connect(ui->addSymbolButton, SIGNAL(released()), this, SLOT(addSymbolButtonPushed()));
+    connect(ui->accentToggleButton, SIGNAL(released()), this, SLOT(accentButtonPushed()));
 
     connect(ui->actionOpen, SIGNAL(triggered()), this, SLOT(openFile())); //Open audio
     connect(ui->actionSaveAs, SIGNAL(triggered()), this, SLOT(saveAsFile())); //SaveAs audio
