@@ -54,6 +54,7 @@ public:
 
 public slots:
     void update(size_t offset);
+    void reset();
 
 signals:
     void clicked(size_t offset);

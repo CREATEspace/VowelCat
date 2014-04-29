@@ -113,3 +113,8 @@ QRgb Spectrogram::freq_argb(formant_sample_t f, formant_sample_t f1,
 void Spectrogram::mouseReleaseEvent(QMouseEvent *event) {
     emit clicked(pixel_to_offset(event->x()));
 }
+
+void Spectrogram::reset() {
+    prev = pos = 0;
+    QWidget::update();
+}

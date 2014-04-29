@@ -68,8 +68,8 @@ int main(int argc, char *argv[])
                      Qt::QueuedConnection);
     QObject::connect(spectro, &Spectrogram::clicked,
                      &window, &MainWindow::spectroClicked);
-    QObject::connect(&window, SIGNAL(clearAudio()),
-                     spectro, SLOT(update()));
+    QObject::connect(&window, &MainWindow::clearAudio,
+                     spectro, &Spectrogram::reset);
 
     plotter.listen();
     window.show();
