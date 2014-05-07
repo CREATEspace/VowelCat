@@ -8,7 +8,7 @@ QMAKE = qmake
 all: Makefile.qt
 	$(MAKE) -f $<
 
-Makefile.qt: qtGui.pro
+Makefile.qt: VowelCat.pro
 	$(QMAKE) $(QMAKEFLAGS) -o $@
 
 clean: Makefile.qt

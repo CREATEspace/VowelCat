@@ -7,7 +7,7 @@
 #  	build libraries and link gui into build directory
 #  - make -B
 #  	force rebuild all libraries and gui
-#  - rm -r build/libformant build/qtGui; make
+#  - rm -r build/libformant build/VowelCat; make
 #  	force rebuild/relink of libformant and the gui
 #  - make release
 #  	on mac, package binary into standalone app
@@ -15,7 +15,7 @@
 #  	compile (but don't link) code in scratch/dir using the Makefile in that
 #  	directory
 #  - make link DIR=scratch/dir
-#  	link the code in qtGui using the Makefile in that directory
+#  	link the code in VowelCat using the Makefile in that directory
 #  - make clean
 #  	remove build directory
 
@@ -87,17 +87,17 @@ STATICLIBS += $(STATICLIB_FORMANT)
 INCLUDE += -I$(BUILD_ABS)/$(SRC_FORMANT)
 PKG_CONFIGS += $(BUILD_FORMANT)/libformant.pc
 
-SRC_QTGUI = qtGui
-BUILD_QTGUI = $(BUILD)/$(SRC_QTGUI)
-DIRS += $(SRC_QTGUI)
+SRC_VOWELCAT = VowelCat
+BUILD_VOWELCAT = $(BUILD)/$(SRC_VOWELCAT)
+DIRS += $(SRC_VOWELCAT)
 
 ifeq ($(UNAME), Darwin)
-APP_QTGUI = $(BUILD_QTGUI)/qtGui.app
+APP_VOWELCAT = $(BUILD_VOWELCAT)/VowelCat.app
 else
-APP_QTGUI = $(BUILD_QTGUI)/qtGui
+APP_VOWELCAT = $(BUILD_VOWELCAT)/VowelCat
 endif
 
-APPS += $(APP_QTGUI)
+APPS += $(APP_VOWELCAT)
 
 ifneq ($(STAGE), )
     CFLAGS += $(INCLUDE)
@@ -149,7 +149,7 @@ all: $(DIRS)
 else ifeq ($(STAGE), 2)
 all: $(STATICLIBS)
 else ifeq ($(STAGE), 3)
-all: $(APP_QTGUI)
+all: $(APP_VOWELCAT)
 endif
 
 # Create the build directory.
@@ -178,11 +178,11 @@ $(STATICLIB_AUDIO):
 	cp $(STATICLIB_AUDIO_BUILD) $@
 
 # Build the main app.
-$(APP_QTGUI):
-	$(MAKE) -C $(BUILD_QTGUI)
+$(APP_VOWELCAT):
+	$(MAKE) -C $(BUILD_VOWELCAT)
 
 # Force these to be remade every time.
-.PHONY: $(DIRS) $(STATICLIB_FORMANT) $(STATICLIB_AUDIO) $(APP_QTGUI)
+.PHONY: $(DIRS) $(STATICLIB_FORMANT) $(STATICLIB_AUDIO) $(APP_VOWELCAT)
 
 stage-1:
 	$(MAKE) STAGE=1
