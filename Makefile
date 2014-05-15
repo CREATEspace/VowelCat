@@ -92,9 +92,11 @@ BUILD_VOWELCAT = $(BUILD)/$(SRC_VOWELCAT)
 DIRS += $(SRC_VOWELCAT)
 
 ifeq ($(UNAME), Darwin)
-APP_VOWELCAT = $(BUILD_VOWELCAT)/VowelCat.app
+APP_VOWELCAT_BUILD = $(BUILD_VOWELCAT)/VowelCat.app
+APP_VOWELCAT = $(BUILD)/VowelCat.app
 else
-APP_VOWELCAT = $(BUILD_VOWELCAT)/VowelCat
+APP_VOWELCAT_BUILD = $(BUILD_VOWELCAT)/VowelCat
+APP_VOWELCAT = $(BUILD)/vowelcat
 endif
 
 APPS += $(APP_VOWELCAT)
@@ -180,6 +182,7 @@ $(STATICLIB_AUDIO):
 # Build the main app.
 $(APP_VOWELCAT):
 	$(MAKE) -C $(BUILD_VOWELCAT)
+	cp -ruf $(APP_VOWELCAT_BUILD) $@
 
 # Force these to be remade every time.
 .PHONY: $(DIRS) $(STATICLIB_FORMANT) $(STATICLIB_AUDIO) $(APP_VOWELCAT)
