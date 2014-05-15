@@ -87,14 +87,19 @@ PKG_CONFIGS += $(BUILD_FORMANT)/libformant.pc
 
 SRC_VOWELCAT = VowelCat
 BUILD_VOWELCAT = $(BUILD)/$(SRC_VOWELCAT)
+VOWELCAT_BIN_BUILD = $(BUILD_VOWELCAT)/VowelCat
+VOWELCAT_BIN = $(BUILD)/vowelcat
+VOWELCAT_APP_BUILD = $(BUILD_VOWELCAT)/VowelCat.app
+VOWELCAT_APP = $(BUILD)/VowelCat.app
+VOWELCAT_DMG = $(BUILD)/VowelCat.dmg
 DIRS += $(SRC_VOWELCAT)
 
 ifeq ($(OS), Darwin)
-APP_VOWELCAT_BUILD = $(BUILD_VOWELCAT)/VowelCat.app
-APP_VOWELCAT = $(BUILD)/VowelCat.app
+APP_VOWELCAT_BUILD = $(VOWELCAT_APP_BUILD)
+APP_VOWELCAT = $(VOWELCAT_APP)
 else
-APP_VOWELCAT_BUILD = $(BUILD_VOWELCAT)/VowelCat
-APP_VOWELCAT = $(BUILD)/vowelcat
+APP_VOWELCAT_BUILD = $(VOWELCAT_BIN_BUILD)
+APP_VOWELCAT = $(VOWELCAT_BIN)
 endif
 
 APPS += $(APP_VOWELCAT)
@@ -151,9 +156,10 @@ all: $(STATICLIBS)
 else ifeq ($(STAGE), 3)
 all: $(APP_VOWELCAT)
 else ifeq ($(STAGE), 4)
-all:
 ifeq ($(OS), Darwin)
-	macdeployqt $(APP_VOWELCAT)
+all: $(VOWELCAT_DMG)
+else
+all:
 endif
 endif
 
@@ -186,6 +192,10 @@ $(STATICLIB_AUDIO):
 $(APP_VOWELCAT):
 	$(MAKE) -C $(BUILD_VOWELCAT)
 	cp -ruf $(APP_VOWELCAT_BUILD) $@
+
+$(VOWELCAT_DMG):
+	macdeployqt $(VOWELCAT_APP)
+	hdiutil create -ov -srcfolder $(VOWELCAT_APP) $@
 
 # Force these to be remade every time.
 .PHONY: $(DIRS) $(STATICLIB_FORMANT) $(STATICLIB_AUDIO) $(APP_VOWELCAT)
