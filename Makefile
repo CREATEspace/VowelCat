@@ -7,10 +7,8 @@
 #  	build libraries and link gui into build directory
 #  - make -B
 #  	force rebuild all libraries and gui
-#  - rm -r build/libformant build/VowelCat; make
-#  	force rebuild/relink of libformant and the gui
 #  - make release
-#  	on mac, package binary into standalone app
+#  	package binary into standalone app
 #  - make compile DIR=scratch/dir
 #  	compile (but don't link) code in scratch/dir using the Makefile in that
 #  	directory
@@ -28,14 +26,12 @@
 #  - PROFILE=1
 #       enable gprof profiling symbols
 
-# The build process is split into multiple -- currently two -- stages:
+# The build process is split into multiple stages:
 #
 #  1. Populate build directory.
 #  2. Build static libraries and generate their pkgconfigs.
 #  3. Link binaries with static libraries.
-#
-# The stage to run is specified by the STAGE environmental variable. If no stage
-# is given, all stages are ran.
+#  4. Perform any steps for a final release.
 
 # Save overriden variables.
 ECFLAGS := $(CFLAGS)
@@ -152,6 +148,11 @@ else ifeq ($(STAGE), 2)
 all: $(STATICLIBS)
 else ifeq ($(STAGE), 3)
 all: $(APP_VOWELCAT)
+else ifeq ($(STAGE), 4)
+all:
+ifeq ($(UNAME), Darwin)
+	macdeployqt $(APP_VOWELCAT)
+endif
 endif
 
 # Create the build directory.
@@ -196,6 +197,9 @@ stage-2: stage-1
 stage-3: stage-2
 	$(MAKE) STAGE=3
 
+stage-4: stage-3
+	$(MAKE) STAGE=4
+
 ifeq ($(DIR), )
 compile:
 	@echo error: specify a directory to compile with DIR=
@@ -218,17 +222,9 @@ link: stage-2
 	$(MAKE) STAGE=3 link
 endif
 
-ifeq ($(RELEASE), )
-release:
-	$(MAKE) RELEASE=1 $@
-else ifeq ($(UNAME), Darwin)
-release: stage-3
-	macdeployqt $(APP_QTGUI)
-else
-release: stage-3
-endif
+release: stage-4
 
 clean:
 	-rm -r $(BUILD)
 
-.PHONY: all stage-1 stage-2 stage-3 compile link release clean
+.PHONY: all stage-1 stage-2 stage-3 stage-4 compile link release clean
