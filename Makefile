@@ -53,7 +53,9 @@ BUILD = build
 BUILD_ABS = $(PWD)/$(BUILD)
 
 # What platform we're running on.
-UNAME = $(shell uname)
+ifeq ($(OS), )
+OS = $(shell uname)
+endif
 
 # Set up variables for submodules to build -- order is important!
 SRC_AUDIO = libaudio
@@ -87,7 +89,7 @@ SRC_VOWELCAT = VowelCat
 BUILD_VOWELCAT = $(BUILD)/$(SRC_VOWELCAT)
 DIRS += $(SRC_VOWELCAT)
 
-ifeq ($(UNAME), Darwin)
+ifeq ($(OS), Darwin)
 APP_VOWELCAT_BUILD = $(BUILD_VOWELCAT)/VowelCat.app
 APP_VOWELCAT = $(BUILD)/VowelCat.app
 else
@@ -101,7 +103,7 @@ ifneq ($(STAGE), )
     CFLAGS += $(INCLUDE)
     CFLAGS += $(ECFLAGS)
 
-    ifeq ($(UNAME), Darwin)
+    ifeq ($(OS), Darwin)
         CFLAGS += -mmacosx-version-min=10.7 -stdlib=libc++
         QMAKEFLAGS += QMAKE_CXX=$(shell command -v clang++)
     else ifeq ($(OS), Windows_NT)
@@ -150,7 +152,7 @@ else ifeq ($(STAGE), 3)
 all: $(APP_VOWELCAT)
 else ifeq ($(STAGE), 4)
 all:
-ifeq ($(UNAME), Darwin)
+ifeq ($(OS), Darwin)
 	macdeployqt $(APP_VOWELCAT)
 endif
 endif
