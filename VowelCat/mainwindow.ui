@@ -10,6 +10,9 @@
     <height>800</height>
    </rect>
   </property>
+  <property name="windowTitle">
+   <string>VowelCat</string>
+  </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QHBoxLayout" name="horizontalLayout_2">
     <property name="spacing">
