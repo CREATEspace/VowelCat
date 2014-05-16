@@ -11,6 +11,12 @@ LDFLAGS =
 MAKEOVERRIDES =
 
 CFLAGS += -std=c11 -Wall -Wextra -pipe -Iinclude
+CFLAGS += -Wstrict-prototypes -Wshadow -Wpointer-arith -Wcast-qual \
+          -Wmissing-prototypes -Wconversion -Wformat=2 \
+          -Wstrict-overflow=5 -pedantic -Wno-missing-braces \
+          -Winline -Wlogical-op -Wstrict-aliasing \
+          -Wredundant-decls -Werror -Wwrite-strings \
+          -Wmissing-include-dirs -Wuninitialized
 CFLAGS += $(ECFLAGS)
 
 LDFLAGS += $(shell pkg-config --libs libformant.pc)
