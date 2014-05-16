@@ -19,6 +19,7 @@
 #define __USE_XOPEN
 #include <math.h>
 
+#include "common.h"
 #include "formant.h"
 #include "processing.h"
 

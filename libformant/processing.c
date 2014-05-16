@@ -25,6 +25,7 @@
 #define __USE_XOPEN
 #include <math.h>
 
+#include "common.h"
 #include "processing.h"
 
 /*
