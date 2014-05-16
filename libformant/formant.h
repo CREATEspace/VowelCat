@@ -11,7 +11,6 @@
 #ifndef FORMANT_H
 #define FORMANT_H
 
-#include <stdbool.h>
 #include <stddef.h>
 
 // How input samples are represented.
