@@ -445,17 +445,18 @@ static void fir(const formant_sample_t *buf, int in_samps, formant_sample_t *buf
     enum { M = 15 };
     enum { L = 1 << 14 };
 
-    formant_sample_t *buft, *bufp, *bufp2, stem;
+    const size_t lcoef = ncoef - 1;
+    formant_sample_t *buft, *bufp, *bufp2;
     formant_sample_t co[256], mem[256];
 
     int integral;
 
-    bufp = ic + ncoef - 1;
+    bufp = &ic[lcoef];
     bufp2 = co;
-    buft = co + (ncoef - 1) * 2;
+    buft = &co[lcoef * 2];
     integral = 0;
 
-    for (int i = ncoef - 1; i > 0; i -= 1) {
+    for (size_t i = 0; i < lcoef; i += 1) {
         if (!invert) {
             *buft = *bufp2 = *bufp;
 
@@ -463,13 +464,8 @@ static void fir(const formant_sample_t *buf, int in_samps, formant_sample_t *buf
             bufp2 += 1;
             bufp -= 1;
         } else {
-            stem = *bufp;
-            integral += stem;
-            *buft = *bufp2 = -stem;
-
-            bufp -= 1;
-            buft -= 1;
-            bufp2 += 1;
+            integral += ic[lcoef - i];
+            co[i] = co[lcoef * 2 - i] = -ic[lcoef - i];
         }
     }
 
@@ -478,16 +474,16 @@ static void fir(const formant_sample_t *buf, int in_samps, formant_sample_t *buf
     } else {
         integral *= 2;
         integral += *bufp;
-        *buft = integral - *bufp;
+        co[lcoef] = integral - *bufp;
     }
 
     buft = mem;
 
-    for (int i = ncoef - 1; i > 0; i -= 1)
-        *buft++ = 0;
+    for (size_t i = 0; i < lcoef; i += 1)
+        buft[i] = 0;
 
-    for (int i = ncoef; i > 0; i -= 1)
-        *buft++ = *buf++;
+    for (size_t i = lcoef; i < (size_t) 2 * ncoef - 1; i += 1)
+        buft[i] = *buf++;
 
     const int k = (ncoef << 1) - 1;
 
