@@ -14,6 +14,8 @@
 
 #include "formant.h"
 
+#define FORMANT_SAMPLE_RATE 10000
+
 #define FORMANT_COUNT 4
 #define MAX_FORMANTS 7
 

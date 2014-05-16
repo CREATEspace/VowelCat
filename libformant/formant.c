@@ -64,7 +64,6 @@ typedef struct {   /* structure to hold raw LPC analysis data */
 
 void sound_init(sound_t *s) {
     *s = (sound_t) {
-        .sample_rate = 0,
         .sample_count = 0,
         .samples = NULL,
     };
@@ -388,7 +387,7 @@ static void pole_lpc(pole_t *pole, const sound_t *sp) {
 
     /* don't waste time on low energy frames */
     if (pole->rms > 1.0) {
-        formant(sp->sample_rate, lpca, &pole->npoles, pole->freq, pole->band,
+        formant(FORMANT_SAMPLE_RATE, lpca, &pole->npoles, pole->freq, pole->band,
             rr, ri);
     } else {			/* write out no pole frequencies */
         pole->npoles = 0;

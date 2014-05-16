@@ -23,8 +23,6 @@ typedef struct {
 
 // A raw audio segment.
 typedef struct sound_t {
-    // Sample rate of the audio data in Hz.
-    size_t sample_rate;
     // The number of samples in the audio data.
     size_t sample_count;
     // The audio data itself.
