@@ -496,14 +496,12 @@ void sound_highpass(sound_t *s) {
 #define FN (M_PI * 2.0 / (LCSIZ - 1))
 #define SCALE (32767.0 / (.5 * LCSIZ))
 
-    formant_sample_t dataout[s->sample_count];
     formant_sample_t lcf[LCSIZ];
 
     for (size_t i = 0; i < LEN; i += 1)
         lcf[i] = SCALE * (0.5 + 0.4 * cos(FN * (double) i));
 
-    fir(s->samples, s->sample_count, dataout, LEN, lcf);
-    memcpy(s->samples, dataout, sizeof(formant_sample_t) * s->sample_count);
+    fir(s->samples, s->sample_count, s->samples, LEN, lcf);
 
 #undef SCALE
 #undef FN
