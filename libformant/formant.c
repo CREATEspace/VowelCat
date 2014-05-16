@@ -513,7 +513,7 @@ static int canbe(const double *fmins, const double *fmaxs, const double *fre,
 /* pnumb: pole number under consideration */
 /* fnumb: formant number under consideration */
 /* maxp: number of poles to consider */
-static size_t candy(int **pc, double *fre, size_t maxp,
+static size_t candy(int **pc, const double *fre, size_t maxp,
                  size_t ncan, size_t cand, size_t pnumb, size_t fnumb,
                  const double *fmins, const double *fmaxs)
 {
