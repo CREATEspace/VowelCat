@@ -438,32 +438,25 @@ static void fir(const formant_sample_t *buf, int in_samps, formant_sample_t *buf
     for (size_t i = 0; i < lcoef; i += 1)
         buft[i] = 0;
 
-    for (size_t i = lcoef; i < (size_t) 2 * ncoef - 1; i += 1)
-        buft[i] = *buf++;
+    for (size_t i = 0; i < ncoef; i += 1)
+        buft[lcoef + i] = buf[i];
+
+    buf = &buf[ncoef];
 
     const size_t k = (ncoef << 1) - 1;
 
-    for (int i = in_samps - ncoef; i > 0; i -= 1) {
-        buft = mem;
-        bufp = co;
-        bufp2 = mem + 1;
+    for (size_t i = 0; i < in_samps - ncoef; i += 1) {
         int sum = 0;
 
-        for (int j = k; j > 0; j -= 1) {
-            sum += (*bufp * *buft + L) >> M;
-            *buft = *bufp2;
-
-            bufp += 1;
-            buft += 1;
-            bufp2 += 1;
+        for (size_t j = 0; j < k; j += 1) {
+            sum += (co[j] * mem[j] + L) >> M;
+            mem[j] = mem[j + 1];
         }
 
-        buft -= 1;
-
-        *buft = *buf;		/* new data to memory */
-        *bufo = sum;
-
+        mem[k - 1] = *buf;		/* new data to memory */
         buf += 1;
+
+        *bufo = sum;
         bufo += 1;
     }
 
