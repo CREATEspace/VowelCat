@@ -439,7 +439,7 @@ static void lc_lin_fir(double fc, int *nf, double *coef) {
    passband gain.  This filter is convolved with the signal in buf.
    The output is placed in buf2.  If invert != 0, the filter magnitude
    response will be inverted. */
-static void fir(formant_sample_t *buf, int in_samps, formant_sample_t *bufo,
+static void fir(const formant_sample_t *buf, int in_samps, formant_sample_t *bufo,
                 int ncoef, formant_sample_t *ic, int invert)
 {
     enum { M = 15 };
