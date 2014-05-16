@@ -40,9 +40,6 @@ void sound_destroy(sound_t *s);
 // Resize the given sound so it can hold the given number of samples.
 void sound_resize(sound_t *s, size_t sample_count);
 
-// Downsample the given sound's sample rate to downsample_rate.
-void sound_downsample(sound_t *s, size_t downsample_rate);
-
 // Perform a highpass on the given sound.
 void sound_highpass(sound_t *s);
 
