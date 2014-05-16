@@ -10,7 +10,7 @@ LDFLAGS =
 # This is OK because overridden variables are explicitely taken into account.
 MAKEOVERRIDES =
 
-CFLAGS += -std=c11 -Wall -Wextra -pipe
+CFLAGS += -std=c11 -Wall -Wextra -pipe -Iinclude
 CFLAGS += $(ECFLAGS)
 
 LDFLAGS += $(shell pkg-config --libs libformant.pc)
