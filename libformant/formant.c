@@ -69,6 +69,7 @@ static_assert(FORMANT_COUNT <= (LPC_ORDER - 4) / 2,
 #define F_BIAS 0.000
 /* cost of mapping f1 and f2 to same frequency */
 #define F_MERGE 2000.0
+#define DO_MERGE (F_MERGE <= 1000.0)
 
 typedef struct { /* structure of a DP lattice node for formant tracking */
     size_t ncand; /* # of candidate mappings for this frame */
@@ -512,7 +513,7 @@ static int canbe(const double *fmins, const double *fmaxs, const double *fre,
 /* pnumb: pole number under consideration */
 /* fnumb: formant number under consideration */
 /* maxp: number of poles to consider */
-static int candy(int **pc, double *fre, int maxp, bool domerge,
+static int candy(int **pc, double *fre, int maxp,
                  int ncan, int cand, int pnumb, int fnumb,
                  const double *fmins, const double *fmaxs)
 {
@@ -526,17 +527,17 @@ static int candy(int **pc, double *fre, int maxp, bool domerge,
             pc[cand][fnumb] = pnumb;
 
             /* allow for f1,f2 merger */
-            if (domerge && fnumb == 0 && canbe(fmins, fmaxs, fre, pnumb, fnumb + 1)) {
+            if (DO_MERGE && fnumb == 0 && canbe(fmins, fmaxs, fre, pnumb, fnumb + 1)) {
                 ncan++;
                 pc[ncan][0] = pc[cand][0];
 
                 /* same pole, next formant */
-                ncan = candy(pc, fre, maxp, domerge, ncan, ncan, pnumb,
+                ncan = candy(pc, fre, maxp, ncan, ncan, pnumb,
                              fnumb + 1, fmins, fmaxs);
             }
 
             /* next formant; next pole */
-            ncan = candy(pc, fre, maxp, domerge, ncan, cand, pnumb + 1,
+            ncan = candy(pc, fre, maxp, ncan, cand, pnumb + 1,
                          fnumb + 1, fmins, fmaxs);
 
             /* try other frequencies for this formant */
@@ -548,11 +549,11 @@ static int candy(int **pc, double *fre, int maxp, bool domerge,
                 for (i = 0; i < fnumb; i++)
                     pc[ncan][i] = pc[cand][i];
 
-                ncan = candy(pc, fre, maxp, domerge, ncan, ncan,
+                ncan = candy(pc, fre, maxp, ncan, ncan,
                              pnumb + 1, fnumb, fmins, fmaxs);
             }
         } else {
-            ncan = candy(pc, fre, maxp, domerge, ncan, cand,
+            ncan = candy(pc, fre, maxp, ncan, cand,
                          pnumb + 1, fnumb, fmins, fmaxs);
         }
     }
@@ -573,7 +574,7 @@ static int candy(int **pc, double *fre, int maxp, bool domerge,
             i = 0;
         }
 
-        ncan = candy(pc, fre, maxp, domerge, ncan, cand, i, fnumb + 1,
+        ncan = candy(pc, fre, maxp, ncan, cand, i, fnumb + 1,
                      fmins, fmaxs);
     }
 
@@ -584,19 +585,18 @@ static int candy(int **pc, double *fre, int maxp, bool domerge,
    for nform formants, calculate all possible mappings of pole frequencies
    to formants, including, possibly, mappings with missing formants. */
 /* freq: poles ordered by increasing FREQUENCY */
-static int get_fcand(int npole, double *freq, int **pcan,
-                     bool domerge, const double *fmins, const double *fmaxs)
+static int get_fcand(int npole, double *freq, int **pcan, const double *fmins,
+                     const double *fmaxs)
 {
-    return candy(pcan, freq, npole, domerge, 0, 0, 0, 0, fmins, fmaxs) + 1;
+    return candy(pcan, freq, npole, 0, 0, 0, 0, fmins, fmaxs) + 1;
 }
 
 static void pole_dpform(pole_t *pole, const sound_t *ps, formants_t *f) {
     double minerr, ftemp, berr, ferr, bfact, ffact, fbias, merger=0.0;
-    double merge_cost, FBIAS;
+    double FBIAS;
     int	ic, mincan=0;
     int	**pcan;
     int dmaxc,dminc,dcountf;
-    bool domerge;
 
     /*  "nominal" freqs.*/
     double fnom[]  = { 500, 1500, 2500, 3500, 4500, 5500, 6500};
@@ -619,11 +619,6 @@ static void pole_dpform(pole_t *pole, const sound_t *ps, formants_t *f) {
     bfact = BAND_FACT / (0.01 * (double) ps->sample_count);
     ffact = DFN_FACT / (0.01 * (double) ps->sample_count);
 
-    merge_cost = F_MERGE;
-
-    if (merge_cost > 1000.0)
-        domerge = false;
-
     /* Allocate space for the formant and bandwidth arrays to be passed back. */
     double fr[FORMANT_COUNT];
 
@@ -642,7 +637,7 @@ static void pole_dpform(pole_t *pole, const sound_t *ps, formants_t *f) {
     /* Get all likely mappings of the poles onto formants for this frame. */
     /* if there ARE pole frequencies available... */
     if (pole->npoles) {
-        ncan = get_fcand(pole->npoles, pole->freq, pcan, domerge, fmins, fmaxs);
+        ncan = get_fcand(pole->npoles, pole->freq, pcan, fmins, fmaxs);
 
         /* Allocate space for this frame's candidates in the dp lattice. */
         fl.prept = malloc(sizeof(*fl.prept) * ncan);
@@ -680,8 +675,8 @@ static void pole_dpform(pole_t *pole, const sound_t *ps, formants_t *f) {
                 /* F1 candidate? */
                 if (!k) {
                     ftemp = pole->freq[ic];
-                    merger = domerge && ftemp == pole->freq[fl.cand[j][1]]
-                        ? merge_cost
+                    merger = DO_MERGE && ftemp == pole->freq[fl.cand[j][1]]
+                        ? F_MERGE
                         : 0.0;
                 }
 
