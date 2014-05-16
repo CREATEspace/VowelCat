@@ -406,10 +406,9 @@ static void pole_lpc(pole_t *pole, const sound_t *sp) {
 
 /* ic contains 1/2 the coefficients of a symmetric FIR filter with unity
    passband gain.  This filter is convolved with the signal in buf.
-   The output is placed in buf2.  If invert != 0, the filter magnitude
-   response will be inverted. */
+   The output is placed in buf2. */
 static void fir(const formant_sample_t *buf, int in_samps, formant_sample_t *bufo,
-                int ncoef, formant_sample_t *ic, int invert)
+                int ncoef, formant_sample_t *ic)
 {
     enum { M = 15 };
     enum { L = 1 << 14 };
@@ -426,25 +425,13 @@ static void fir(const formant_sample_t *buf, int in_samps, formant_sample_t *buf
     integral = 0;
 
     for (size_t i = 0; i < lcoef; i += 1) {
-        if (!invert) {
-            *buft = *bufp2 = *bufp;
-
-            buft -= 1;
-            bufp2 += 1;
-            bufp -= 1;
-        } else {
-            integral += ic[lcoef - i];
-            co[i] = co[lcoef * 2 - i] = -ic[lcoef - i];
-        }
+        integral += ic[lcoef - i];
+        co[i] = co[lcoef * 2 - i] = -ic[lcoef - i];
     }
 
-    if (!invert) {
-        *buft = *bufp2 = *bufp; /* point of symmetry */
-    } else {
-        integral *= 2;
-        integral += *bufp;
-        co[lcoef] = integral - *bufp;
-    }
+    integral *= 2;
+    integral += *bufp;
+    co[lcoef] = integral - *bufp;
 
     buft = mem;
 
@@ -515,7 +502,7 @@ void sound_highpass(sound_t *s) {
     for (size_t i = 0; i < LEN; i += 1)
         lcf[i] = SCALE * (0.5 + 0.4 * cos(FN * (double) i));
 
-    fir(s->samples, s->sample_count, dataout, LEN, lcf, 1);
+    fir(s->samples, s->sample_count, dataout, LEN, lcf);
     memcpy(s->samples, dataout, sizeof(formant_sample_t) * s->sample_count);
 
 #undef SCALE
