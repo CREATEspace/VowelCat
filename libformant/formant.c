@@ -593,7 +593,6 @@ static size_t get_fcand(size_t npole, double *freq, int **pcan, const double *fm
 
 static void pole_dpform(pole_t *pole, const sound_t *ps, formants_t *f) {
     double minerr, ftemp, berr, ferr, bfact, ffact, fbias, merger=0.0;
-    double FBIAS;
     int	ic, mincan=0;
     int	**pcan;
     int dmaxc,dminc,dcountf;
@@ -612,8 +611,6 @@ static void pole_dpform(pole_t *pole, const sound_t *ps, formants_t *f) {
             fmaxs[i] = fnom[i] + (double) i * NOM_FREQ + 1000.0;
         }
     }
-
-    FBIAS = F_BIAS / (0.01 * (double) ps->sample_count);
 
     /* Setup working values of the cost weights. */
     bfact = BAND_FACT / (0.01 * (double) ps->sample_count);
@@ -692,8 +689,8 @@ static void pole_dpform(pole_t *pole, const sound_t *ps, formants_t *f) {
         }
 
         /* Compute the total cost of this mapping and best previous. */
-        fl.cumerr[j] = FBIAS * fbias + bfact * berr + merger +
-            ffact * ferr + minerr;
+        fl.cumerr[j] = F_BIAS / (0.01 * (double) ps->sample_count) * fbias +
+            bfact * berr + merger + ffact * ferr + minerr;
     }
 
     /* Pick the candidate in the final frame with the lowest cost. */
