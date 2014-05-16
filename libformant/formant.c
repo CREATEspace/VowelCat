@@ -123,9 +123,7 @@ void sound_resize(sound_t *s, size_t sample_count) {
 static void autoc(size_t windowsize, const formant_sample_t *s, double *coef,
                   size_t ncoef, double *rms)
 {
-    double sum, sum0;
-
-    sum0 = 0;
+    double sum0 = 0;
 
     for (size_t i = 0; i < windowsize; i += 1)
         sum0 += s[i] * s[i];
@@ -146,7 +144,7 @@ static void autoc(size_t windowsize, const formant_sample_t *s, double *coef,
     }
 
     for (size_t i = 1; i < ncoef; i += 1) {
-        sum = 0;
+        double sum = 0;
 
         for (size_t j = 0; j < windowsize - i; j += 1)
             sum += s[j] * s[i + j];
