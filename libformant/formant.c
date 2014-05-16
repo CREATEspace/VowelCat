@@ -152,7 +152,7 @@ static void autoc(size_t windowsize, const formant_sample_t *s, double *coef,
         coef[i] = sum / sum0;
     }
 
-    *rms = sqrt(sum0 / windowsize);
+    *rms = sqrt(sum0 / (double) windowsize);
 }
 
 /*
@@ -609,16 +609,16 @@ static void pole_dpform(pole_t *pole, const sound_t *ps, formants_t *f) {
     if (NOM_FREQ > 0.0) {
         for (size_t i = 0; i < MAX_FORMANTS; i++) {
             fnom[i] = (i * 2 + 1) * NOM_FREQ;
-            fmins[i] = fnom[i] - (i + 1) * NOM_FREQ + 50.0;
-            fmaxs[i] = fnom[i] + i * NOM_FREQ + 1000.0;
+            fmins[i] = fnom[i] - ((double) i + 1) * NOM_FREQ + 50.0;
+            fmaxs[i] = fnom[i] + (double) i * NOM_FREQ + 1000.0;
         }
     }
 
-    FBIAS = F_BIAS / (0.01 * ps->sample_count);
+    FBIAS = F_BIAS / (0.01 * (double) ps->sample_count);
 
     /* Setup working values of the cost weights. */
-    bfact = BAND_FACT /(0.01 * ps->sample_count);
-    ffact = DFN_FACT /(0.01 * ps->sample_count);
+    bfact = BAND_FACT / (0.01 * (double) ps->sample_count);
+    ffact = DFN_FACT / (0.01 * (double) ps->sample_count);
 
     merge_cost = F_MERGE;
 
