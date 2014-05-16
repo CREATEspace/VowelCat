@@ -325,7 +325,11 @@ static int lbpoly(double *a, int order, double *rootr, double *rooti) {
 int formant(double *lpca, size_t *n_form, double *freq, double *band, double *rr,
             double *ri)
 {
-    double  flo, pi2t, theta;
+#define PI_2T (M_PI * 2.0 / FORMANT_SAMPLE_RATE)
+/* hold the folding frequency. */
+#define THETA (FORMANT_SAMPLE_RATE / 2.0)
+
+    double  flo, theta;
     size_t fc;
 
     /* was there a problem in the root finder? */
@@ -334,7 +338,6 @@ int formant(double *lpca, size_t *n_form, double *freq, double *band, double *rr
         return false;
     }
 
-    pi2t = M_PI * 2.0 / FORMANT_SAMPLE_RATE;
     fc = 0;
 
     /* convert the z-plane locations to frequencies and bandwidths */
@@ -343,7 +346,7 @@ int formant(double *lpca, size_t *n_form, double *freq, double *band, double *rr
             continue;
 
         theta = atan2(ri[i], rr[i]);
-        freq[fc] = fabs(theta / pi2t);
+        freq[fc] = fabs(theta / PI_2T);
         band[fc] = 0.5 * FORMANT_SAMPLE_RATE * log(rr[i]*rr[i] + ri[i]*ri[i]) / M_PI;
 
         if (band[fc] < 0.0)
@@ -361,15 +364,12 @@ int formant(double *lpca, size_t *n_form, double *freq, double *band, double *rr
     /* Now order the complex poles by frequency.  Always place the (uninteresting)
        real poles at the end of the arrays.	*/
 
-    /* temporarily hold the folding frequency. */
-    theta = FORMANT_SAMPLE_RATE / 2.0;
-
     /* order the poles by frequency (bubble) */
     for (size_t i = 0; i < fc - 1; i++) {
         for (size_t j = 0; j < fc - 1 - i; j++) {
             /* Force the real poles to the end of the list. */
-            bool iscomp1 = freq[j] > 1.0 && freq[j] < theta;
-            bool iscomp2 = freq[j + 1] > 1.0 && freq[j + 1] < theta;
+            bool iscomp1 = freq[j] > 1.0 && freq[j] < THETA;
+            bool iscomp2 = freq[j + 1] > 1.0 && freq[j + 1] < THETA;
             bool swit = freq[j] > freq[j + 1] && iscomp2;
 
             if (!(swit || (iscomp2 && !iscomp1)))
@@ -385,15 +385,17 @@ int formant(double *lpca, size_t *n_form, double *freq, double *band, double *rr
         }
     }
 
-    theta -= 1;
     size_t nform = 0;
 
     /* Now count the complex poles as formant candidates. */
     for (size_t i = 0; i < fc; i += 1)
-        if (freq[i] > 1.0 && freq[i] < theta)
+        if (freq[i] > 1.0 && freq[i] < THETA - 1)
             nform += 1;
 
     *n_form = nform;
 
     return true;
+
+#undef THETA
+#undef PI_2T
 }
