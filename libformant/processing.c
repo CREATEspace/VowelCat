@@ -319,12 +319,11 @@ static int lbpoly(double *a, int order, double *rootr, double *rooti) {
 /* lpc_ord: order of the LP model */
 /* n_form: number of COMPLEX roots of the LPC polynomial */
 /* init: preset to true if no root candidates are available */
-/* s_freq: the sampling frequency of the speech waveform data */
 /* lpca: linear predictor coefficients */
 /* freq: returned array of candidate formant frequencies */
 /* band: returned array of candidate formant bandwidths */
-int formant(double s_freq, double *lpca, size_t *n_form, double *freq,
-            double *band, double *rr, double *ri)
+int formant(double *lpca, size_t *n_form, double *freq, double *band, double *rr,
+            double *ri)
 {
     double  flo, pi2t, theta;
     size_t fc;
@@ -335,7 +334,7 @@ int formant(double s_freq, double *lpca, size_t *n_form, double *freq,
         return false;
     }
 
-    pi2t = M_PI * 2.0 / s_freq;
+    pi2t = M_PI * 2.0 / FORMANT_SAMPLE_RATE;
     fc = 0;
 
     /* convert the z-plane locations to frequencies and bandwidths */
@@ -345,7 +344,7 @@ int formant(double s_freq, double *lpca, size_t *n_form, double *freq,
 
         theta = atan2(ri[i], rr[i]);
         freq[fc] = fabs(theta / pi2t);
-        band[fc] = 0.5 * s_freq * log(rr[i]*rr[i] + ri[i]*ri[i]) / M_PI;
+        band[fc] = 0.5 * FORMANT_SAMPLE_RATE * log(rr[i]*rr[i] + ri[i]*ri[i]) / M_PI;
 
         if (band[fc] < 0.0)
             band[fc] = -band[fc];
@@ -363,7 +362,7 @@ int formant(double s_freq, double *lpca, size_t *n_form, double *freq,
        real poles at the end of the arrays.	*/
 
     /* temporarily hold the folding frequency. */
-    theta = s_freq / 2.0;
+    theta = FORMANT_SAMPLE_RATE / 2.0;
 
     /* order the poles by frequency (bubble) */
     for (size_t i = 0; i < fc - 1; i++) {

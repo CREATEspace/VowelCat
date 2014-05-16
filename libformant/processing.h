@@ -13,8 +13,8 @@
 
 #include "formant.h"
 
-int formant(double s_freq, double *lpca, size_t *n_form, double *freq,
-            double *band, double *rr, double *ri);
+int formant(double *lpca, size_t *n_form, double *freq, double *band, double *rr,
+            double *ri);
 
 void lpc(size_t wsize, const formant_sample_t *data, double *lpca, double *rms);
 
