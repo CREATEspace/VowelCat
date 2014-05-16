@@ -715,25 +715,18 @@ void sound_highpass(sound_t *s) {
 #define FN (M_PI * 2.0 / (LCSIZ - 1))
 #define SCALE (32767.0 / (.5 * LCSIZ))
 
-    formant_sample_t *datain, *dataout;
-    formant_sample_t *lcf;
-
-    datain = malloc(sizeof(formant_sample_t) * s->sample_count);
-    dataout = malloc(sizeof(formant_sample_t) * s->sample_count);
+    formant_sample_t datain[s->sample_count];
+    formant_sample_t dataout[s->sample_count];
 
     memcpy(datain, s->samples, sizeof(formant_sample_t) * s->sample_count);
 
-    lcf = malloc(sizeof(formant_sample_t) * LCSIZ);
+    formant_sample_t lcf[LCSIZ];
 
     for (size_t i = 0; i < LEN; i += 1)
         lcf[i] = SCALE * (0.5 + 0.4 * cos(FN * (double) i));
 
     fir(datain, s->sample_count, dataout, LEN, lcf, 1);
     memcpy(s->samples, dataout, sizeof(formant_sample_t) * s->sample_count);
-
-    free(lcf);
-    free(dataout);
-    free(datain);
 
 #undef SCALE
 #undef FN
