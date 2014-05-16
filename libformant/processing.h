@@ -12,7 +12,7 @@
 #include <assert.h>
 #include <stddef.h>
 
-#define FORMANT_COUNT 2
+#define FORMANT_COUNT 4
 #define MAX_FORMANTS 7
 
 #define LPC_STABLE 70
