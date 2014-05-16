@@ -823,12 +823,7 @@ static void fir(const formant_sample_t *buf, int in_samps, formant_sample_t *buf
     formant_sample_t *buft, *bufp, *bufp2;
     formant_sample_t co[256], mem[256];
 
-    int integral;
-
-    bufp = &ic[lcoef];
-    bufp2 = co;
-    buft = &co[lcoef * 2];
-    integral = 0;
+    int integral = 0;
 
     for (size_t i = 0; i < lcoef; i += 1) {
         integral += ic[lcoef - i];
@@ -836,8 +831,8 @@ static void fir(const formant_sample_t *buf, int in_samps, formant_sample_t *buf
     }
 
     integral *= 2;
-    integral += *bufp;
-    co[lcoef] = integral - *bufp;
+    integral += ic[0];
+    co[lcoef] = integral - ic[0];
 
     buft = mem;
 
