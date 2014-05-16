@@ -503,7 +503,7 @@ static int formant(double *lpca, size_t *n_form, double *freq, double *band,
 
 /* can this pole be this freq.? */
 static int canbe(const double *fmins, const double *fmaxs, const double *fre,
-                 int pnumb, int fnumb)
+                 size_t pnumb, size_t fnumb)
 {
     return fre[pnumb] >= fmins[fnumb] && fre[pnumb] <= fmaxs[fnumb];
 }
@@ -513,18 +513,16 @@ static int canbe(const double *fmins, const double *fmaxs, const double *fre,
 /* pnumb: pole number under consideration */
 /* fnumb: formant number under consideration */
 /* maxp: number of poles to consider */
-static int candy(int **pc, double *fre, int maxp,
-                 int ncan, int cand, int pnumb, int fnumb,
+static size_t candy(int **pc, double *fre, size_t maxp,
+                 size_t ncan, size_t cand, size_t pnumb, size_t fnumb,
                  const double *fmins, const double *fmaxs)
 {
-    int i,j;
-
     if (fnumb < FORMANT_COUNT)
         pc[cand][fnumb] = -1;
 
     if (pnumb < maxp && fnumb < FORMANT_COUNT) {
-        if (canbe(fmins, fmaxs, fre, pnumb,fnumb)) {
-            pc[cand][fnumb] = pnumb;
+        if (canbe(fmins, fmaxs, fre, pnumb, fnumb)) {
+            pc[cand][fnumb] = (int) pnumb;
 
             /* allow for f1,f2 merger */
             if (DO_MERGE && fnumb == 0 && canbe(fmins, fmaxs, fre, pnumb, fnumb + 1)) {
@@ -546,7 +544,7 @@ static int candy(int **pc, double *fre, int maxp,
                 ncan++;
 
                 /* clone the lower formants */
-                for (i = 0; i < fnumb; i++)
+                for (size_t i = 0; i < fnumb; i++)
                     pc[ncan][i] = pc[cand][i];
 
                 ncan = candy(pc, fre, maxp, ncan, ncan,
@@ -562,14 +560,16 @@ static int candy(int **pc, double *fre, int maxp,
        will map onto the current formant, go on to the next formant leaving the
        current formant null. */
     if (pnumb >= maxp && fnumb < FORMANT_COUNT - 1 && pc[cand][fnumb] < 0) {
+        size_t i;
+
         if (fnumb) {
-            j = fnumb - 1;
+            int j = (int) fnumb - 1;
 
             while (j > 0 && pc[cand][j] < 0)
                 j -= 1;
 
             j = pc[cand][j];
-            i = j >= 0 ? j : 0;
+            i = j >= 0 ? (size_t) j : 0;
         } else {
             i = 0;
         }
@@ -585,7 +585,7 @@ static int candy(int **pc, double *fre, int maxp,
    for nform formants, calculate all possible mappings of pole frequencies
    to formants, including, possibly, mappings with missing formants. */
 /* freq: poles ordered by increasing FREQUENCY */
-static int get_fcand(int npole, double *freq, int **pcan, const double *fmins,
+static size_t get_fcand(size_t npole, double *freq, int **pcan, const double *fmins,
                      const double *fmaxs)
 {
     return candy(pcan, freq, npole, 0, 0, 0, 0, fmins, fmaxs) + 1;
