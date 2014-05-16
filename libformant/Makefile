@@ -1,4 +1,4 @@
-SRC = formant.c processing.c
+SRC = formant.c
 OBJ = $(SRC:.c=.o)
 LIB = libformant.a
 
