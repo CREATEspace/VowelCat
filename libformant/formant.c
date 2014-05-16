@@ -599,11 +599,11 @@ static void pole_dpform(pole_t *pole, const sound_t *ps, formants_t *f) {
     int dmaxc,dminc,dcountf;
 
     /*  "nominal" freqs.*/
-    double fnom[]  = { 500, 1500, 2500, 3500, 4500, 5500, 6500};
+    double fnom[MAX_FORMANTS]  = { 500, 1500, 2500, 3500, 4500, 5500, 6500};
     /* frequency bounds */
-    double fmins[] = {  50,  400, 1000, 2000, 2000, 3000, 3000};
+    double fmins[MAX_FORMANTS] = {  50,  400, 1000, 2000, 2000, 3000, 3000};
     /* for 1st 5 formants */
-    double fmaxs[] = {1500, 3500, 4500, 5000, 6000, 6000, 8000};
+    double fmaxs[MAX_FORMANTS] = {1500, 3500, 4500, 5000, 6000, 6000, 8000};
 
     if (NOM_FREQ > 0.0) {
         for (size_t i = 0; i < MAX_FORMANTS; i++) {
