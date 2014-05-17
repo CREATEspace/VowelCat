@@ -12,7 +12,6 @@
 // Revised by: John Shore
 
 #include <assert.h>
-#include <fcntl.h>
 #include <float.h>
 #include <stdbool.h>
 #include <stdio.h>
