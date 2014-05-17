@@ -568,8 +568,8 @@ static size_t candy(int **pc, const double *fre, size_t maxp,
             while (j > 0 && pc[cand][j] < 0)
                 j -= 1;
 
-            j = pc[cand][j];
-            i = j >= 0 ? (size_t) j : 0;
+            int p = pc[cand][j];
+            i = p >= 0 ? (size_t) p : 0;
         } else {
             i = 0;
         }
