@@ -830,7 +830,7 @@ static void fir(const formant_sample_t *buf, int in_samps, formant_sample_t *buf
     for (size_t i = 0; i < ncoef; i += 1)
         mem[lcoef + i] = buf[i];
 
-    buf = &buf[ncoef];
+    buf += ncoef;
 
     const size_t k = (ncoef << 1) - 1;
 
