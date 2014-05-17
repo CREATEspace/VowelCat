@@ -832,7 +832,7 @@ static void fir(const formant_sample_t *buf, int in_samps, formant_sample_t *buf
 
     buf += ncoef;
 
-    const size_t k = (ncoef << 1) - 1;
+    const size_t k = (ncoef * 2) - 1;
 
     for (size_t i = 0; i < in_samps - ncoef; i += 1) {
         int sum = 0;
