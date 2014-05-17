@@ -761,8 +761,8 @@ static void pole_dpform(pole_t *pole, const sound_t *ps, formants_t *f) {
     free(pcan);
 
     *f = (formants_t) {
-        .f1 = fr[0],
-        .f2 = fr[1],
+        .f1 = (formant_sample_t) fr[0],
+        .f2 = (formant_sample_t) fr[1],
     };
 }
 
@@ -816,12 +816,12 @@ static void fir(const formant_sample_t *buf, size_t in_samps, formant_sample_t *
 
     for (size_t i = 0; i < lcoef; i += 1) {
         integral += ic[lcoef - i];
-        co[i] = co[lcoef * 2 - i] = -ic[lcoef - i];
+        co[i] = co[lcoef * 2 - i] = (formant_sample_t) -ic[lcoef - i];
     }
 
     integral *= 2;
     integral += ic[0];
-    co[lcoef] = integral - ic[0];
+    co[lcoef] = (formant_sample_t)(integral - ic[0]);
 
     for (size_t i = 0; i < lcoef; i += 1)
         mem[i] = 0;
@@ -844,7 +844,7 @@ static void fir(const formant_sample_t *buf, size_t in_samps, formant_sample_t *
         mem[k - 1] = *buf;		/* new data to memory */
         buf += 1;
 
-        *bufo = sum;
+        *bufo = (formant_sample_t) sum;
         bufo += 1;
     }
 
@@ -866,7 +866,7 @@ static void fir(const formant_sample_t *buf, size_t in_samps, formant_sample_t *
         buft -= 1;
         *buft = 0;
 
-        *bufo = sum;
+        *bufo = (formant_sample_t) sum;
         bufo += 1;
     }
 }
@@ -883,7 +883,7 @@ void sound_highpass(sound_t *s) {
     formant_sample_t lcf[LCSIZ];
 
     for (size_t i = 0; i < LEN; i += 1)
-        lcf[i] = SCALE * (0.5 + 0.4 * cos(FN * (double) i));
+        lcf[i] = (formant_sample_t)(SCALE * (0.5 + 0.4 * cos(FN * (double) i)));
 
     fir(s->samples, s->sample_count, s->samples, LEN, lcf);
 
