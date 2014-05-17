@@ -595,7 +595,8 @@ static void pole_dpform(pole_t *pole, const sound_t *ps, formants_t *f) {
     double minerr, ftemp, berr, ferr, bfact, ffact, fbias, merger=0.0;
     int	ic, mincan=0;
     int	**pcan;
-    int dmaxc,dminc,dcountf;
+    int dcountf;
+    size_t dmaxc, dminc;
 
     /*  "nominal" freqs.*/
     double fnom[MAX_FORMANTS]  = { 500, 1500, 2500, 3500, 4500, 5500, 6500};
@@ -708,7 +709,7 @@ static void pole_dpform(pole_t *pole, const sound_t *ps, formants_t *f) {
         for (size_t j = 1; j < fl.ncand; j++) {
             if (fl.cumerr[j] < minerr) {
                 minerr = fl.cumerr[j];
-                mincan = j;
+                mincan = (int) j;
             }
         }
     }
@@ -716,12 +717,10 @@ static void pole_dpform(pole_t *pole, const sound_t *ps, formants_t *f) {
     /* if there is a "best" candidate at this frame */
     /* note that mincan will remain =-1 if no candidates */
     if (mincan >= 0) {
-        int j = fl.ncand;
-
-        if (j > dmaxc)
-            dmaxc = j;
-        else if (j < dminc)
-            dminc = j;
+        if (fl.ncand > dmaxc)
+            dmaxc = fl.ncand;
+        else if (fl.ncand < dminc)
+            dminc = fl.ncand;
 
         dcountf++;
 
@@ -803,7 +802,7 @@ static void pole_lpc(pole_t *pole, const sound_t *sp) {
 /* ic contains 1/2 the coefficients of a symmetric FIR filter with unity
    passband gain.  This filter is convolved with the signal in buf.
    The output is placed in buf2. */
-static void fir(const formant_sample_t *buf, int in_samps, formant_sample_t *bufo,
+static void fir(const formant_sample_t *buf, size_t in_samps, formant_sample_t *bufo,
                 size_t ncoef, formant_sample_t *ic)
 {
     enum { M = 15 };
@@ -849,13 +848,13 @@ static void fir(const formant_sample_t *buf, int in_samps, formant_sample_t *buf
         bufo += 1;
     }
 
-    for (int i = ncoef; i > 0; i -= 1) {	/* pad data end with zeros */
+    for (size_t i = ncoef; i > 0; i -= 1) {	/* pad data end with zeros */
         buft = mem;
         bufp = co;
         bufp2 = mem + 1;
         int sum = 0;
 
-        for (int j = k; j > 0; j -= 1) {
+        for (size_t j = k; j > 0; j -= 1) {
             sum += (*bufp * *buft + L) >> M;
             *buft = *bufp2;
 
