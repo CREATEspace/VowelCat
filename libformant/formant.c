@@ -761,8 +761,10 @@ static void pole_dpform(pole_t *pole, const sound_t *ps, formants_t *f) {
 
     free(pcan);
 
-    f->f1 = fr[0];
-    f->f2 = fr[1];
+    *f = (formants_t) {
+        .f1 = fr[0],
+        .f2 = fr[1],
+    };
 }
 
 static void pole_lpc(pole_t *pole, const sound_t *sp) {
