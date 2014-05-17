@@ -864,8 +864,11 @@ static void fir(const formant_sample_t *buf, int in_samps, formant_sample_t *buf
             bufp2 += 1;
         }
 
-        *--buft = 0;
-        *bufo++ = sum;
+        buft -= 1;
+        *buft = 0;
+
+        *bufo = sum;
+        bufo += 1;
     }
 }
 
