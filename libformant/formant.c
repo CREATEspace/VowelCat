@@ -104,6 +104,7 @@ void sound_resize(sound_t *s, size_t sample_count) {
 
     s->sample_count = sample_count;
     s->samples = realloc(s->samples, sample_count * sizeof(formant_sample_t));
+    assert(s->samples);
 }
 
 /*
