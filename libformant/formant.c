@@ -805,7 +805,6 @@ static void fir(formant_sample_t *samples, const size_t nsamples,
     const size_t k = (ncoef * 2) - 1;
 
     formant_sample_t co[256], mem[256];
-    int integral = 0;
 
     size_t in = 0;
     size_t out = 0;
@@ -815,6 +814,8 @@ static void fir(formant_sample_t *samples, const size_t nsamples,
 
     for (size_t i = 0; i < lcoef; i += 1)
         co[lcoef * 2 - i] = co[i];
+
+    int integral = 0;
 
     for (size_t i = 1; i < lcoef; i += 1)
         integral += coef[i];
