@@ -797,7 +797,7 @@ static void pole_lpc(pole_t *pole, const sound_t *sp) {
    passband gain.  This filter is convolved with the signal in buf.
    The output is placed in buf2. */
 static void fir(const formant_sample_t *buf, size_t in_samps, formant_sample_t *bufo,
-                size_t ncoef, formant_sample_t *ic)
+                size_t ncoef, const formant_sample_t *ic)
 {
     enum { M = 15 };
     enum { L = 1 << 14 };
