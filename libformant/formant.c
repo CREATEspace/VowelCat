@@ -662,24 +662,19 @@ static void pole_dpform(pole_t *pole, const sound_t *ps, formants_t *f) {
 
     /* Pick the candidate in the final frame with the lowest cost. */
     /* Starting with that min.-cost cand., work back thru the lattice. */
-    int mincan = -1;
+    size_t mincan = 0;
+    double minerr = fl.cumerr[0];
 
-    /* have candidates at this frame? */
-    if (fl.ncand) {
-        double minerr = fl.cumerr[0];
-        mincan = 0;
-
-        for (size_t j = 1; j < fl.ncand; j += 1) {
-            if (fl.cumerr[j] < minerr) {
-                minerr = fl.cumerr[j];
-                mincan = (int) j;
-            }
+    for (size_t j = 1; j < fl.ncand; j += 1) {
+        if (fl.cumerr[j] < minerr) {
+            minerr = fl.cumerr[j];
+            mincan = j;
         }
     }
 
     /* if there is a "best" candidate at this frame */
     /* note that mincan will remain =-1 if no candidates */
-    if (mincan >= 0) {
+    if (fl.ncand) {
         for (size_t j = 0; j < FORMANT_COUNT; j += 1) {
             if (fl.pcan[mincan][j] >= 0)
                 fr[j] = pole->freq[fl.pcan[mincan][j]];
