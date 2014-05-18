@@ -803,6 +803,8 @@ static void fir(const formant_sample_t *buf, size_t in_samps, formant_sample_t *
     enum { L = 1 << 14 };
 
     const size_t lcoef = ncoef - 1;
+    const size_t k = (ncoef * 2) - 1;
+
     formant_sample_t *buft, *bufp, *bufp2;
     formant_sample_t co[256], mem[256];
 
@@ -822,8 +824,6 @@ static void fir(const formant_sample_t *buf, size_t in_samps, formant_sample_t *
         mem[lcoef + i] = buf[i];
 
     buf += ncoef;
-
-    const size_t k = (ncoef * 2) - 1;
 
     for (size_t i = 0; i < in_samps - ncoef; i += 1) {
         int sum = 0;
