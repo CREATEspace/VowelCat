@@ -72,9 +72,9 @@ static_assert(FORMANT_COUNT <= (LPC_ORDER - 4) / 2,
 
 typedef struct { /* structure of a DP lattice node for formant tracking */
     size_t ncand; /* # of candidate mappings for this frame */
-    int **cand;      /* pole-to-formant map-candidate array */
-    int *prept;	 /* backpointer array for each frame */
-    double *cumerr;	 /* cum. errors associated with each cand. */
+    int *cand[MAX_CANDIDATES];      /* pole-to-formant map-candidate array */
+    int prept[MAX_CANDIDATES];	 /* backpointer array for each frame */
+    double cumerr[MAX_CANDIDATES];	 /* cum. errors associated with each cand. */
 } dp_lattice_t;
 
 typedef struct {   /* structure to hold raw LPC analysis data */
@@ -630,11 +630,6 @@ static void pole_dpform(pole_t *pole, const sound_t *ps, formants_t *f) {
     if (pole->npoles) {
         ncan = get_fcand(pole->npoles, pole->freq, pcan, fmins, fmaxs);
 
-        /* Allocate space for this frame's candidates in the dp lattice. */
-        fl.prept = malloc(sizeof(*fl.prept) * ncan);
-        fl.cumerr = malloc(sizeof(double) * ncan);
-        fl.cand = malloc(sizeof(*fl.cand) * ncan);
-
         /* allocate cand. slots and install candidates */
         for (size_t j = 0; j < ncan; j += 1) {
             fl.cand[j] = malloc(sizeof(**fl.cand) * FORMANT_COUNT);
@@ -739,10 +734,6 @@ static void pole_dpform(pole_t *pole, const sound_t *ps, formants_t *f) {
         if (fl.cand) {
             for (size_t j = 0; j < fl.ncand; j += 1)
                 free(fl.cand[j]);
-
-            free(fl.cand);
-            free(fl.cumerr);
-            free(fl.prept);
         }
     }
 
