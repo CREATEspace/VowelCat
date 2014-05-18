@@ -201,7 +201,7 @@ static void lpc(size_t wsize, const formant_sample_t *data, double *lpca,
     if (LPC_STABLE > 1.0) {
         double ffact = 1.0 / (1.0 + exp(-LPC_STABLE / 20.0 * log(10.0)));
 
-        for (size_t i = 1; i < LPC_COEF; i++)
+        for (size_t i = 1; i < LPC_COEF; i += 1)
             rho[i] *= ffact;
     }
 
@@ -299,10 +299,10 @@ static int lbpoly(double *a, int order, double *rootr, double *rooti) {
         double p = -2.0 * rootr[ordm1];
         double q = rootr[ordm1]*rootr[ordm1] + rooti[ordm1]*rooti[ordm1];
 
-        for (ntrys = 0; ntrys < MAX_TRYS; ntrys++) {
+        for (ntrys = 0; ntrys < MAX_TRYS; ntrys += 1) {
             int	found = false;
 
-            for (itcnt = 0; itcnt < MAX_ITS; itcnt++) {
+            for (itcnt = 0; itcnt < MAX_ITS; itcnt += 1) {
                 double lim = lim0 / (1 + fabs(p) + fabs(q));
 
                 b[ord] = a[ord];
@@ -311,7 +311,7 @@ static int lbpoly(double *a, int order, double *rootr, double *rooti) {
                 c[ord] = b[ord];
                 c[ordm1] = b[ordm1] - (p * c[ord]);
 
-                for (k = 2; k <= ordm1; k++) {
+                for (k = 2; k <= ordm1; k += 1) {
                     int mmk = ord - k;
                     int mmkp2 = mmk+2;
                     int mmkp1 = mmk+1;
@@ -328,7 +328,7 @@ static int lbpoly(double *a, int order, double *rootr, double *rooti) {
                     b[0] = a[0] - p * b[1] - q * b[2];
 
                     if (b[0] <= lim)
-                        k++;
+                        k += 1;
                 }
 
                 /* Some coefficient exceeded lim; */
@@ -378,7 +378,7 @@ static int lbpoly(double *a, int order, double *rootr, double *rooti) {
 
         /* Update the coefficient array with the coeffs. of the
            reduced polynomial. */
-        for (int i = 0; i <= ordm2; i++)
+        for (int i = 0; i <= ordm2; i += 1)
             a[i] = b[i + 2];
     }
 
@@ -426,7 +426,7 @@ static size_t formant(double *lpca, double *freq, double *band, double *rr,
     size_t fc = 0;
 
     /* convert the z-plane locations to frequencies and bandwidths */
-    for (size_t i = 0; i < LPC_ORDER; i++) {
+    for (size_t i = 0; i < LPC_ORDER; i += 1) {
         if (rr[i] == 0.0 && ri[i] == 0.0)
             continue;
 
@@ -450,8 +450,8 @@ static size_t formant(double *lpca, double *freq, double *band, double *rr,
        real poles at the end of the arrays.	*/
 
     /* order the poles by frequency (bubble) */
-    for (size_t i = 0; i < fc - 1; i++) {
-        for (size_t j = 0; j < fc - 1 - i; j++) {
+    for (size_t i = 0; i < fc - 1; i += 1) {
+        for (size_t j = 0; j < fc - 1 - i; j += 1) {
             /* Force the real poles to the end of the list. */
             bool iscomp1 = freq[j] > 1.0 && freq[j] < THETA;
             bool iscomp2 = freq[j + 1] > 1.0 && freq[j + 1] < THETA;
@@ -521,7 +521,7 @@ static size_t candy(int **pc, const double *fre, size_t maxp,
 
             /* allow for f1,f2 merger */
             if (DO_MERGE && fnumb == 0 && canbe(fmins, fmaxs, fre, pnumb, fnumb + 1)) {
-                ncan++;
+                ncan += 1;
                 pc[ncan][0] = pc[cand][0];
 
                 /* same pole, next formant */
@@ -536,10 +536,10 @@ static size_t candy(int **pc, const double *fre, size_t maxp,
             /* try other frequencies for this formant */
             if (pnumb + 1 < maxp && canbe(fmins, fmaxs, fre, pnumb + 1, fnumb)) {
                 /* add one to the candidate index/tally */
-                ncan++;
+                ncan += 1;
 
                 /* clone the lower formants */
-                for (size_t i = 0; i < fnumb; i++)
+                for (size_t i = 0; i < fnumb; i += 1)
                     pc[ncan][i] = pc[cand][i];
 
                 ncan = candy(pc, fre, maxp, ncan, ncan,
@@ -601,7 +601,7 @@ static void pole_dpform(pole_t *pole, const sound_t *ps, formants_t *f) {
     double fmaxs[MAX_FORMANTS] = {1500, 3500, 4500, 5000, 6000, 6000, 8000};
 
     if (NOM_FREQ > 0.0) {
-        for (size_t i = 0; i < MAX_FORMANTS; i++) {
+        for (size_t i = 0; i < MAX_FORMANTS; i += 1) {
             fnom[i] = (i * 2 + 1) * NOM_FREQ;
             fmins[i] = fnom[i] - ((double) i + 1) * NOM_FREQ + 50.0;
             fmaxs[i] = fnom[i] + (double) i * NOM_FREQ + 1000.0;
@@ -618,7 +618,7 @@ static void pole_dpform(pole_t *pole, const sound_t *ps, formants_t *f) {
     /* Allocate space for the raw candidate array. */
     pcan = malloc(sizeof(*pcan) * MAX_CANDIDATES);
 
-    for (size_t i = 0; i < MAX_CANDIDATES; i++)
+    for (size_t i = 0; i < MAX_CANDIDATES; i += 1)
         pcan[i] = malloc(sizeof(**pcan) * FORMANT_COUNT);
 
     /* Allocate space for the dp lattice */
@@ -638,10 +638,10 @@ static void pole_dpform(pole_t *pole, const sound_t *ps, formants_t *f) {
         fl.cand = malloc(sizeof(*fl.cand) * ncan);
 
         /* allocate cand. slots and install candidates */
-        for (size_t j = 0; j < ncan; j++) {
+        for (size_t j = 0; j < ncan; j += 1) {
             fl.cand[j] = malloc(sizeof(**fl.cand) * FORMANT_COUNT);
 
-            for (size_t k = 0; k < FORMANT_COUNT; k++)
+            for (size_t k = 0; k < FORMANT_COUNT; k += 1)
                 fl.cand[j][k] = pcan[j][k];
         }
     }
@@ -649,7 +649,7 @@ static void pole_dpform(pole_t *pole, const sound_t *ps, formants_t *f) {
     fl.ncand = ncan;
 
     /* compute the distance between the current and previous mappings */
-    for (size_t j = 0; j < ncan; j++) {	/* for each CURRENT mapping... */
+    for (size_t j = 0; j < ncan; j += 1) {	/* for each CURRENT mapping... */
         minerr = 0;
 
         /* point to best previous mapping */
@@ -661,7 +661,7 @@ static void pole_dpform(pole_t *pole, const sound_t *ps, formants_t *f) {
         ferr = 0;
         fbias = 0;
 
-        for (size_t k = 0; k < FORMANT_COUNT; k++) {
+        for (size_t k = 0; k < FORMANT_COUNT; k += 1) {
             ic = fl.cand[j][k];
 
             if (ic >= 0) {
@@ -701,7 +701,7 @@ static void pole_dpform(pole_t *pole, const sound_t *ps, formants_t *f) {
         minerr = fl.cumerr[0];
         mincan = 0;
 
-        for (size_t j = 1; j < fl.ncand; j++) {
+        for (size_t j = 1; j < fl.ncand; j += 1) {
             if (fl.cumerr[j] < minerr) {
                 minerr = fl.cumerr[j];
                 mincan = (int) j;
@@ -717,9 +717,9 @@ static void pole_dpform(pole_t *pole, const sound_t *ps, formants_t *f) {
         else if (fl.ncand < dminc)
             dminc = fl.ncand;
 
-        dcountf++;
+        dcountf += 1;
 
-        for (size_t j = 0; j < FORMANT_COUNT; j++) {
+        for (size_t j = 0; j < FORMANT_COUNT; j += 1) {
             int k = fl.cand[mincan][j];
 
             if (k >= 0)
@@ -733,14 +733,14 @@ static void pole_dpform(pole_t *pole, const sound_t *ps, formants_t *f) {
         mincan = fl.prept[mincan];
     } else {
         /* if no candidates, fake with "nominal" frequencies. */
-        for (size_t j = 0; j < FORMANT_COUNT; j++)
+        for (size_t j = 0; j < FORMANT_COUNT; j += 1)
             fr[j] = fnom[j];
     }
 
     /* Deallocate all the DP lattice work space. */
     if (fl.ncand) {
         if (fl.cand) {
-            for (size_t j = 0; j < fl.ncand; j++)
+            for (size_t j = 0; j < fl.ncand; j += 1)
                 free(fl.cand[j]);
 
             free(fl.cand);
@@ -750,7 +750,7 @@ static void pole_dpform(pole_t *pole, const sound_t *ps, formants_t *f) {
     }
 
     /* Deallocate space for the raw candidate aray. */
-    for (size_t i = 0; i < MAX_CANDIDATES; i++)
+    for (size_t i = 0; i < MAX_CANDIDATES; i += 1)
         free(pcan[i]);
 
     free(pcan);
