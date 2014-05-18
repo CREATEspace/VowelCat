@@ -52,7 +52,7 @@ static_assert(FORMANT_COUNT <= (LPC_ORDER - 4) / 2,
 
 /* Here are the major fudge factors for tweaking the formant tracker. */
 /* maximum number of candidate mappings allowed */
-#define MAX_CANDIDATES 300
+#define MAX_CANDIDATES 64
 /* equivalent delta-Hz cost for missing formant */
 #define MISSING 1
 /* equivalent bandwidth cost of a missing formant */
