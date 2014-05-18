@@ -777,11 +777,10 @@ static void pole_lpc(pole_t *pole, const sound_t *sp) {
     }
 
     /* don't waste time on low energy frames */
-    if (pole->rms > 1.0) {
+    if (pole->rms > 1.0)
         pole->npoles = formant(lpca, pole->freq, pole->band, rr, ri);
-    } else {			/* write out no pole frequencies */
+    else			/* write out no pole frequencies */
         pole->npoles = 0;
-    }
 
 #undef X
 }
