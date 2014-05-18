@@ -591,9 +591,6 @@ static size_t get_fcand(size_t npole, double *freq, pcan_t pcan,
 }
 
 static void pole_dpform(pole_t *pole, const sound_t *ps, formants_t *f) {
-    double minerr, berr, ferr, bfact, ffact, fbias, merger=0.0;
-    int	ic;
-
     /*  "nominal" freqs.*/
     double fnom[MAX_FORMANTS]  = { 500, 1500, 2500, 3500, 4500, 5500, 6500};
     /* frequency bounds */
@@ -610,8 +607,8 @@ static void pole_dpform(pole_t *pole, const sound_t *ps, formants_t *f) {
     }
 
     /* Setup working values of the cost weights. */
-    bfact = BAND_FACT / (0.01 * (double) ps->sample_count);
-    ffact = DFN_FACT / (0.01 * (double) ps->sample_count);
+    const double bfact = BAND_FACT / (0.01 * (double) ps->sample_count);
+    const double ffact = DFN_FACT / (0.01 * (double) ps->sample_count);
 
     /* Allocate space for the formant and bandwidth arrays to be passed back. */
     double fr[FORMANT_COUNT];
@@ -628,19 +625,20 @@ static void pole_dpform(pole_t *pole, const sound_t *ps, formants_t *f) {
 
     /* compute the distance between the current and previous mappings */
     for (size_t j = 0; j < fl.ncand; j += 1) {	/* for each CURRENT mapping... */
-        minerr = 0;
+        double minerr = 0;
 
         /* point to best previous mapping */
         /* (Note that mincan=-1 if there were no candidates in prev. fr.) */
         /* Compute the local costs for this current mapping. */
         fl.prept[j] = 0;
 
-        berr = 0;
-        ferr = 0;
-        fbias = 0;
+        double berr = 0;
+        double ferr = 0;
+        double fbias = 0;
+        double merger = 0.0;
 
         for (size_t k = 0; k < FORMANT_COUNT; k += 1) {
-            ic = fl.pcan[j][k];
+            int ic = fl.pcan[j][k];
 
             if (ic >= 0) {
                 /* F1 candidate? */
@@ -675,7 +673,7 @@ static void pole_dpform(pole_t *pole, const sound_t *ps, formants_t *f) {
 
     /* have candidates at this frame? */
     if (fl.ncand) {
-        minerr = fl.cumerr[0];
+        double minerr = fl.cumerr[0];
         mincan = 0;
 
         for (size_t j = 1; j < fl.ncand; j += 1) {
