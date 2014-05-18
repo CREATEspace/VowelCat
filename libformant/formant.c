@@ -61,9 +61,9 @@ static_assert(FORMANT_COUNT <= (LPC_ORDER - 4) / 2,
 /* with good "stationarity" function:*/
 #define DF_FACT 20.0
 /* cost for proportional dev. from nominal freqs. */
-#define DFN_FACT 0.3
+#define DFN_FACT 30
 /* cost per Hz of bandwidth in the poles */
-#define BAND_FACT 0.002
+#define BAND_FACT 0.2
 /* bias toward selecting low-freq. poles */
 #define F_BIAS 0.000
 /* cost of mapping f1 and f2 to same frequency */
@@ -605,8 +605,8 @@ static void pole_dpform(pole_t *pole, const sound_t *ps, formants_t *f) {
     }
 
     /* Setup working values of the cost weights. */
-    const double bfact = BAND_FACT / (0.01 * (double) ps->sample_count);
-    const double ffact = DFN_FACT / (0.01 * (double) ps->sample_count);
+    const double bfact = BAND_FACT / (double) ps->sample_count;
+    const double ffact = DFN_FACT / (double) ps->sample_count;
 
     /* Allocate space for the formant and bandwidth arrays to be passed back. */
     double fr[FORMANT_COUNT];
