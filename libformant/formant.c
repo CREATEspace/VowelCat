@@ -862,7 +862,7 @@ void sound_highpass(sound_t *s) {
     enum { LEN = LCSIZ / 2 + 1 };
 
 #define FN (M_PI * 2.0 / (LCSIZ - 1))
-#define SCALE (32767.0 / (.5 * LCSIZ))
+#define SCALE (32767.0 / LCSIZ * 2.0)
 
     formant_sample_t lcf[LCSIZ];
 
