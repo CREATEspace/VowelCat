@@ -547,8 +547,6 @@ static size_t candy(pcan_t pc, const double *fre, size_t maxp,
        will map onto the current formant, go on to the next formant leaving the
        current formant null. */
     if (pnumb >= maxp && fnumb < FORMANT_COUNT - 1 && pc[cand][fnumb] < 0) {
-        size_t i;
-
         if (fnumb) {
             int j = (int) fnumb - 1;
 
@@ -556,12 +554,12 @@ static size_t candy(pcan_t pc, const double *fre, size_t maxp,
                 j -= 1;
 
             int p = pc[cand][j];
-            i = p >= 0 ? (size_t) p : 0;
+            pnumb = p >= 0 ? (size_t) p : 0;
         } else {
-            i = 0;
+            pnumb = 0;
         }
 
-        ncan = candy(pc, fre, maxp, ncan, cand, i, fnumb + 1,
+        ncan = candy(pc, fre, maxp, ncan, cand, pnumb, fnumb + 1,
                      fmins, fmaxs);
     }
 
