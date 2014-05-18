@@ -657,7 +657,7 @@ static void pole_dpform(pole_t *pole, const sound_t *ps, formants_t *f) {
         /* point to best previous mapping */
         /* (Note that mincan=-1 if there were no candidates in prev. fr.) */
         /* Compute the local costs for this current mapping. */
-        fl.prept[j] = mincan;
+        fl.prept[j] = 0;
 
         berr = 0;
         ferr = 0;
