@@ -70,8 +70,11 @@ static_assert(FORMANT_COUNT <= (LPC_ORDER - 4) / 2,
 #define F_MERGE 2000.0
 #define DO_MERGE (F_MERGE <= 1000.0)
 
+typedef int pcan_t[MAX_CANDIDATES][FORMANT_COUNT];
+
 typedef struct { /* structure of a DP lattice node for formant tracking */
     size_t ncand; /* # of candidate mappings for this frame */
+    pcan_t pcan;
     int prept[MAX_CANDIDATES];	 /* backpointer array for each frame */
     double cumerr[MAX_CANDIDATES];	 /* cum. errors associated with each cand. */
 } dp_lattice_t;
@@ -85,8 +88,6 @@ typedef struct {   /* structure to hold raw LPC analysis data */
     double freq[LPC_ORDER];  /* array of complex pole frequencies (Hz) */
     double band[LPC_ORDER];  /* array of complex pole bandwidths (Hz) */
 } pole_t;
-
-typedef int pcan_t[MAX_CANDIDATES][FORMANT_COUNT];
 
 void sound_init(sound_t *s) {
     *s = (sound_t) {
@@ -615,9 +616,6 @@ static void pole_dpform(pole_t *pole, const sound_t *ps, formants_t *f) {
     /* Allocate space for the formant and bandwidth arrays to be passed back. */
     double fr[FORMANT_COUNT];
 
-    /* Allocate space for the raw candidate array. */
-    pcan_t pcan;
-
     /* Allocate space for the dp lattice */
     dp_lattice_t fl;
 
@@ -627,7 +625,7 @@ static void pole_dpform(pole_t *pole, const sound_t *ps, formants_t *f) {
     /* Get all likely mappings of the poles onto formants for this frame. */
     /* if there ARE pole frequencies available... */
     if (pole->npoles)
-        ncan = get_fcand(pole->npoles, pole->freq, pcan, fmins, fmaxs);
+        ncan = get_fcand(pole->npoles, pole->freq, fl.pcan, fmins, fmaxs);
 
     fl.ncand = ncan;
 
@@ -645,12 +643,12 @@ static void pole_dpform(pole_t *pole, const sound_t *ps, formants_t *f) {
         fbias = 0;
 
         for (size_t k = 0; k < FORMANT_COUNT; k += 1) {
-            ic = pcan[j][k];
+            ic = fl.pcan[j][k];
 
             if (ic >= 0) {
                 /* F1 candidate? */
                 if (!k) {
-                    merger = DO_MERGE && pole->freq[ic]== pole->freq[pcan[j][1]]
+                    merger = DO_MERGE && pole->freq[ic]== pole->freq[fl.pcan[j][1]]
                         ? F_MERGE
                         : 0.0;
                 }
@@ -702,7 +700,7 @@ static void pole_dpform(pole_t *pole, const sound_t *ps, formants_t *f) {
         dcountf += 1;
 
         for (size_t j = 0; j < FORMANT_COUNT; j += 1) {
-            int k = pcan[mincan][j];
+            int k = fl.pcan[mincan][j];
 
             if (k >= 0)
                 fr[j] = pole->freq[k];
