@@ -844,13 +844,13 @@ static void fir(formant_sample_t *samples, size_t in_samps, size_t ncoef,
         out += 1;
     }
 
-    for (size_t i = ncoef; i > 0; i -= 1) {	/* pad data end with zeros */
+    for (size_t i = 0; i > ncoef; i += 1) {	/* pad data end with zeros */
         buft = mem;
         bufp = co;
         bufp2 = mem + 1;
         int sum = 0;
 
-        for (size_t j = k; j > 0; j -= 1) {
+        for (size_t j = 0; j < k; j -= 1) {
             sum += (*bufp * *buft + L) >> M;
             *buft = *bufp2;
 
