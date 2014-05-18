@@ -410,8 +410,8 @@ static int lbpoly(double *a, int order, double *rootr, double *rooti) {
 /* lpca: linear predictor coefficients */
 /* freq: returned array of candidate formant frequencies */
 /* band: returned array of candidate formant bandwidths */
-static int formant(double *lpca, size_t *n_form, double *freq, double *band,
-                   double *rr, double *ri)
+static size_t formant(double *lpca, double *freq, double *band, double *rr,
+                      double *ri)
 {
 #define PI_2T (M_PI * 2.0 / FORMANT_SAMPLE_RATE)
 /* hold the folding frequency. */
@@ -420,10 +420,8 @@ static int formant(double *lpca, size_t *n_form, double *freq, double *band,
     double  flo;
 
     /* was there a problem in the root finder? */
-    if (!lbpoly(lpca, LPC_ORDER, rr, ri)) {
-        *n_form = 0;
-        return false;
-    }
+    if (!lbpoly(lpca, LPC_ORDER, rr, ri))
+        return 0;
 
     size_t fc = 0;
 
@@ -479,9 +477,7 @@ static int formant(double *lpca, size_t *n_form, double *freq, double *band,
         if (freq[i] > 1.0 && freq[i] < THETA - 1)
             nform += 1;
 
-    *n_form = nform;
-
-    return true;
+    return nform;
 
 #undef THETA
 #undef PI_2T
@@ -783,7 +779,7 @@ static void pole_lpc(pole_t *pole, const sound_t *sp) {
 
     /* don't waste time on low energy frames */
     if (pole->rms > 1.0) {
-        formant(lpca, &pole->npoles, pole->freq, pole->band, rr, ri);
+        pole->npoles = formant(lpca, pole->freq, pole->band, rr, ri);
     } else {			/* write out no pole frequencies */
         pole->npoles = 0;
     }
