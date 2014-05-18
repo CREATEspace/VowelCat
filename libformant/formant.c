@@ -75,7 +75,6 @@ typedef int pcan_t[MAX_CANDIDATES][FORMANT_COUNT];
 typedef struct { /* structure of a DP lattice node for formant tracking */
     size_t ncand; /* # of candidate mappings for this frame */
     pcan_t pcan;
-    int prept[MAX_CANDIDATES];	 /* backpointer array for each frame */
     double cumerr[MAX_CANDIDATES];	 /* cum. errors associated with each cand. */
 } dp_lattice_t;
 
@@ -627,11 +626,8 @@ static void pole_dpform(pole_t *pole, const sound_t *ps, formants_t *f) {
     for (size_t j = 0; j < fl.ncand; j += 1) {	/* for each CURRENT mapping... */
         double minerr = 0;
 
-        /* point to best previous mapping */
         /* (Note that mincan=-1 if there were no candidates in prev. fr.) */
         /* Compute the local costs for this current mapping. */
-        fl.prept[j] = 0;
-
         double berr = 0;
         double ferr = 0;
         double fbias = 0;
@@ -704,8 +700,6 @@ static void pole_dpform(pole_t *pole, const sound_t *ps, formants_t *f) {
                 /* or insert neutral values */
                 fr[j] = fnom[j];
         }
-
-        mincan = fl.prept[mincan];
     } else {
         /* if no candidates, fake with "nominal" frequencies. */
         for (size_t j = 0; j < FORMANT_COUNT; j += 1)
