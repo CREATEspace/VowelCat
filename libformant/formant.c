@@ -509,8 +509,8 @@ static bool canbe(const double *fmins, const double *fmaxs, const double *fre,
 /* fnumb: formant number under consideration */
 /* maxp: number of poles to consider */
 static size_t candy(int **pc, const double *fre, size_t maxp,
-                 size_t ncan, size_t cand, size_t pnumb, size_t fnumb,
-                 const double *fmins, const double *fmaxs)
+                    size_t ncan, size_t cand, size_t pnumb, size_t fnumb,
+                    const double *fmins, const double *fmaxs)
 {
     if (fnumb < FORMANT_COUNT)
         pc[cand][fnumb] = -1;
@@ -581,7 +581,7 @@ static size_t candy(int **pc, const double *fre, size_t maxp,
    to formants, including, possibly, mappings with missing formants. */
 /* freq: poles ordered by increasing FREQUENCY */
 static size_t get_fcand(size_t npole, double *freq, int **pcan, const double *fmins,
-                     const double *fmaxs)
+                        const double *fmaxs)
 {
     return candy(pcan, freq, npole, 0, 0, 0, 0, fmins, fmaxs) + 1;
 }
