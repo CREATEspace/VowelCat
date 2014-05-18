@@ -681,10 +681,8 @@ static void pole_dpform(pole_t *pole, const sound_t *ps, formants_t *f) {
     /* note that mincan will remain =-1 if no candidates */
     if (mincan >= 0) {
         for (size_t j = 0; j < FORMANT_COUNT; j += 1) {
-            int k = fl.pcan[mincan][j];
-
-            if (k >= 0)
-                fr[j] = pole->freq[k];
+            if (fl.pcan[mincan][j] >= 0)
+                fr[j] = pole->freq[fl.pcan[mincan][j]];
             else
                 /* IF FORMANT IS MISSING... */
                 /* or insert neutral values */
