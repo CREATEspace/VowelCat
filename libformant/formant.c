@@ -418,8 +418,6 @@ static size_t formant(double *lpca, double *freq, double *band, double *rr,
 /* hold the folding frequency. */
 #define THETA (FORMANT_SAMPLE_RATE / 2.0)
 
-    double  copy;
-
     /* was there a problem in the root finder? */
     if (!lbpoly(lpca, LPC_ORDER, rr, ri))
         return 0;
@@ -461,13 +459,17 @@ static size_t formant(double *lpca, double *freq, double *band, double *rr,
             if (!(swit || (iscomp2 && !iscomp1)))
                 continue;
 
-            copy = band[j + 1];
-            band[j + 1] = band[j];
-            band[j] = copy;
+            {
+                double copy = band[j + 1];
+                band[j + 1] = band[j];
+                band[j] = copy;
+            }
 
-            copy = freq[j + 1];
-            freq[j + 1] = freq[j];
-            freq[j] = copy;
+            {
+                double copy = freq[j + 1];
+                freq[j + 1] = freq[j];
+                freq[j] = copy;
+            }
         }
     }
 
