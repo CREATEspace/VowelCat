@@ -87,6 +87,8 @@ typedef struct {   /* structure to hold raw LPC analysis data */
     double band[LPC_ORDER];  /* array of complex pole bandwidths (Hz) */
 } pole_t;
 
+typedef int pcan_t[MAX_CANDIDATES][FORMANT_COUNT];
+
 void sound_init(sound_t *s) {
     *s = (sound_t) {
         .sample_count = 0,
@@ -508,7 +510,7 @@ static bool canbe(const double *fmins, const double *fmaxs, const double *fre,
 /* pnumb: pole number under consideration */
 /* fnumb: formant number under consideration */
 /* maxp: number of poles to consider */
-static size_t candy(int **pc, const double *fre, size_t maxp,
+static size_t candy(pcan_t pc, const double *fre, size_t maxp,
                     size_t ncan, size_t cand, size_t pnumb, size_t fnumb,
                     const double *fmins, const double *fmaxs)
 {
@@ -582,8 +584,8 @@ static size_t candy(int **pc, const double *fre, size_t maxp,
    for nform formants, calculate all possible mappings of pole frequencies
    to formants, including, possibly, mappings with missing formants. */
 /* freq: poles ordered by increasing FREQUENCY */
-static size_t get_fcand(size_t npole, double *freq, int **pcan, const double *fmins,
-                        const double *fmaxs)
+static size_t get_fcand(size_t npole, double *freq, pcan_t pcan,
+                        const double *fmins, const double *fmaxs)
 {
     return candy(pcan, freq, npole, 0, 0, 0, 0, fmins, fmaxs) + 1;
 }
@@ -615,10 +617,7 @@ static void pole_dpform(pole_t *pole, const sound_t *ps, formants_t *f) {
     double fr[FORMANT_COUNT];
 
     /* Allocate space for the raw candidate array. */
-    int *pcan[MAX_CANDIDATES];
-
-    for (size_t i = 0; i < MAX_CANDIDATES; i += 1)
-        pcan[i] = malloc(sizeof(**pcan) * FORMANT_COUNT);
+    pcan_t pcan;
 
     /* Allocate space for the dp lattice */
     dp_lattice_t fl;
@@ -746,10 +745,6 @@ static void pole_dpform(pole_t *pole, const sound_t *ps, formants_t *f) {
             free(fl.prept);
         }
     }
-
-    /* Deallocate space for the raw candidate aray. */
-    for (size_t i = 0; i < MAX_CANDIDATES; i += 1)
-        free(pcan[i]);
 
     *f = (formants_t) {
         .f1 = (formant_sample_t) fr[0],
