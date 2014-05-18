@@ -795,7 +795,7 @@ static void pole_lpc(pole_t *pole, const sound_t *sp) {
 
 /* ic contains 1/2 the coefficients of a symmetric FIR filter with unity
    passband gain.  This filter is convolved in place with the given samples. */
-static void fir(formant_sample_t *samples, size_t in_samps, size_t ncoef,
+static void fir(formant_sample_t *samples, size_t nsamples, size_t ncoef,
                 const formant_sample_t *coef)
 {
     enum { M = 15 };
@@ -829,7 +829,7 @@ static void fir(formant_sample_t *samples, size_t in_samps, size_t ncoef,
         in += 1;
     }
 
-    for (size_t i = 0; i < in_samps - ncoef; i += 1) {
+    for (size_t i = 0; i < nsamples - ncoef; i += 1) {
         int sum = 0;
 
         for (size_t j = 0; j < k; j += 1) {
