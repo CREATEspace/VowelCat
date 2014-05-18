@@ -590,10 +590,8 @@ static size_t get_fcand(size_t npole, double *freq, int **pcan, const double *fm
 
 static void pole_dpform(pole_t *pole, const sound_t *ps, formants_t *f) {
     double minerr, berr, ferr, bfact, ffact, fbias, merger=0.0;
-    int	ic, mincan=0;
+    int	ic;
     int	**pcan;
-    int dcountf;
-    size_t dmaxc, dminc;
 
     /*  "nominal" freqs.*/
     double fnom[MAX_FORMANTS]  = { 500, 1500, 2500, 3500, 4500, 5500, 6500};
@@ -692,10 +690,10 @@ static void pole_dpform(pole_t *pole, const sound_t *ps, formants_t *f) {
 
     /* Pick the candidate in the final frame with the lowest cost. */
     /* Starting with that min.-cost cand., work back thru the lattice. */
-    dmaxc = 0;
-    dminc = 100;
-    dcountf = 0;
-    mincan = -1;
+    size_t dmaxc = 0;
+    size_t dminc = 100;
+    int dcountf = 0;
+    int mincan = -1;
 
     /* have candidates at this frame? */
     if (fl.ncand) {
