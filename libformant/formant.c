@@ -30,7 +30,6 @@
 #define FORMANT_SAMPLE_RATE 10000
 
 #define FORMANT_COUNT 4
-#define MAX_FORMANTS 7
 
 #define LPC_STABLE 70
 #define LPC_ORDER 12
@@ -43,9 +42,6 @@
 
 static_assert(LPC_ORDER <= LPC_ORDER_MAX && LPC_ORDER >= LPC_ORDER_MIN,
     "LPC_ORDER out of bounds");
-
-static_assert(FORMANT_COUNT <= MAX_FORMANTS,
-    "FORMANT_COUNT out of bounds");
 
 static_assert(FORMANT_COUNT <= (LPC_ORDER - 4) / 2,
     "FORMANT_COUNT too large");
@@ -590,14 +586,14 @@ static size_t get_fcand(size_t npole, double *freq, pcan_t pcan,
 
 static void pole_dpform(pole_t *pole, const sound_t *ps, formants_t *f) {
     /*  "nominal" freqs.*/
-    double fnom[MAX_FORMANTS]  = { 500, 1500, 2500, 3500, 4500, 5500, 6500};
+    double fnom[FORMANT_COUNT]  = { 500, 1500, 2500, 3500};
     /* frequency bounds */
-    double fmins[MAX_FORMANTS] = {  50,  400, 1000, 2000, 2000, 3000, 3000};
+    double fmins[FORMANT_COUNT] = {  50,  400, 1000, 2000};
     /* for 1st 5 formants */
-    double fmaxs[MAX_FORMANTS] = {1500, 3500, 4500, 5000, 6000, 6000, 8000};
+    double fmaxs[FORMANT_COUNT] = {1500, 3500, 4500, 5000};
 
     if (NOM_FREQ > 0.0) {
-        for (size_t i = 0; i < MAX_FORMANTS; i += 1) {
+        for (size_t i = 0; i < FORMANT_COUNT; i += 1) {
             fnom[i] = (i * 2 + 1) * NOM_FREQ;
             fmins[i] = fnom[i] - ((double) i + 1) * NOM_FREQ + 50.0;
             fmaxs[i] = fnom[i] + (double) i * NOM_FREQ + 1000.0;
