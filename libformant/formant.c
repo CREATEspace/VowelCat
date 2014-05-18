@@ -708,7 +708,7 @@ static void pole_lpc(pole_t *pole, const sound_t *sp) {
 
     /* set up starting points for the root search near unit circle */
     for (size_t i = 0; i <= LPC_ORDER; i += 1) {
-        flo = (double) LPC_ORDER - (double) i;
+        flo = (double)(LPC_ORDER - i);
         rr[i] = 2.0 * cos((flo + 0.5) * X);
         ri[i] = 2.0 * sin((flo + 0.5) * X);
     }
