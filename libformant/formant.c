@@ -66,12 +66,6 @@
 // Bias toward selecting low-freq. poles.
 #define F_BIAS 0.000
 
-// Cost of mapping F1 and F2 to same frequency.
-#define F_MERGE 2000.0
-
-// Whether to do F1-F2 merging.
-#define DO_MERGE (F_MERGE <= 1000.0)
-
 static_assert(LPC_ORDER <= LPC_ORDER_MAX && LPC_ORDER >= LPC_ORDER_MIN,
     "LPC_ORDER out of bounds");
 
@@ -527,18 +521,6 @@ static size_t candy(pcan_t pc, const double *fre, size_t maxp,
         if (canbe(fmins, fmaxs, fre, pnumb, fnumb)) {
             pc[cand][fnumb] = (int) pnumb;
 
-            /* allow for f1,f2 merger */
-            if (DO_MERGE) {
-                if (fnumb == 0 && canbe(fmins, fmaxs, fre, pnumb, fnumb + 1)) {
-                    ncan += 1;
-                    pc[ncan][0] = pc[cand][0];
-
-                    /* same pole, next formant */
-                    ncan = candy(pc, fre, maxp, ncan, ncan, pnumb,
-                                 fnumb + 1, fmins, fmaxs);
-                }
-            }
-
             /* next formant; next pole */
             ncan = candy(pc, fre, maxp, ncan, cand, pnumb + 1,
                          fnumb + 1, fmins, fmaxs);
@@ -644,13 +626,6 @@ static void pole_dpform(pole_t *pole, const sound_t *ps, formants_t *f) {
             int ic = fl.pcan[j][k];
 
             if (ic >= 0) {
-                /* F1 candidate? */
-                if (!k) {
-                    merger = DO_MERGE && pole->freq[ic]== pole->freq[fl.pcan[j][1]]
-                        ? F_MERGE
-                        : 0.0;
-                }
-
                 berr += pole->band[ic];
                 ferr += fabs(pole->freq[ic] - fnom[k]) / fnom[k];
                 fbias += pole->freq[ic];
