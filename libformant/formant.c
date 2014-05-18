@@ -589,7 +589,7 @@ static size_t get_fcand(size_t npole, double *freq, int **pcan, const double *fm
 }
 
 static void pole_dpform(pole_t *pole, const sound_t *ps, formants_t *f) {
-    double minerr, ftemp, berr, ferr, bfact, ffact, fbias, merger=0.0;
+    double minerr, berr, ferr, bfact, ffact, fbias, merger=0.0;
     int	ic, mincan=0;
     int	**pcan;
     int dcountf;
@@ -669,8 +669,7 @@ static void pole_dpform(pole_t *pole, const sound_t *ps, formants_t *f) {
             if (ic >= 0) {
                 /* F1 candidate? */
                 if (!k) {
-                    ftemp = pole->freq[ic];
-                    merger = DO_MERGE && ftemp == pole->freq[fl.cand[j][1]]
+                    merger = DO_MERGE && pole->freq[ic]== pole->freq[fl.cand[j][1]]
                         ? F_MERGE
                         : 0.0;
                 }
