@@ -669,7 +669,6 @@ static void pole_dpform(pole_t *pole, const sound_t *ps, formants_t *f) {
             mincan = j;
 
     /* if there is a "best" candidate at this frame */
-    /* note that mincan will remain =-1 if no candidates */
     if (fl.ncand) {
         for (size_t j = 0; j < FORMANT_COUNT; j += 1) {
             if (fl.pcan[mincan][j] >= 0)
