@@ -675,13 +675,13 @@ static void pole_lpc(pole_t *pole, const sound_t *sp) {
 
     double lpca[LPC_ORDER_MAX];
     double rr[LPC_ORDER_MAX], ri[LPC_ORDER_MAX];
-    double flo;
 
     lpc(sp->sample_count, sp->samples, lpca, &pole->rms);
 
     /* set up starting points for the root search near unit circle */
     for (size_t i = 0; i <= LPC_ORDER; i += 1) {
-        flo = (double)(LPC_ORDER - i);
+        const double flo = (double)(LPC_ORDER - i);
+
         rr[i] = 2.0 * cos((flo + 0.5) * X);
         ri[i] = 2.0 * sin((flo + 0.5) * X);
     }
