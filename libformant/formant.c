@@ -26,44 +26,57 @@
 #include "greatest.h"
 #endif
 
+// Required sample rate of input samples.
 #define FORMANT_SAMPLE_RATE 10000
 
+// Number of formants to calculate.
 #define FORMANT_COUNT 4
 
+// Factor used to stabilize the LPC diagonal.
 #define LPC_STABLE 70
+
+// Order of the LPC polynomial -- the number of terms.
 #define LPC_ORDER 12
 #define LPC_ORDER_MIN 2
 #define LPC_ORDER_MAX 30
+// Include the implicit first coefficient with value 1.
 #define LPC_COEF (LPC_ORDER + 1)
 
 // Nominal F1 frequency.
 #define NOM_FREQ 0
+
+// Maximum number of candidate mappings allowed.
+#define MAX_CANDIDATES 64
+
+// Equivalent delta-Hz cost for missing formant.
+#define MISSING 1
+
+// Equivalent bandwidth cost of a missing formant.
+#define NOBAND 1000
+
+// Cost for proportional frequency changes.
+#define DF_FACT 20.0
+
+// Cost for proportional dev. from nominal freqs.
+#define DFN_FACT 30
+
+// Cost per Hz of bandwidth in the poles.
+#define BAND_FACT 0.2
+
+// Bias toward selecting low-freq. poles.
+#define F_BIAS 0.000
+
+// Cost of mapping F1 and F2 to same frequency.
+#define F_MERGE 2000.0
+
+// Whether to do F1-F2 merging.
+#define DO_MERGE (F_MERGE <= 1000.0)
 
 static_assert(LPC_ORDER <= LPC_ORDER_MAX && LPC_ORDER >= LPC_ORDER_MIN,
     "LPC_ORDER out of bounds");
 
 static_assert(FORMANT_COUNT <= (LPC_ORDER - 4) / 2,
     "FORMANT_COUNT too large");
-
-/* Here are the major fudge factors for tweaking the formant tracker. */
-/* maximum number of candidate mappings allowed */
-#define MAX_CANDIDATES 64
-/* equivalent delta-Hz cost for missing formant */
-#define MISSING 1
-/* equivalent bandwidth cost of a missing formant */
-#define NOBAND 1000
-/* cost for proportional frequency changes */
-/* with good "stationarity" function:*/
-#define DF_FACT 20.0
-/* cost for proportional dev. from nominal freqs. */
-#define DFN_FACT 30
-/* cost per Hz of bandwidth in the poles */
-#define BAND_FACT 0.2
-/* bias toward selecting low-freq. poles */
-#define F_BIAS 0.000
-/* cost of mapping f1 and f2 to same frequency */
-#define F_MERGE 2000.0
-#define DO_MERGE (F_MERGE <= 1000.0)
 
 typedef int pcan_t[MAX_CANDIDATES][FORMANT_COUNT];
 
