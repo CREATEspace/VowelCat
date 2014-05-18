@@ -800,7 +800,7 @@ static void fir(formant_sample_t *samples, const size_t nsamples,
     const size_t lcoef = ncoef - 1;
     const size_t k = (ncoef * 2) - 1;
 
-    formant_sample_t co[lcoef * 2], mem[256];
+    formant_sample_t co[lcoef * 2], mem[ncoef * 2];
 
     size_t in = 0;
     size_t out = 0;
