@@ -553,8 +553,7 @@ static size_t candy(pcan_t pc, const double *fre, size_t maxp,
             while (j > 0 && pc[cand][j] < 0)
                 j -= 1;
 
-            int p = pc[cand][j];
-            pnumb = p >= 0 ? (size_t) p : 0;
+            pnumb = pc[cand][j] >= 0 ? (size_t) pc[cand][j] : 0;
         } else {
             pnumb = 0;
         }
