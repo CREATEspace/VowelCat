@@ -72,7 +72,6 @@ static_assert(FORMANT_COUNT <= (LPC_ORDER - 4) / 2,
 
 typedef struct { /* structure of a DP lattice node for formant tracking */
     size_t ncand; /* # of candidate mappings for this frame */
-    int *cand[MAX_CANDIDATES];      /* pole-to-formant map-candidate array */
     int prept[MAX_CANDIDATES];	 /* backpointer array for each frame */
     double cumerr[MAX_CANDIDATES];	 /* cum. errors associated with each cand. */
 } dp_lattice_t;
@@ -627,17 +626,8 @@ static void pole_dpform(pole_t *pole, const sound_t *ps, formants_t *f) {
 
     /* Get all likely mappings of the poles onto formants for this frame. */
     /* if there ARE pole frequencies available... */
-    if (pole->npoles) {
+    if (pole->npoles)
         ncan = get_fcand(pole->npoles, pole->freq, pcan, fmins, fmaxs);
-
-        /* allocate cand. slots and install candidates */
-        for (size_t j = 0; j < ncan; j += 1) {
-            fl.cand[j] = malloc(sizeof(**fl.cand) * FORMANT_COUNT);
-
-            for (size_t k = 0; k < FORMANT_COUNT; k += 1)
-                fl.cand[j][k] = pcan[j][k];
-        }
-    }
 
     fl.ncand = ncan;
 
@@ -655,12 +645,12 @@ static void pole_dpform(pole_t *pole, const sound_t *ps, formants_t *f) {
         fbias = 0;
 
         for (size_t k = 0; k < FORMANT_COUNT; k += 1) {
-            ic = fl.cand[j][k];
+            ic = pcan[j][k];
 
             if (ic >= 0) {
                 /* F1 candidate? */
                 if (!k) {
-                    merger = DO_MERGE && pole->freq[ic]== pole->freq[fl.cand[j][1]]
+                    merger = DO_MERGE && pole->freq[ic]== pole->freq[pcan[j][1]]
                         ? F_MERGE
                         : 0.0;
                 }
@@ -712,7 +702,7 @@ static void pole_dpform(pole_t *pole, const sound_t *ps, formants_t *f) {
         dcountf += 1;
 
         for (size_t j = 0; j < FORMANT_COUNT; j += 1) {
-            int k = fl.cand[mincan][j];
+            int k = pcan[mincan][j];
 
             if (k >= 0)
                 fr[j] = pole->freq[k];
@@ -727,14 +717,6 @@ static void pole_dpform(pole_t *pole, const sound_t *ps, formants_t *f) {
         /* if no candidates, fake with "nominal" frequencies. */
         for (size_t j = 0; j < FORMANT_COUNT; j += 1)
             fr[j] = fnom[j];
-    }
-
-    /* Deallocate all the DP lattice work space. */
-    if (fl.ncand) {
-        if (fl.cand) {
-            for (size_t j = 0; j < fl.ncand; j += 1)
-                free(fl.cand[j]);
-        }
     }
 
     *f = (formants_t) {
