@@ -591,7 +591,6 @@ static size_t get_fcand(size_t npole, double *freq, int **pcan, const double *fm
 static void pole_dpform(pole_t *pole, const sound_t *ps, formants_t *f) {
     double minerr, berr, ferr, bfact, ffact, fbias, merger=0.0;
     int	ic;
-    int	**pcan;
 
     /*  "nominal" freqs.*/
     double fnom[MAX_FORMANTS]  = { 500, 1500, 2500, 3500, 4500, 5500, 6500};
@@ -616,7 +615,7 @@ static void pole_dpform(pole_t *pole, const sound_t *ps, formants_t *f) {
     double fr[FORMANT_COUNT];
 
     /* Allocate space for the raw candidate array. */
-    pcan = malloc(sizeof(*pcan) * MAX_CANDIDATES);
+    int *pcan[MAX_CANDIDATES];
 
     for (size_t i = 0; i < MAX_CANDIDATES; i += 1)
         pcan[i] = malloc(sizeof(**pcan) * FORMANT_COUNT);
@@ -751,8 +750,6 @@ static void pole_dpform(pole_t *pole, const sound_t *ps, formants_t *f) {
     /* Deallocate space for the raw candidate aray. */
     for (size_t i = 0; i < MAX_CANDIDATES; i += 1)
         free(pcan[i]);
-
-    free(pcan);
 
     *f = (formants_t) {
         .f1 = (formant_sample_t) fr[0],
