@@ -10,7 +10,7 @@ LDFLAGS =
 # This is OK because overridden variables are explicitely taken into account.
 MAKEOVERRIDES =
 
-CFLAGS += -std=c11 -Wall -Wextra -pipe -Iinclude
+CFLAGS += -std=c11 -Wall -Wextra -pipe
 CFLAGS += -Wstrict-prototypes -Wshadow -Wpointer-arith -Wcast-qual \
           -Wmissing-prototypes -Wconversion -Wformat=2 \
           -Wstrict-overflow=5 -pedantic -Wno-missing-braces \
