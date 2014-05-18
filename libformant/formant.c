@@ -810,10 +810,14 @@ static void fir(const formant_sample_t *buf, size_t in_samps, formant_sample_t *
 
     int integral = 0;
 
-    for (size_t i = 0; i < lcoef; i += 1) {
+    for (size_t i = 0; i < lcoef; i += 1)
+        co[i] = (formant_sample_t) -ic[lcoef - i];
+
+    for (size_t i = 0; i < lcoef; i += 1)
+        co[lcoef * 2 - i] = co[i];
+
+    for (size_t i = 0; i < lcoef; i += 1)
         integral += ic[lcoef - i];
-        co[i] = co[lcoef * 2 - i] = (formant_sample_t) -ic[lcoef - i];
-    }
 
     co[lcoef] = (formant_sample_t)(integral * 2);
 
