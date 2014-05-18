@@ -794,10 +794,9 @@ static void pole_lpc(pole_t *pole, const sound_t *sp) {
 /*	actual or intended publication of such source code.	*/
 
 /* ic contains 1/2 the coefficients of a symmetric FIR filter with unity
-   passband gain.  This filter is convolved with the signal in buf.
-   The output is placed in buf2. */
-static void fir(const formant_sample_t *buf, size_t in_samps, formant_sample_t *bufo,
-                size_t ncoef, const formant_sample_t *coef)
+   passband gain.  This filter is convolved in place with the given samples. */
+static void fir(formant_sample_t *samples, size_t in_samps, size_t ncoef,
+                const formant_sample_t *coef)
 {
     enum { M = 15 };
     enum { L = 1 << 14 };
@@ -825,9 +824,10 @@ static void fir(const formant_sample_t *buf, size_t in_samps, formant_sample_t *
         mem[i] = 0;
 
     for (size_t i = 0; i < ncoef; i += 1)
-        mem[lcoef + i] = buf[i];
+        mem[lcoef + i] = samples[i];
 
-    buf += ncoef;
+    size_t in = ncoef;
+    size_t out = 0;
 
     for (size_t i = 0; i < in_samps - ncoef; i += 1) {
         int sum = 0;
@@ -837,11 +837,11 @@ static void fir(const formant_sample_t *buf, size_t in_samps, formant_sample_t *
             mem[j] = mem[j + 1];
         }
 
-        mem[k - 1] = *buf;		/* new data to memory */
-        buf += 1;
+        mem[k - 1] = samples[in];		/* new data to memory */
+        samples[out] = (formant_sample_t) sum;
 
-        *bufo = (formant_sample_t) sum;
-        bufo += 1;
+        in += 1;
+        out += 1;
     }
 
     for (size_t i = ncoef; i > 0; i -= 1) {	/* pad data end with zeros */
@@ -862,8 +862,8 @@ static void fir(const formant_sample_t *buf, size_t in_samps, formant_sample_t *
         buft -= 1;
         *buft = 0;
 
-        *bufo = (formant_sample_t) sum;
-        bufo += 1;
+        samples[out] = (formant_sample_t) sum;
+        out += 1;
     }
 }
 
@@ -881,7 +881,7 @@ void sound_highpass(sound_t *s) {
     for (size_t i = 0; i < LEN; i += 1)
         lcf[i] = (formant_sample_t)(SCALE * (0.5 + 0.4 * cos(FN * (double) i)));
 
-    fir(s->samples, s->sample_count, s->samples, LEN, lcf);
+    fir(s->samples, s->sample_count, LEN, lcf);
 
 #undef SCALE
 #undef FN
