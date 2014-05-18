@@ -276,15 +276,15 @@ static int qquad(double a, double b, double c, double *r1r, double *r1i,
 /* Rootr and rooti are assumed to contain starting points for the root
    search on entry to lbpoly(). */
 static int lbpoly(double *a, int order, double *rootr, double *rooti) {
-    int	    ord, ordm1, ordm2, itcnt, i, k, mmk, mmkp2, mmkp1, ntrys;
-    double  err, p, q, delp, delq, den;
+    int	    ord, itcnt, k, ntrys;
+    double  delp, delq, den;
     double b[LPC_COEF];
     double c[LPC_COEF];
-    double  lim0 = 0.5 * sqrt(DBL_MAX);
+    const double lim0 = 0.5 * sqrt(DBL_MAX);
 
     for (ord = order; ord > 2; ord -= 2) {
-        ordm1 = ord - 1;
-        ordm2 = ord - 2;
+        const int ordm1 = ord - 1;
+        const int ordm2 = ord - 2;
 
         /* Here is a kluge to prevent UNDERFLOW! (Sometimes the near-zero
            roots left in rootr and/or rooti cause underflow here...	*/
@@ -295,8 +295,8 @@ static int lbpoly(double *a, int order, double *rootr, double *rooti) {
             rooti[ordm1] = 0.0;
 
         /* set initial guesses for quad factor */
-        p = -2.0 * rootr[ordm1];
-        q = rootr[ordm1]*rootr[ordm1] + rooti[ordm1]*rooti[ordm1];
+        double p = -2.0 * rootr[ordm1];
+        double q = rootr[ordm1]*rootr[ordm1] + rooti[ordm1]*rooti[ordm1];
 
         for (ntrys = 0; ntrys < MAX_TRYS; ntrys++) {
             int	found = false;
@@ -311,9 +311,9 @@ static int lbpoly(double *a, int order, double *rootr, double *rooti) {
                 c[ordm1] = b[ordm1] - (p * c[ord]);
 
                 for (k = 2; k <= ordm1; k++) {
-                    mmk = ord - k;
-                    mmkp2 = mmk+2;
-                    mmkp1 = mmk+1;
+                    int mmk = ord - k;
+                    int mmkp2 = mmk+2;
+                    int mmkp1 = mmk+1;
 
                     b[mmk] = a[mmk] - (p* b[mmkp1]) - (q* b[mmkp2]);
                     c[mmk] = b[mmk] - (p* c[mmkp1]) - (q* c[mmkp2]);
@@ -335,7 +335,7 @@ static int lbpoly(double *a, int order, double *rootr, double *rooti) {
                 if (k <= ord)
                     break;
 
-                err = fabs(b[0]) + fabs(b[1]);
+                const double err = fabs(b[0]) + fabs(b[1]);
 
                 if (err <= MAX_ERR) {
                     found = true;
@@ -377,7 +377,7 @@ static int lbpoly(double *a, int order, double *rootr, double *rooti) {
 
         /* Update the coefficient array with the coeffs. of the
            reduced polynomial. */
-        for (i = 0; i <= ordm2; i++)
+        for (int i = 0; i <= ordm2; i++)
             a[i] = b[i + 2];
     }
 
@@ -416,8 +416,7 @@ static int formant(double *lpca, size_t *n_form, double *freq, double *band,
 /* hold the folding frequency. */
 #define THETA (FORMANT_SAMPLE_RATE / 2.0)
 
-    double  flo, theta;
-    size_t fc;
+    double  flo;
 
     /* was there a problem in the root finder? */
     if (!lbpoly(lpca, LPC_ORDER, rr, ri)) {
@@ -425,14 +424,14 @@ static int formant(double *lpca, size_t *n_form, double *freq, double *band,
         return false;
     }
 
-    fc = 0;
+    size_t fc = 0;
 
     /* convert the z-plane locations to frequencies and bandwidths */
     for (size_t i = 0; i < LPC_ORDER; i++) {
         if (rr[i] == 0.0 && ri[i] == 0.0)
             continue;
 
-        theta = atan2(ri[i], rr[i]);
+        const double theta = atan2(ri[i], rr[i]);
         freq[fc] = fabs(theta / PI_2T);
         band[fc] = 0.5 * FORMANT_SAMPLE_RATE * log(rr[i]*rr[i] + ri[i]*ri[i]) / M_PI;
 
