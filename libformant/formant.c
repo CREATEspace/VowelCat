@@ -617,20 +617,17 @@ static void pole_dpform(pole_t *pole, const sound_t *ps, formants_t *f) {
     double fr[FORMANT_COUNT];
 
     /* Allocate space for the dp lattice */
-    dp_lattice_t fl;
-
-    /* main formant tracking loop */
-    size_t ncan = 0;
+    dp_lattice_t fl = {
+        .ncand = 0,
+    };
 
     /* Get all likely mappings of the poles onto formants for this frame. */
     /* if there ARE pole frequencies available... */
     if (pole->npoles)
-        ncan = get_fcand(pole->npoles, pole->freq, fl.pcan, fmins, fmaxs);
-
-    fl.ncand = ncan;
+        fl.ncand = get_fcand(pole->npoles, pole->freq, fl.pcan, fmins, fmaxs);
 
     /* compute the distance between the current and previous mappings */
-    for (size_t j = 0; j < ncan; j += 1) {	/* for each CURRENT mapping... */
+    for (size_t j = 0; j < fl.ncand; j += 1) {	/* for each CURRENT mapping... */
         minerr = 0;
 
         /* point to best previous mapping */
