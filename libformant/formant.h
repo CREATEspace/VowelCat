@@ -13,12 +13,8 @@
 
 #include <stddef.h>
 
-// How input samples are represented.
+// Samples are 16-bit signed integers.
 typedef short formant_sample_t;
-
-typedef struct {
-    formant_sample_t f1, f2;
-} formants_t;
 
 // A raw audio segment.
 typedef struct sound_t {
@@ -39,6 +35,11 @@ void sound_resize(sound_t *s, size_t sample_count);
 
 // Perform a highpass on the given sound.
 void sound_highpass(sound_t *s);
+
+// An F1 and F2 formant frequency.
+typedef struct {
+    formant_sample_t f1, f2;
+} formants_t;
 
 // Calculate the formants for the samples in the given sound.
 void formants_calc(formants_t *f, const sound_t *s);
