@@ -497,8 +497,8 @@ static size_t formant(double *lpca, double *freq, double *band, double *rr,
    */
 
 /* can this pole be this freq.? */
-static int canbe(const double *fmins, const double *fmaxs, const double *fre,
-                 size_t pnumb, size_t fnumb)
+static bool canbe(const double *fmins, const double *fmaxs, const double *fre,
+                  size_t pnumb, size_t fnumb)
 {
     return fre[pnumb] >= fmins[fnumb] && fre[pnumb] <= fmaxs[fnumb];
 }
