@@ -816,8 +816,8 @@ static void fir(const formant_sample_t *buf, size_t in_samps, formant_sample_t *
     for (size_t i = 0; i < lcoef; i += 1)
         co[lcoef * 2 - i] = co[i];
 
-    for (size_t i = 0; i < lcoef; i += 1)
-        integral += ic[lcoef - i];
+    for (size_t i = 1; i < lcoef; i += 1)
+        integral += ic[i];
 
     co[lcoef] = (formant_sample_t)(integral * 2);
 
