@@ -520,13 +520,15 @@ static size_t candy(int **pc, const double *fre, size_t maxp,
             pc[cand][fnumb] = (int) pnumb;
 
             /* allow for f1,f2 merger */
-            if (DO_MERGE && fnumb == 0 && canbe(fmins, fmaxs, fre, pnumb, fnumb + 1)) {
-                ncan += 1;
-                pc[ncan][0] = pc[cand][0];
+            if (DO_MERGE) {
+                if (fnumb == 0 && canbe(fmins, fmaxs, fre, pnumb, fnumb + 1)) {
+                    ncan += 1;
+                    pc[ncan][0] = pc[cand][0];
 
-                /* same pole, next formant */
-                ncan = candy(pc, fre, maxp, ncan, ncan, pnumb,
-                             fnumb + 1, fmins, fmaxs);
+                    /* same pole, next formant */
+                    ncan = candy(pc, fre, maxp, ncan, ncan, pnumb,
+                                 fnumb + 1, fmins, fmaxs);
+                }
             }
 
             /* next formant; next pole */
