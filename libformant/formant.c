@@ -615,7 +615,6 @@ static void pole_dpform(pole_t *pole, const sound_t *ps, formants_t *f) {
         double berr = 0;
         double ferr = 0;
         double fbias = 0;
-        double merger = 0.0;
 
         for (size_t k = 0; k < FORMANT_COUNT; k += 1) {
             int ic = fl.pcan[j][k];
@@ -634,7 +633,7 @@ static void pole_dpform(pole_t *pole, const sound_t *ps, formants_t *f) {
 
         /* Compute the total cost of this mapping and best previous. */
         fl.cumerr[j] = F_BIAS / (0.01 * (double) ps->sample_count) * fbias +
-            bfact * berr + merger + ffact * ferr;
+            bfact * berr + ffact * ferr;
     }
 
     /* Pick the candidate in the final frame with the lowest cost. */
