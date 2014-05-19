@@ -187,9 +187,11 @@ static void durbin(double *a, const double *coef, size_t coef_count) {
     }
 }
 
-static double lpc(size_t wsize, const formant_sample_t *data, double *lpca) {
+static double lpc(double *lpca, const formant_sample_t *samples,
+                  size_t sample_count)
+{
     double coef[LPC_COEF];
-    double rms = autoc(coef, LPC_COEF, data, wsize);
+    double rms = autoc(coef, LPC_COEF, samples, sample_count);
 
     /* add a little to the diagonal for stability */
     if (LPC_STABLE > 1.0) {
@@ -676,7 +678,7 @@ static void pole_lpc(pole_t *pole, const sound_t *sp) {
     }
 
     double lpca[LPC_ORDER_MAX];
-    double rms = lpc(sp->sample_count, sp->samples, lpca);
+    double rms = lpc(lpca, sp->samples, sp->sample_count);
 
     /* don't waste time on low energy frames */
     if (rms > 0.0)
