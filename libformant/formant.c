@@ -548,7 +548,7 @@ static size_t candy(pcan_t pc, const double *fre, size_t maxp,
        current formant null. */
     if (pnumb >= maxp && fnumb < FORMANT_COUNT - 1 && pc[cand][fnumb] < 0) {
         if (fnumb) {
-            int j = (int) fnumb - 1;
+            size_t j = fnumb - 1;
 
             while (j > 0 && pc[cand][j] < 0)
                 j -= 1;
