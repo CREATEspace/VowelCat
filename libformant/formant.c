@@ -574,9 +574,8 @@ static size_t get_fcand(size_t npole, double *freq, pcan_t pcan,
 static void pole_dpform(pole_t *pole, const sound_t *ps, formants_t *f) {
     /*  "nominal" freqs.*/
     double fnom[FORMANT_COUNT]  = { 500, 1500, 2500, 3500};
-    /* frequency bounds */
+    /* frequency bounds for 1st 5 formants */
     double fmins[FORMANT_COUNT] = {  50,  400, 1000, 2000};
-    /* for 1st 5 formants */
     double fmaxs[FORMANT_COUNT] = {1500, 3500, 4500, 5000};
 
     if (NOM_FREQ > 0.0) {
