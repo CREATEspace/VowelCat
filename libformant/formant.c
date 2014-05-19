@@ -188,18 +188,18 @@ static void durbin(double *a, const double *coef, size_t coef_count) {
 }
 
 static double lpc(size_t wsize, const formant_sample_t *data, double *lpca) {
-    double rho[LPC_COEF];
-    double rms = autoc(rho, LPC_COEF, data, wsize);
+    double coef[LPC_COEF];
+    double rms = autoc(coef, LPC_COEF, data, wsize);
 
     /* add a little to the diagonal for stability */
     if (LPC_STABLE > 1.0) {
         double ffact = 1.0 / (1.0 + exp(-LPC_STABLE / 20.0 * log(10.0)));
 
         for (size_t i = 1; i < LPC_COEF; i += 1)
-            rho[i] *= ffact;
+            coef[i] *= ffact;
     }
 
-    durbin(&lpca[1], rho, LPC_COEF);
+    durbin(&lpca[1], coef, LPC_COEF);
 
     lpca[0] = 1.0;
 
