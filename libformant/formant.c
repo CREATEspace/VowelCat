@@ -669,10 +669,7 @@ static void pole_dpform(pole_t *pole, const sound_t *ps, formants_t *f) {
 static void pole_lpc(pole_t *pole, const sound_t *sp) {
 #define X (M_PI / (LPC_ORDER + 1))
 
-    double lpca[LPC_ORDER_MAX];
     double rr[LPC_ORDER_MAX], ri[LPC_ORDER_MAX];
-
-    lpc(sp->sample_count, sp->samples, lpca, &pole->rms);
 
     /* set up starting points for the root search near unit circle */
     for (size_t i = 0; i <= LPC_ORDER; i += 1) {
@@ -681,6 +678,9 @@ static void pole_lpc(pole_t *pole, const sound_t *sp) {
         rr[i] = 2.0 * cos((flo + 0.5) * X);
         ri[i] = 2.0 * sin((flo + 0.5) * X);
     }
+
+    double lpca[LPC_ORDER_MAX];
+    lpc(sp->sample_count, sp->samples, lpca, &pole->rms);
 
     /* don't waste time on low energy frames */
     if (pole->rms > 1.0)
