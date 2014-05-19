@@ -627,7 +627,7 @@ static void pole_dpform(pole_t *pole, const sound_t *ps, formants_t *f) {
         }
 
         /* Compute the total cost of this mapping and best previous. */
-        fl.cumerr[j] = F_BIAS / (0.01 * (double) ps->sample_count) * fbias +
+        fl.cumerr[j] = F_BIAS / (double) ps->sample_count * fbias +
             bfact * berr + ffact * ferr;
     }
 
