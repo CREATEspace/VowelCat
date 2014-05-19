@@ -606,6 +606,8 @@ static void pole_dpform(pole_t *pole, const sound_t *ps, formants_t *f) {
     if (pole->npoles)
         fl.ncand = get_fcand(pole->npoles, pole->freq, fl.pcan, fmins, fmaxs);
 
+    assert(fl.ncand <= MAX_CANDIDATES);
+
     /* compute the distance between the current and previous mappings */
     for (size_t j = 0; j < fl.ncand; j += 1) {	/* for each CURRENT mapping... */
         double minerr = 0;
