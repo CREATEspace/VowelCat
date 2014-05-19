@@ -612,12 +612,12 @@ static void pole_dpform(pole_t *pole, const sound_t *ps, formants_t *f) {
         double fbias = 0;
 
         for (size_t k = 0; k < FORMANT_COUNT; k += 1) {
-            int ic = fl.pcan[j][k];
+            int cand = fl.pcan[j][k];
 
-            if (ic >= 0) {
-                berr += pole->band[ic];
-                ferr += fabs(pole->freq[ic] - fnom[k]) / fnom[k];
-                fbias += pole->freq[ic];
+            if (cand >= 0) {
+                berr += pole->band[cand];
+                ferr += fabs(pole->freq[cand] - fnom[k]) / fnom[k];
+                fbias += pole->freq[cand];
             } else {
                 /* if there was no freq. for this formant */
                 berr += NOBAND;
