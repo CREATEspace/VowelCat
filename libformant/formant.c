@@ -81,7 +81,6 @@ typedef struct { /* structure of a DP lattice node for formant tracking */
 } dp_lattice_t;
 
 typedef struct {   /* structure to hold raw LPC analysis data */
-    double rms;    /* rms for current LPC analysis frame */
     size_t npoles; /* # of complex poles from roots of LPC polynomial */
     double freq[LPC_ORDER];  /* array of complex pole frequencies (Hz) */
     double band[LPC_ORDER];  /* array of complex pole bandwidths (Hz) */
@@ -119,10 +118,10 @@ void sound_resize(sound_t *s, size_t sample_count) {
 /*
  * Compute the pp+1 autocorrelation lags of the windowsize samples in s.
  * Return the normalized autocorrelation coefficients in coef.
- * The rms is returned in rms.
+ * Return the rms.
  */
-static void autoc(size_t windowsize, const formant_sample_t *s, double *coef,
-                  size_t ncoef, double *rms)
+static double autoc(size_t windowsize, const formant_sample_t *s, double *coef,
+                    size_t ncoef)
 {
     double sum0 = 0;
 
@@ -134,14 +133,12 @@ static void autoc(size_t windowsize, const formant_sample_t *s, double *coef,
 
     /* No energy: fake low-energy white noise. */
     if (sum0 == 0) {
-        /* Arbitrarily assign 1 to rms. */
-        *rms = 1;
-
         /* Now fake autocorrelation of white noise. */
         for (size_t i = 1; i < ncoef; i += 1)
             coef[i] = 0;
 
-        return;
+        /* Arbitrarily assign 1 to rms. */
+        return 1;
     }
 
     for (size_t i = 1; i < ncoef; i += 1) {
@@ -153,7 +150,7 @@ static void autoc(size_t windowsize, const formant_sample_t *s, double *coef,
         coef[i] = sum / sum0;
     }
 
-    *rms = sqrt(sum0 / (double) windowsize);
+    return sqrt(sum0 / (double) windowsize);
 }
 
 /*
@@ -190,12 +187,9 @@ static void durbin(const double *coef, double *a, size_t ncoef) {
     }
 }
 
-static void lpc(size_t wsize, const formant_sample_t *data, double *lpca,
-                double *rms)
-{
+static double lpc(size_t wsize, const formant_sample_t *data, double *lpca) {
     double rho[LPC_COEF];
-
-    autoc(wsize, data, rho, LPC_COEF, rms);
+    double rms = autoc(wsize, data, rho, LPC_COEF);
 
     /* add a little to the diagonal for stability */
     if (LPC_STABLE > 1.0) {
@@ -208,6 +202,8 @@ static void lpc(size_t wsize, const formant_sample_t *data, double *lpca,
     durbin(rho, &lpca[1], LPC_COEF);
 
     lpca[0] = 1.0;
+
+    return rms;
 }
 
 /*		lbpoly.c		*/
@@ -680,10 +676,10 @@ static void pole_lpc(pole_t *pole, const sound_t *sp) {
     }
 
     double lpca[LPC_ORDER_MAX];
-    lpc(sp->sample_count, sp->samples, lpca, &pole->rms);
+    double rms = lpc(sp->sample_count, sp->samples, lpca);
 
     /* don't waste time on low energy frames */
-    if (pole->rms > 1.0)
+    if (rms > 1.0)
         pole->npoles = formant(lpca, pole->freq, pole->band, rr, ri);
     else			/* write out no pole frequencies */
         pole->npoles = 0;
