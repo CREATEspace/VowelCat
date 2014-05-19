@@ -610,8 +610,6 @@ static void pole_dpform(pole_t *pole, const sound_t *ps, formants_t *f) {
 
     /* compute the distance between the current and previous mappings */
     for (size_t j = 0; j < fl.ncand; j += 1) {	/* for each CURRENT mapping... */
-        double minerr = 0;
-
         /* (Note that mincan=-1 if there were no candidates in prev. fr.) */
         /* Compute the local costs for this current mapping. */
         double berr = 0;
@@ -636,7 +634,7 @@ static void pole_dpform(pole_t *pole, const sound_t *ps, formants_t *f) {
 
         /* Compute the total cost of this mapping and best previous. */
         fl.cumerr[j] = F_BIAS / (0.01 * (double) ps->sample_count) * fbias +
-            bfact * berr + merger + ffact * ferr + minerr;
+            bfact * berr + merger + ffact * ferr;
     }
 
     /* Pick the candidate in the final frame with the lowest cost. */
