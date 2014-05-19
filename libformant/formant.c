@@ -116,17 +116,17 @@ void sound_resize(sound_t *s, size_t sample_count) {
  */
 
 /*
- * Compute the pp+1 autocorrelation lags of the windowsize samples in s.
+ * Compute the pp+1 autocorrelation lags of the sample_count samples in s.
  * Return the normalized autocorrelation coefficients in coef.
  * Return the rms if autocorrelation succeeded and 0 if not.
  */
-static double autoc(size_t windowsize, const formant_sample_t *s, double *coef,
-                    size_t ncoef)
+static double autoc(double *coef, size_t coef_count,
+                    const formant_sample_t *samples, size_t sample_count)
 {
     double sum0 = 0;
 
-    for (size_t i = 0; i < windowsize; i += 1)
-        sum0 += s[i] * s[i];
+    for (size_t i = 0; i < sample_count; i += 1)
+        sum0 += samples[i] * samples[i];
 
     /* coef[0] will always =1. */
     coef[0] = 1;
@@ -134,22 +134,22 @@ static double autoc(size_t windowsize, const formant_sample_t *s, double *coef,
     /* No energy: fake low-energy white noise. */
     if (sum0 == 0) {
         /* Now fake autocorrelation of white noise. */
-        for (size_t i = 1; i < ncoef; i += 1)
+        for (size_t i = 1; i < coef_count; i += 1)
             coef[i] = 0;
 
         return 0.0;
     }
 
-    for (size_t i = 1; i < ncoef; i += 1) {
+    for (size_t i = 1; i < coef_count; i += 1) {
         double sum = 0;
 
-        for (size_t j = 0; j < windowsize - i; j += 1)
-            sum += s[j] * s[i + j];
+        for (size_t j = 0; j < sample_count - i; j += 1)
+            sum += samples[j] * samples[i + j];
 
         coef[i] = sum / sum0;
     }
 
-    return sqrt(sum0 / (double) windowsize);
+    return sqrt(sum0 / (double) sample_count);
 }
 
 /*
@@ -188,7 +188,7 @@ static void durbin(const double *coef, double *a, size_t ncoef) {
 
 static double lpc(size_t wsize, const formant_sample_t *data, double *lpca) {
     double rho[LPC_COEF];
-    double rms = autoc(wsize, data, rho, LPC_COEF);
+    double rms = autoc(rho, LPC_COEF, data, wsize);
 
     /* add a little to the diagonal for stability */
     if (LPC_STABLE > 1.0) {
