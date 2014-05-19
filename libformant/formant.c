@@ -217,8 +217,8 @@ static double lpc(size_t wsize, const formant_sample_t *data, double *lpca) {
 
 /* find x, where a*x**2 + b*x + c = 0   */
 /* return real and imag. parts of roots */
-static int qquad(double a, double b, double c, double *r1r, double *r1i,
-                 double *r2r, double *r2i)
+static bool qquad(double a, double b, double c, double *r1r, double *r1i,
+                  double *r2r, double *r2i)
 {
     double  numi, den, y;
 
