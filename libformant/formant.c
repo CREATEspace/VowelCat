@@ -626,9 +626,9 @@ static void pole_dpform(pole_t *pole, const sound_t *ps, formants_t *f) {
                 fbias += pole->freq[ic];
             } else {
                 /* if there was no freq. for this formant */
-                fbias += fnom[k];
                 berr += NOBAND;
                 ferr += MISSING;
+                fbias += fnom[k];
             }
         }
 
