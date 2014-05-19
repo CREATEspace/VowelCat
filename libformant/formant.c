@@ -153,11 +153,12 @@ static double autoc(double *coef, size_t coef_count,
 }
 
 /*
- * Compute the AR and PARCOR coefficients using Durbin's recursion.
- * Note: Durbin returns the coefficients in normal sign format.
+ * Compute the AR (autoregressive) and PARCOR (partial autocorrelation)
+ * coefficients using Durbin's recursion. Note: Durbin returns the coefficients
+ * in normal sign format.
  *	(i.e. a[0] is assumed to be = +1.)
  */
-static void durbin(const double *coef, double *a, size_t ncoef) {
+static void durbin(double *a, const double *coef, size_t coef_count) {
     double b[LPC_COEF];
     double k;
     double e;
@@ -167,7 +168,7 @@ static void durbin(const double *coef, double *a, size_t ncoef) {
     a[0] = k;
     e *= 1 - k*k;
 
-    for (size_t i = 1; i < ncoef - 1; i += 1) {
+    for (size_t i = 1; i < coef_count - 1; i += 1) {
         double s = 0;
 
         for (size_t j = 0; j < i; j += 1)
@@ -198,7 +199,7 @@ static double lpc(size_t wsize, const formant_sample_t *data, double *lpca) {
             rho[i] *= ffact;
     }
 
-    durbin(rho, &lpca[1], LPC_COEF);
+    durbin(&lpca[1], rho, LPC_COEF);
 
     lpca[0] = 1.0;
 
