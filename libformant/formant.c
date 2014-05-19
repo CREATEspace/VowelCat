@@ -160,7 +160,7 @@ static double autoc(double *coef, size_t coef_count,
 static void durbin(const double *coef, double *a, size_t ncoef) {
     double b[LPC_COEF];
     double k;
-    double e, s;
+    double e;
 
     e = coef[0];
     k = -coef[1] / e;
@@ -168,7 +168,7 @@ static void durbin(const double *coef, double *a, size_t ncoef) {
     e *= 1 - k*k;
 
     for (size_t i = 1; i < ncoef - 1; i += 1) {
-        s = 0;
+        double s = 0;
 
         for (size_t j = 0; j < i; j += 1)
             s -= a[j] * coef[i-j];
