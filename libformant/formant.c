@@ -118,7 +118,7 @@ void sound_resize(sound_t *s, size_t sample_count) {
 /*
  * Compute the pp+1 autocorrelation lags of the windowsize samples in s.
  * Return the normalized autocorrelation coefficients in coef.
- * Return the rms.
+ * Return the rms if autocorrelation succeeded and 0 if not.
  */
 static double autoc(size_t windowsize, const formant_sample_t *s, double *coef,
                     size_t ncoef)
@@ -137,8 +137,7 @@ static double autoc(size_t windowsize, const formant_sample_t *s, double *coef,
         for (size_t i = 1; i < ncoef; i += 1)
             coef[i] = 0;
 
-        /* Arbitrarily assign 1 to rms. */
-        return 1;
+        return 0.0;
     }
 
     for (size_t i = 1; i < ncoef; i += 1) {
@@ -679,7 +678,7 @@ static void pole_lpc(pole_t *pole, const sound_t *sp) {
     double rms = lpc(sp->sample_count, sp->samples, lpca);
 
     /* don't waste time on low energy frames */
-    if (rms > 1.0)
+    if (rms > 0.0)
         pole->npoles = formant(lpca, pole->freq, pole->band, rr, ri);
     else			/* write out no pole frequencies */
         pole->npoles = 0;
