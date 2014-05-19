@@ -453,7 +453,7 @@ static size_t formant(double *lpca, double *freq, double *band, double *rr,
             bool iscomp2 = freq[j + 1] > 1.0 && freq[j + 1] < THETA;
             bool swit = freq[j] > freq[j + 1] && iscomp2;
 
-            if (!(swit || (iscomp2 && !iscomp1)))
+            if (!swit && (!iscomp2 || iscomp1))
                 continue;
 
             {
