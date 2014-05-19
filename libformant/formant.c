@@ -271,7 +271,7 @@ static bool qquad(double a, double b, double c, double *r1r, double *r1i,
 /* rootr, rooti: the real and imag. roots of the polynomial */
 /* Rootr and rooti are assumed to contain starting points for the root
    search on entry to lbpoly(). */
-static int lbpoly(double *a, int order, double *rootr, double *rooti) {
+static bool lbpoly(double *a, int order, double *rootr, double *rooti) {
     int	    ord, itcnt, k, ntrys;
     double  delp, delq, den;
     double b[LPC_COEF];
