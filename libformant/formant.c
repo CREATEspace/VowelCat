@@ -727,7 +727,7 @@ static void fir(formant_sample_t *samples, const size_t nsamples,
     for (size_t i = 0; i < lcoef; i += 1)
         mem[i] = 0;
 
-    for (size_t i = lcoef; i < 2 * ncoef - 1; i += 1) {
+    for (size_t i = lcoef; i < k; i += 1) {
         mem[i] = samples[in];
         in += 1;
     }
