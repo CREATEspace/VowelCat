@@ -116,7 +116,7 @@ ifneq ($(STAGE), )
         QMAKEFLAGS += CONFIG-=debug_and_release
     endif
 
-    ifeq ($(RELEASE), 1)
+    ifeq ($(OPTIMIZE), 1)
         CFLAGS += -O2 -flto -DNDEBUG
         LDFLAGS += -O2 -flto
         QMAKEFLAGS += CONFIG+=release
