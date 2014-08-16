@@ -83,6 +83,23 @@ public:
     }
 };
 
+class DipthongArrow: public QCPItemLine {
+public:
+    DipthongArrow(QCustomPlot *plot, VowelSymbol *start_, const QPointF &end_):
+        QCPItemLine(plot)
+    {
+        start->setParentAnchor(start_->position);
+        end->setCoords(end_);
+
+        QPen pen;
+        pen.setWidth(4);
+
+        setHead(QCPLineEnding::esSpikeArrow);
+        setPen(pen);;
+        setSelectable(false);
+    }
+};
+
 MainWindow::MainWindow(audio_t *a, Formants *f, Plotter *p, Spectrogram *s):
     ui(new Ui::MainWindow),
     tracer(Tracer::COUNT),
@@ -319,6 +336,7 @@ void MainWindow::loadSymbols() {
 
     clearSymbols();
     vowelSymbols.clear();
+    vowelLines.clear();
 
     loadSymbols(stream);
     plot->replot();
@@ -329,11 +347,21 @@ void MainWindow::loadSymbols() {
 void MainWindow::loadSymbols(FILE *stream) {
     uint32_t f1, f2;
     wchar_t symbol;
+    uint32_t endx, endy;
 
-    while (fscanf(stream, "%lc %u %u\n", &symbol, &f1, &f2) == 3) {
+    while (fscanf(stream, "%lc %u %u", &symbol, &f1, &f2) == 3) {
         auto vs = new VowelSymbol(plot, symbol, f1, f2);
+
         plot->addItem(vs);
         vowelSymbols.push_back(vs);
+
+        if (fscanf(stream, "%u %u\n", &endx, &endy) != 2)
+            continue;
+
+        auto da = new DipthongArrow(plot, vs, QPointF(endx, endy));
+
+        plot->addItem(da);
+        vowelLines.push_back(da);
     }
 }
 
@@ -1026,6 +1054,9 @@ void MainWindow::invertAxis(){
 void MainWindow::clearSymbols() {
     for (int i = 0; i < vowelSymbols.size(); i++)
         ui->customPlot->removeItem(vowelSymbols[i]);
+
+    for (int i = 0; i < vowelLines.size(); i += 1)
+        ui->customPlot->removeItem(vowelLines[i]);
 }
 
 void MainWindow::mouseMove(QMouseEvent *event){
