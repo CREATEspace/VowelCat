@@ -37,6 +37,18 @@ int main(int argc, char *argv[])
 
     QApplication app(argc, argv);
 
+    QPixmap pixmap("splash.png");
+    QSplashScreen splash(pixmap, Qt::WindowStaysOnTopHint);
+    QFont splashFont;
+    splashFont.setPixelSize(39);
+    splashFont.setFamily("Sans");
+    splashFont.setWeight(QFont::DemiBold);
+    QColor ou_green = QColor(0, 105, 78);
+
+    splash.setFont(splashFont);
+    splash.showMessage("v 1.0.0", Qt::AlignBottom, ou_green);
+    splash.show();
+
     audio_t audio;
 
     if (!audio_init(&audio, SAMPLE_RATE, CHANNELS, SAMPLES_PER_CHUNK))
@@ -76,6 +88,7 @@ int main(int argc, char *argv[])
 
     // This function blocks until the main window is closed or
     // QCoreApplication::quit is called.
+    //splash.hide();
     QCoreApplication::exec();
 
     delete spectro;
