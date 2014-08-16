@@ -85,9 +85,9 @@ private:
     enum { TIMER_INTERVAL = 10 };
     enum { TIMER_SLOWDOWN = 50 };
 
-    enum { DUR_BASE = SAMPLES_PER_CHUNK * 1000000000 / SAMPLE_RATE };
-    enum { DUR_FUDGE = DUR_BASE };
-    enum { DUR = DUR_BASE + DUR_FUDGE };
+	static const uintmax_t DUR_BASE = SAMPLES_PER_CHUNK * 1000000000ULL / SAMPLE_RATE; 
+    static const uintmax_t DUR_FUDGE = DUR_BASE; 
+    static const uintmax_t DUR = DUR_BASE + DUR_FUDGE; 
 
     typedef struct {
         formant_sample_t x, y;
