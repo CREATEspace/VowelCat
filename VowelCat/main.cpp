@@ -39,10 +39,11 @@ int main(int argc, char *argv[])
 
     QPixmap pixmap("splash.png");
     QSplashScreen splash(pixmap, Qt::WindowStaysOnTopHint);
+
     QFont splashFont;
-    splashFont.setPixelSize(39);
     splashFont.setFamily("Sans");
     splashFont.setWeight(QFont::DemiBold);
+    
     QColor ou_green = QColor(0, 105, 78);
 
     splash.setFont(splashFont);
@@ -88,7 +89,6 @@ int main(int argc, char *argv[])
 
     // This function blocks until the main window is closed or
     // QCoreApplication::quit is called.
-    //splash.hide();
     QCoreApplication::exec();
 
     delete spectro;
