@@ -65,7 +65,7 @@ private:
     enum { FONT_SIZE = 30 };
 
 public:
-    VowelSymbol(QCustomPlot *plot, wchar_t symbol, uint32_t f1,
+    VowelSymbol(QCustomPlot *plot, const wchar_t *symbol, uint32_t f1,
                 uint32_t f2):
         QCPItemText(plot)
     {
@@ -75,7 +75,7 @@ public:
         setFont(font);
         setSelectedFont(font);
         setSelectedColor(Qt::blue);
-        setText(QString::fromWCharArray(&symbol, 1));
+        setText(QString::fromWCharArray(symbol));
     }
 };
 
@@ -342,10 +342,19 @@ void MainWindow::loadSymbols() {
 
 void MainWindow::loadSymbols(FILE *stream) {
     uint32_t f1, f2;
-    wchar_t symbol;
     uint32_t endx, endy;
 
-    while (fscanf(stream, "%lc %u %u", &symbol, &f1, &f2) == 3) {
+    // Support a maximum two-character symbol, and make sure it's always
+    // null-terminated.
+    wchar_t symbol[3];
+    symbol[2] = L'\0';
+
+    while (fscanf(stream, "%2lc %u %u", symbol, &f1, &f2) == 3) {
+        // If the symbol is only one character, the second character will be the
+        // whitespace separator. In that case, strip the whitespace off.
+        if (iswspace(symbol[1]))
+            symbol[1] = L'\0';
+
         auto vs = new VowelSymbol(plot, symbol, f1, f2);
 
         plot->addItem(vs);
