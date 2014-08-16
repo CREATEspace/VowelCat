@@ -178,6 +178,7 @@ private slots:
 
 private:
     void initButtons();
+    void loadTitle(FILE *stream);
     void loadSymbols(FILE *stream);
     void saveSymbols(FILE *stream) const;
 

@@ -334,10 +334,21 @@ void MainWindow::loadSymbols() {
     vowelSymbols.clear();
     vowelLines.clear();
 
+    loadTitle(stream);
     loadSymbols(stream);
     plot->replot();
 
     fclose(stream);
+}
+
+void MainWindow::loadTitle(FILE *stream) {
+    char *title;
+
+    if (fscanf(stream, "%ms\n", &title) != 1)
+        return;
+
+    ui->label->setText(QString(title));
+    free(title);
 }
 
 void MainWindow::loadSymbols(FILE *stream) {
