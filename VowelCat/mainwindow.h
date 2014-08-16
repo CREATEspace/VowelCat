@@ -15,6 +15,7 @@
 #include <QFileDialog>
 #include <QMainWindow>
 #include <QPushButton>
+#include <QString>
 #include <QTimer>
 
 extern "C" {
@@ -76,6 +77,45 @@ private:
     static uint32_t rgba(double i);
 };
 
+class VowelSymbol: public QCPItemText {
+private:
+    enum { FONT_SIZE = 30 };
+
+public:
+    VowelSymbol(QCustomPlot *plot, const wchar_t *symbol, uint32_t f1,
+                uint32_t f2);
+};
+
+class DipthongArrow: public QCPItemLine {
+public:
+    DipthongArrow(QCustomPlot *plot, VowelSymbol *start_, const QPointF &end_);
+};
+
+class PhoneticChart {
+private:
+    QCustomPlot *plot;
+    QLabel *label;
+
+    QString title;
+    QVector<VowelSymbol *> symbols;
+    QVector<DipthongArrow *> arrows;
+
+public:
+    PhoneticChart(QCustomPlot *plot_, QLabel *label_);
+    PhoneticChart();
+
+    bool load(FILE *stream);
+
+    void install();
+    void uninstall();
+
+    void save(FILE *stream);
+
+private:
+    bool loadTitle(FILE *stream);
+    bool loadSymbols(FILE *stream);
+};
+
 class MainWindow: public QMainWindow {
     Q_OBJECT
 
@@ -111,12 +151,15 @@ private:
 
     // Stores the lines for the vowel quadrilateral.
     QVector<QCPItemLine *> vowelBox;
-    QVector<QCPItemText*> vowelSymbols;
     QVector<QPushButton*> vowelButtons;
-    QVector<QCPItemLine*> vowelLines;
     QSignalMapper signalMapper;
     int accentToggle;
     bool vowelToggle;
+
+    // All charts currently loaded from disk.
+    QVector<PhoneticChart> charts;
+    // The current chart displayed on the plot -- an index into charts.
+    size_t curChart;
 
     enum {
         DEFAULT     = 0,
@@ -178,10 +221,6 @@ private slots:
 
 private:
     void initButtons();
-    void loadTitle(FILE *stream);
-    void loadSymbols(FILE *stream);
-    void saveSymbols(FILE *stream) const;
-
     void setupPlot();
     void setupVowelBox();
     void showTracers();
@@ -193,7 +232,6 @@ private:
     void setupChineseSymbols();
     void setupEnglishReceivedSymbols();
     void addSymbol(QString symbol);
-    void clearSymbols();
 
     void updateTracers(formant_sample_t x, formant_sample_t y);
     void clearTracer();
