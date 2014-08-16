@@ -25,6 +25,8 @@
 #       compile for the native instruction set of the host computer
 #  - PROFILE=1
 #       enable gprof profiling symbols
+#  - OPTIMIZE=1
+#       enable link-time and general optimizations
 
 # The build process is split into multiple stages:
 #
@@ -117,9 +119,12 @@ ifneq ($(STAGE), )
     endif
 
     ifeq ($(RELEASE), 1)
+        QMAKEFLAGS += CONFIG+=release
+    endif
+
+    ifeq ($(OPTIMIZE), 1)
         CFLAGS += -O2 -flto -DNDEBUG
         LDFLAGS += -O2 -flto
-        QMAKEFLAGS += CONFIG+=release
     endif
 
     ifeq ($(NATIVE), 1)
@@ -234,7 +239,12 @@ link: stage-2
 	$(MAKE) STAGE=3 link
 endif
 
+ifeq ($(RELEASE), )
+release:
+	$(MAKE) RELEASE=1 release
+else
 release: stage-4
+endif
 
 clean:
 	-rm -r $(BUILD)
