@@ -5,6 +5,8 @@
 #include <math.h>
 #include <stdio.h>
 #include <time.h>
+#include <iostream>
+#include <string>
 
 #include <QColor>
 #include <QFile>
@@ -99,6 +101,12 @@ public:
         setSelectable(false);
     }
 };
+
+struct PhoneticChart: {
+    QVector<QCPItemText*> vowelSymbols;
+    QVector<QCPItemLine*> vowelLines;
+    Qstring Title;
+}
 
 MainWindow::MainWindow(audio_t *a, Formants *f, Plotter *p, Spectrogram *s):
     ui(new Ui::MainWindow),
@@ -328,6 +336,8 @@ void MainWindow::loadSymbols() {
     auto path = QFileDialog::getOpenFileName(this, "Open Vowel Symbols")
         .toUtf8().constData();
 
+    cout << path << endl;
+
     FILE *stream = fopen(path, "r");
 
     if (!stream)
@@ -511,82 +521,97 @@ void MainWindow::setupChineseSymbols(){
 }
 
 void MainWindow::setupEnglishSymbols(){
-    QCPItemText *upperHighBackRounded = new QCPItemText(ui->customPlot);
-    upperHighBackRounded->position->setCoords(750, 295);
-    upperHighBackRounded->setText("u");
 
-    QCPItemText *lowerHighBackRounded = new QCPItemText(ui->customPlot);
-    lowerHighBackRounded->position->setCoords(910, 334);
-    lowerHighBackRounded->setText("ʊ");
+    QStringList nameFilter("*.sym");
+    QDir directory(QDir::currentPath());
+    QStringList symbolFiles = directory.entryList(nameFilter);
 
-    QCPItemText *upperMidBackRounded = new QCPItemText(ui->customPlot);
-    upperMidBackRounded->position->setCoords(727, 406);
-    upperMidBackRounded->setText("o");
+    QStringList::const_iterator it;
+    int i = 0;
+    for (it = symbolFiles.constBegin(); it != symbolFiles.constEnd(); ++it){
+        //std::cout << (*it).toUtf8().constData() << std::endl;
 
-    QCPItemText *lowerMidBackRounded = new QCPItemText(ui->customPlot);
-    lowerMidBackRounded->position->setCoords(830, 541);
-    lowerMidBackRounded->setText("ɔ");
+        FILE *stream = fopen((*it).toLocal8Bit().constData(), "r");
+        loadSymbols(stream, i++);
 
-    QCPItemText *lowerLowBackRounded = new QCPItemText(ui->customPlot);
-    lowerLowBackRounded->position->setCoords(843, 652);
-    lowerLowBackRounded->setText("ɒ");
-
-    QCPItemText *lowerLowBackUnrounded = new QCPItemText(ui->customPlot);
-    lowerLowBackUnrounded->position->setCoords(1065, 781);
-    lowerLowBackUnrounded->setText("ɑ");
-
-    QCPItemText *lowerLowCentralUnrounded = new QCPItemText(ui->customPlot);
-    lowerLowCentralUnrounded->position->setCoords(1211, 784);
-    lowerLowCentralUnrounded->setText("ä");
-
-    QCPItemText *lowerLowFrontUnrounded = new QCPItemText(ui->customPlot);
-    lowerLowFrontUnrounded->position->setCoords(1632, 806);
-    lowerLowFrontUnrounded->setText("a");
-
-    QCPItemText *upperLowFrontUnrounded = new QCPItemText(ui->customPlot);
-    upperLowFrontUnrounded->position->setCoords(1782, 766);
-    upperLowFrontUnrounded->setText("æ");
-
-    QCPItemText *lowerMidFrontUnrounded = new QCPItemText(ui->customPlot);
-    lowerMidFrontUnrounded->position->setCoords(1840, 541);
-    lowerMidFrontUnrounded->setText("ɛ");
-
-    QCPItemText *upperMidFrontUnrounded = new QCPItemText(ui->customPlot);
-    upperMidFrontUnrounded->position->setCoords(2148, 434);
-    upperMidFrontUnrounded->setText("e");
-
-    QCPItemText *lowerHighFrontUnrounded = new QCPItemText(ui->customPlot);
-    lowerHighFrontUnrounded->position->setCoords(2187, 360);
-    lowerHighFrontUnrounded->setText("ɪ");
-
-    QCPItemText *upperHighFrontUnrounded = new QCPItemText(ui->customPlot);
-    upperHighFrontUnrounded->position->setCoords(2343, 294);
-    upperHighFrontUnrounded->setText("i");
-
-    vowelSymbols.resize(13);
-    vowelSymbols[0] = upperHighBackRounded;
-    vowelSymbols[1] = lowerHighBackRounded;
-    vowelSymbols[2] = upperMidBackRounded;
-    vowelSymbols[3] = lowerMidBackRounded;
-    vowelSymbols[4] = lowerLowBackRounded;
-    vowelSymbols[5] = lowerLowBackUnrounded;
-    vowelSymbols[6] = lowerLowCentralUnrounded;
-    vowelSymbols[7] = lowerLowFrontUnrounded;
-    vowelSymbols[8] = upperLowFrontUnrounded;
-    vowelSymbols[9] = lowerMidFrontUnrounded;
-    vowelSymbols[10] = upperMidFrontUnrounded;
-    vowelSymbols[11] = lowerHighFrontUnrounded;
-    vowelSymbols[12] = upperHighFrontUnrounded;
-
-    for (int i = 0; i < 13; i++){
-        ui->customPlot->addItem(vowelSymbols[i]);
-        vowelSymbols[i]->setFont(QFont(font().family(), 40));
-        vowelSymbols[i]->setColor(QColor(34, 34, 34));
-        vowelSymbols[i]->setSelectedColor(Qt::blue);
-        vowelSymbols[i]->setSelectedFont(QFont(font().family(), 40));
     }
 
-    ui->label->setText("International Phonetic Alphabet");
+//    QCPItemText *upperHighBackRounded = new QCPItemText(ui->customPlot);
+//    upperHighBackRounded->position->setCoords(750, 295);
+//    upperHighBackRounded->setText("u");
+//
+//    QCPItemText *lowerHighBackRounded = new QCPItemText(ui->customPlot);
+//    lowerHighBackRounded->position->setCoords(910, 334);
+//    lowerHighBackRounded->setText("ʊ");
+//
+//    QCPItemText *upperMidBackRounded = new QCPItemText(ui->customPlot);
+//    upperMidBackRounded->position->setCoords(727, 406);
+//    upperMidBackRounded->setText("o");
+//
+//    QCPItemText *lowerMidBackRounded = new QCPItemText(ui->customPlot);
+//    lowerMidBackRounded->position->setCoords(830, 541);
+//    lowerMidBackRounded->setText("ɔ");
+//
+//    QCPItemText *lowerLowBackRounded = new QCPItemText(ui->customPlot);
+//    lowerLowBackRounded->position->setCoords(843, 652);
+//    lowerLowBackRounded->setText("ɒ");
+//
+//    QCPItemText *lowerLowBackUnrounded = new QCPItemText(ui->customPlot);
+//    lowerLowBackUnrounded->position->setCoords(1065, 781);
+//    lowerLowBackUnrounded->setText("ɑ");
+//
+//    QCPItemText *lowerLowCentralUnrounded = new QCPItemText(ui->customPlot);
+//    lowerLowCentralUnrounded->position->setCoords(1211, 784);
+//    lowerLowCentralUnrounded->setText("ä");
+//
+//    QCPItemText *lowerLowFrontUnrounded = new QCPItemText(ui->customPlot);
+//    lowerLowFrontUnrounded->position->setCoords(1632, 806);
+//    lowerLowFrontUnrounded->setText("a");
+//
+//    QCPItemText *upperLowFrontUnrounded = new QCPItemText(ui->customPlot);
+//    upperLowFrontUnrounded->position->setCoords(1782, 766);
+//    upperLowFrontUnrounded->setText("æ");
+//
+//    QCPItemText *lowerMidFrontUnrounded = new QCPItemText(ui->customPlot);
+//    lowerMidFrontUnrounded->position->setCoords(1840, 541);
+//    lowerMidFrontUnrounded->setText("ɛ");
+//
+//    QCPItemText *upperMidFrontUnrounded = new QCPItemText(ui->customPlot);
+//    upperMidFrontUnrounded->position->setCoords(2148, 434);
+//    upperMidFrontUnrounded->setText("e");
+//
+//    QCPItemText *lowerHighFrontUnrounded = new QCPItemText(ui->customPlot);
+//    lowerHighFrontUnrounded->position->setCoords(2187, 360);
+//    lowerHighFrontUnrounded->setText("ɪ");
+//
+//    QCPItemText *upperHighFrontUnrounded = new QCPItemText(ui->customPlot);
+//    upperHighFrontUnrounded->position->setCoords(2343, 294);
+//    upperHighFrontUnrounded->setText("i");
+//
+//    vowelSymbols.resize(13);
+//    vowelSymbols[0] = upperHighBackRounded;
+//    vowelSymbols[1] = lowerHighBackRounded;
+//    vowelSymbols[2] = upperMidBackRounded;
+//    vowelSymbols[3] = lowerMidBackRounded;
+//    vowelSymbols[4] = lowerLowBackRounded;
+//    vowelSymbols[5] = lowerLowBackUnrounded;
+//    vowelSymbols[6] = lowerLowCentralUnrounded;
+//    vowelSymbols[7] = lowerLowFrontUnrounded;
+//    vowelSymbols[8] = upperLowFrontUnrounded;
+//    vowelSymbols[9] = lowerMidFrontUnrounded;
+//    vowelSymbols[10] = upperMidFrontUnrounded;
+//    vowelSymbols[11] = lowerHighFrontUnrounded;
+//    vowelSymbols[12] = upperHighFrontUnrounded;
+//
+//    for (int i = 0; i < 13; i++){
+//        ui->customPlot->addItem(vowelSymbols[i]);
+//        vowelSymbols[i]->setFont(QFont(font().family(), 40));
+//        vowelSymbols[i]->setColor(QColor(34, 34, 34));
+//        vowelSymbols[i]->setSelectedColor(Qt::blue);
+//        vowelSymbols[i]->setSelectedFont(QFont(font().family(), 40));
+//    }
+//
+//    ui->label->setText("International Phonetic Alphabet");
 }
 
 void MainWindow::setupEnglishReceivedSymbols(){
