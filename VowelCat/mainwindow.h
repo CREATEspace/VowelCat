@@ -111,6 +111,8 @@ private:
     pthread_mutex_t plot_lock;
     QTimer timer;
 
+    // Stores the lines for the vowel quadrilateral.
+    QVector<QCPItemLine *> vowelBox;
     QVector<QCPItemText*> vowelSymbols;
     QVector<QPushButton*> vowelButtons;
     QVector<QCPItemLine*> vowelLines;
@@ -182,6 +184,7 @@ private:
     void saveSymbols(FILE *stream) const;
 
     void setupPlot();
+    void setupVowelBox();
     void showTracers();
     void hideTracers();
     void setupVowelButtons();
