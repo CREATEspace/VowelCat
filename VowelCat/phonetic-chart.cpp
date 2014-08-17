@@ -95,7 +95,7 @@ bool PhoneticChart::loadSymbols(FILE *stream) {
 
         symbols.push_back(new VowelSymbol(plot, symbol, f1, f2));
 
-        if (fscanf(stream, "%u %u\n", &endx, &endy) != 2)
+        if (fscanf(stream, "%u %u\n", &endy, &endx) != 2)
             continue;
 
         arrows.push_back(new DipthongArrow(plot, symbols.last(),
