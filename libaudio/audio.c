@@ -261,8 +261,19 @@ void audio_clear(audio_t *a)
    audio_reset(a);
 }
 
-void audio_open(audio_t *a, audio_sample_t *m_data, size_t m_size)
+void audio_open(audio_t *a, FILE *fp)
 {
+   int fd;
+   struct stat st;
+   size_t m_size;
+   audio_sample_t *m_data;
+   
+   fd = fileno(fp);
+   fstat(fd, &st);
+   m_size = st.st_size;
+   
+   m_data = (audio_sample_t*) mmap(NULL, m_size, PROT_READ, MAP_SHARED, fd, 0);
+
    // HACK: skip over the wav header, and come up with a better solution soon.
    a->prbuf = (audio_sample_t *)((uint8_t *) m_data + sizeof(wav_header_t));
    a->flags |= SOURCE_DISK;
@@ -270,13 +281,13 @@ void audio_open(audio_t *a, audio_sample_t *m_data, size_t m_size)
    a->prbuf_offset = 0;
 }
 
-void audio_save(audio_t *a, int fd)
+void audio_save(audio_t *a, FILE *fp)
 {
    wav_header_t header;
    wav_header_init(&header, a);
 
-   write(fd, &header, sizeof(wav_header_t));
-   write(fd, a->prbuf, a->prbuf_size * sizeof(audio_sample_t));
+   fwrite(&header, sizeof(wav_header_t), 1, fp);
+   fwrite(a->prbuf, sizeof(audio_sample_t), a->prbuf_size, fp);
 }
 
 // Grow the given audio buffer so it can hold the given additional number of

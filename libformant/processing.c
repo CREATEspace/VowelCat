@@ -402,7 +402,7 @@ static void autoc(size_t windowsize, double *s, size_t p, double *r, double *e) 
         return;
     }
     for( i=1; i <= p; i++){
-        for( sum=0., j=0, q=s, t=s+i; j < (windowsize)-i; j++, q++, t++){
+        for( sum=0., j=0, q=s, t=s+i; j+i < windowsize; j++, q++, t++){
             sum += (*q) * (*t);
         }
         *(++r) = sum/sum0;

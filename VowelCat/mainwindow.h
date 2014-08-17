@@ -29,8 +29,6 @@ extern "C" {
 #include "timespec.h"
 #include "ui_mainwindow.h"
 
-class Plotter;
-
 class Tracer: public QCPItemTracer {
 public:
     enum { COUNT = 8 };
