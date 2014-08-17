@@ -69,7 +69,7 @@ bool PhoneticChart::load(FILE *stream) {
 bool PhoneticChart::loadTitle(FILE *stream) {
     char *title_;
 
-    if (fscanf(stream, "%ms\n", &title_) != 1)
+    if (fscanf(stream, "%m[^\n]\n", &title_) != 1)
         return false;
 
     title = QString(title_);
