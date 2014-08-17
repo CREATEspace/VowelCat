@@ -36,6 +36,8 @@ private:
     QVector<VowelSymbol *> symbols;
     QVector<DipthongArrow *> arrows;
 
+    QMap<VowelSymbol *, DipthongArrow *> symbolArrowMap;
+
 public:
     PhoneticChart(QCustomPlot *plot_, QLabel *label_);
     PhoneticChart();

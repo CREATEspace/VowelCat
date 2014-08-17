@@ -87,6 +87,7 @@ bool PhoneticChart::loadSymbols(FILE *stream) {
 
         arrows.push_back(new DipthongArrow(plot, symbols.last(),
             QPointF(endx, endy)));
+        symbolArrowMap.insert(symbols.last(), arrows.last());
     }
 
     return true;
@@ -111,12 +112,36 @@ void PhoneticChart::uninstall() {
 }
 
 void PhoneticChart::save(FILE *stream) {
+    {
+        auto utf8 = title.toUtf8();
+        fprintf(stream, "%s\n", utf8.data());
+    }
+
     for (int i = 0; i < symbols.size(); i += 1) {
         auto vs = symbols[i];
-        auto coords = vs->position->coords();
 
-        fprintf(stream, "%lc\t%u\t%u\n", vs->text().at(0).unicode(),
-            (uint32_t) coords.y(), (uint32_t) coords.x());
+        {
+            auto text = vs->text();
+            auto utf8 = text.toUtf8();
+            fprintf(stream, "%s\t", utf8.data());
+        }
+
+        {
+            auto coords = vs->position->coords();
+            fprintf(stream, "%u\t%u", (uint32_t) coords.y(),
+                (uint32_t) coords.x());
+        }
+
+        auto cursor = symbolArrowMap.find(vs);
+
+        if (cursor != symbolArrowMap.end()) {
+            auto da = cursor.value();
+            auto coords = da->end->coords();
+
+            fprintf(stream, "\t%u\t%u", (uint32_t) coords.x(),
+                (uint32_t) coords.y());
+        }
+
+        fputc('\n', stream);
     }
 }
-
