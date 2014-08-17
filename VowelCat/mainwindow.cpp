@@ -5,6 +5,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <time.h>
+#include <iostream>
 
 #include <QColor>
 #include <QFile>
@@ -88,12 +89,8 @@ MainWindow::MainWindow(audio_t *a, Formants *f, Plotter *p, Spectrogram *s):
     ui->endButton->setIcon(QIcon::fromTheme("media-skip-forward"));
 
     ui->englishGroupBox->setStyleSheet("QPushButton {font-size:18pt;}");
-    ui->chineseGroupBox->setStyleSheet("QPushButton {font-size:18pt;}");
 
-    ui->chineseGroupBox->setVisible(false);
     ui->label->setAlignment(Qt::AlignRight);
-    accentToggle = 0;
-    vowelToggle = true;
 
     plot = ui->customPlot;
     graph = plot->addGraph();
@@ -103,16 +100,14 @@ MainWindow::MainWindow(audio_t *a, Formants *f, Plotter *p, Spectrogram *s):
     connect(plot, SIGNAL(mouseMove(QMouseEvent*)), this, SLOT(mouseMove(QMouseEvent*)));
     connect(plot, SIGNAL(mouseRelease(QMouseEvent*)), this, SLOT(mouseRelease()));
 
-    connect(ui->defaultSymbolsButton, SIGNAL(released()), this, SLOT(defaultSymbolsButtonPushed()));
+    connect(ui->toggleChart, SIGNAL(released()), this, SLOT(toggleChart()));
     connect(ui->addSymbolButton, SIGNAL(released()), this, SLOT(addSymbolButtonPushed()));
-    connect(ui->accentToggleButton, SIGNAL(released()), this, SLOT(accentButtonPushed()));
 
     connect(ui->actionOpen, SIGNAL(triggered()), this, SLOT(openFile())); //Open audio
     connect(ui->actionSaveAs, SIGNAL(triggered()), this, SLOT(saveAsFile())); //SaveAs audio
     connect(ui->actionOpenSymbols, SIGNAL(triggered()), this, SLOT(loadSymbols()));
     connect(ui->actionSaveSymbols, SIGNAL(triggered()), this, SLOT(saveSymbols()));
     connect(ui->actionQuit, SIGNAL(triggered()), qApp, SLOT(quit()));
-    connect(ui->actionResetPlot, SIGNAL(triggered()), this, SLOT(resetPlot()));
     connect(ui->actionInvertAxis, SIGNAL(triggered()), this, SLOT(invertAxis()));
 
     connect(ui->playButton, SIGNAL(clicked()), this, SLOT(startPlay())); //Play
@@ -127,10 +122,8 @@ MainWindow::MainWindow(audio_t *a, Formants *f, Plotter *p, Spectrogram *s):
 
     ui->actionSaveAs->setEnabled(false);
 
-    vowelButtons.resize(45);
+    vowelButtons.resize(36);
     setupVowelButtons();
-    setupEnglishButtons();
-    setupChineseButtons();
 
     initButtons();
     setupPlot();
@@ -148,7 +141,7 @@ void MainWindow::openFile() {
 
     qfilename = QFileDialog::getOpenFileName(this, tr("Open Audio File"), "", tr("Audio-Files(*.raw *.wav)"));
 
-    if (qfilename == NULL) 
+    if (qfilename == NULL)
         return;
 
 	qunicode = qfilename.toUtf8();
@@ -346,13 +339,30 @@ void MainWindow::setupPlot()
     plot->yAxis->setRangeReversed(true);
     plot->yAxis->setLabel("F1 (Hz)");
 
-    setupEnglishSymbols();
+    loadCharts();
     setupVowelBox();
 
     for (size_t i = 0; i < Tracer::COUNT; i += 1)
         tracers[i] = new Tracer(plot, graph, i);
 
     hideTracers();
+}
+
+void MainWindow::loadCharts() {
+    QStringList nameFilter("*.sym");
+    QDir directory(QDir::currentPath());
+    QStringList symbolFiles = directory.entryList(nameFilter);
+
+    QStringList::const_iterator it;
+    for (it = symbolFiles.constBegin(); it != symbolFiles.constEnd(); ++it){
+         FILE *stream = fopen((*it).toLocal8Bit().constData(), "r");
+         PhoneticChart load(ui->customPlot, ui->label);
+         load.load(stream);
+         load.hide();
+         charts.push_back(load);
+    }
+    curChart = charts.size() - 1;
+    charts[curChart].install();
 }
 
 void MainWindow::setupVowelBox() {
@@ -413,243 +423,6 @@ void MainWindow::hideTracers() {
         tracers[i]->hide();
 }
 
-void MainWindow::setupChineseSymbols(){
-    QCPItemText *closeFront = new QCPItemText(ui->customPlot);
-    closeFront->position->setCoords(2200, 240);
-    closeFront->setText("i");
-
-    QCPItemText *closeFront2 = new QCPItemText(ui->customPlot);
-    closeFront2->position->setCoords(2000, 235);
-    closeFront2->setText("y");
-
-    QCPItemText *closeBack = new QCPItemText(ui->customPlot);
-    closeBack->position->setCoords(850, 300);
-    closeBack->setText("u");
-
-    QCPItemText *closeMidBack = new QCPItemText(ui->customPlot);
-    closeMidBack->position->setCoords(1350, 425);
-    closeMidBack->setText("ɤ");
-
-    QCPItemText *openFront = new QCPItemText(ui->customPlot);
-    openFront->position->setCoords(1400, 750);
-    openFront->setText("a");
-
-    // vowelSymbols.resize(5);
-    // vowelSymbols[0] = closeFront;
-    // vowelSymbols[1] = closeFront2;
-    // vowelSymbols[2] = closeBack;
-    // vowelSymbols[3] = closeMidBack;
-    // vowelSymbols[4] = openFront;
-
-    for (int i = 0; i < 5; i++){
-        // ui->customPlot->addItem(vowelSymbols[i]);
-        // vowelSymbols[i]->setFont(QFont(font().family(), 40));
-        // vowelSymbols[i]->setColor(QColor(34, 34, 34));
-        // vowelSymbols[i]->setSelectedColor(Qt::blue);
-        // vowelSymbols[i]->setSelectedFont(QFont(font().family(), 40));
-    }
-
-    ui->label->setText("Chinese");
-}
-
-void MainWindow::setupEnglishSymbols(){
-    // QStringList nameFilter("*.sym");
-    // QDir directory(QDir::currentPath());
-    // QStringList symbolFiles = directory.entryList(nameFilter);
-
-    // QStringList::const_iterator it;
-    // int i = 0;
-    // for (it = symbolFiles.constBegin(); it != symbolFiles.constEnd(); ++it){
-    //     //std::cout << (*it).toUtf8().constData() << std::endl;
-
-    //     FILE *stream = fopen((*it).toLocal8Bit().constData(), "r");
-    //     loadSymbols(stream, i++);
-    // }
-
-    QCPItemText *upperHighBackRounded = new QCPItemText(ui->customPlot);
-    upperHighBackRounded->position->setCoords(750, 295);
-    upperHighBackRounded->setText("u");
-
-    QCPItemText *lowerHighBackRounded = new QCPItemText(ui->customPlot);
-    lowerHighBackRounded->position->setCoords(910, 334);
-    lowerHighBackRounded->setText("ʊ");
-
-    QCPItemText *upperMidBackRounded = new QCPItemText(ui->customPlot);
-    upperMidBackRounded->position->setCoords(727, 406);
-    upperMidBackRounded->setText("o");
-
-    QCPItemText *lowerMidBackRounded = new QCPItemText(ui->customPlot);
-    lowerMidBackRounded->position->setCoords(830, 541);
-    lowerMidBackRounded->setText("ɔ");
-
-    QCPItemText *lowerLowBackRounded = new QCPItemText(ui->customPlot);
-    lowerLowBackRounded->position->setCoords(843, 652);
-    lowerLowBackRounded->setText("ɒ");
-
-    QCPItemText *lowerLowBackUnrounded = new QCPItemText(ui->customPlot);
-    lowerLowBackUnrounded->position->setCoords(1065, 781);
-    lowerLowBackUnrounded->setText("ɑ");
-
-    QCPItemText *lowerLowCentralUnrounded = new QCPItemText(ui->customPlot);
-    lowerLowCentralUnrounded->position->setCoords(1211, 784);
-    lowerLowCentralUnrounded->setText("ä");
-
-    QCPItemText *lowerLowFrontUnrounded = new QCPItemText(ui->customPlot);
-    lowerLowFrontUnrounded->position->setCoords(1632, 806);
-    lowerLowFrontUnrounded->setText("a");
-
-    QCPItemText *upperLowFrontUnrounded = new QCPItemText(ui->customPlot);
-    upperLowFrontUnrounded->position->setCoords(1782, 766);
-    upperLowFrontUnrounded->setText("æ");
-
-    QCPItemText *lowerMidFrontUnrounded = new QCPItemText(ui->customPlot);
-    lowerMidFrontUnrounded->position->setCoords(1840, 541);
-    lowerMidFrontUnrounded->setText("ɛ");
-
-    QCPItemText *upperMidFrontUnrounded = new QCPItemText(ui->customPlot);
-    upperMidFrontUnrounded->position->setCoords(2148, 434);
-    upperMidFrontUnrounded->setText("e");
-
-    QCPItemText *lowerHighFrontUnrounded = new QCPItemText(ui->customPlot);
-    lowerHighFrontUnrounded->position->setCoords(2187, 360);
-    lowerHighFrontUnrounded->setText("ɪ");
-
-    QCPItemText *upperHighFrontUnrounded = new QCPItemText(ui->customPlot);
-    upperHighFrontUnrounded->position->setCoords(2343, 294);
-    upperHighFrontUnrounded->setText("i");
-
-    // vowelSymbols.resize(13);
-    // vowelSymbols[0] = upperHighBackRounded;
-    // vowelSymbols[1] = lowerHighBackRounded;
-    // vowelSymbols[2] = upperMidBackRounded;
-    // vowelSymbols[3] = lowerMidBackRounded;
-    // vowelSymbols[4] = lowerLowBackRounded;
-    // vowelSymbols[5] = lowerLowBackUnrounded;
-    // vowelSymbols[6] = lowerLowCentralUnrounded;
-    // vowelSymbols[7] = lowerLowFrontUnrounded;
-    // vowelSymbols[8] = upperLowFrontUnrounded;
-    // vowelSymbols[9] = lowerMidFrontUnrounded;
-    // vowelSymbols[10] = upperMidFrontUnrounded;
-    // vowelSymbols[11] = lowerHighFrontUnrounded;
-    // vowelSymbols[12] = upperHighFrontUnrounded;
-
-    for (int i = 0; i < 13; i++){
-        // ui->customPlot->addItem(vowelSymbols[i]);
-        // vowelSymbols[i]->setFont(QFont(font().family(), 40));
-        // vowelSymbols[i]->setColor(QColor(34, 34, 34));
-        // vowelSymbols[i]->setSelectedColor(Qt::blue);
-        // vowelSymbols[i]->setSelectedFont(QFont(font().family(), 40));
-    }
-
-    ui->label->setText("International Phonetic Alphabet");
-}
-
-void MainWindow::setupEnglishReceivedSymbols(){
-    QCPItemText *one = new QCPItemText(ui->customPlot);
-    one->position->setCoords(1850, 350);
-    one->setText("ɪɘ");
-
-    QCPItemText *two = new QCPItemText(ui->customPlot);
-    two->position->setCoords(1100, 350);
-    two->setText("ʊɘ");
-
-    QCPItemText *three = new QCPItemText(ui->customPlot);
-    three->position->setCoords(1950, 480);
-    three->setText("eɪ");
-
-    QCPItemText *four = new QCPItemText(ui->customPlot);
-    four->position->setCoords(1450, 480);
-    four->setText("ɘʊ");
-
-    QCPItemText *five = new QCPItemText(ui->customPlot);
-    five->position->setCoords(950, 480);
-    five->setText("ɔɪ");
-
-    QCPItemText *six = new QCPItemText(ui->customPlot);
-    six->position->setCoords(1920, 560);
-    six->setText("eɘ");
-
-    QCPItemText *seven = new QCPItemText(ui->customPlot);
-    seven->position->setCoords(1520, 730);
-    seven->setText("aɪ");
-
-    QCPItemText *eight = new QCPItemText(ui->customPlot);
-    eight->position->setCoords(1225, 730);
-    eight->setText("aʊ");
-
-    // vowelSymbols.resize(8);
-    // vowelSymbols[0] = one;
-    // vowelSymbols[1] = two;
-    // vowelSymbols[2] = three;
-    // vowelSymbols[3] = four;
-    // vowelSymbols[4] = five;
-    // vowelSymbols[5] = six;
-    // vowelSymbols[6] = seven;
-    // vowelSymbols[7] = eight;
-
-    // for (int i = 0; i < 8; i++){
-    //     ui->customPlot->addItem(vowelSymbols[i]);
-    //     vowelSymbols[i]->setFont(QFont(font().family(), 40));
-    //     vowelSymbols[i]->setColor(QColor(34, 34, 34));
-    //     vowelSymbols[i]->setSelectedColor(Qt::blue);
-    //     vowelSymbols[i]->setSelectedFont(QFont(font().family(), 40));
-    // }
-
-    QCPItemLine *oneLine = new QCPItemLine(plot);
-    oneLine->start->setParentAnchor(one->position);
-    oneLine->end->setCoords(1650, 450);
-
-    QCPItemLine *twoLine = new QCPItemLine(plot);
-    twoLine->start->setParentAnchor(two->position);
-    twoLine->end->setCoords(1300, 440);
-
-    QCPItemLine *threeLine = new QCPItemLine(plot);
-    threeLine->start->setParentAnchor(three->position);
-    threeLine->end->setCoords(1900, 400);
-
-    QCPItemLine *fourLine = new QCPItemLine(plot);
-    fourLine->start->setParentAnchor(four->position);
-    fourLine->end->setCoords(1250, 400);
-
-    QCPItemLine *fiveLine = new QCPItemLine(plot);
-    fiveLine->start->setParentAnchor(five->position);
-    fiveLine->end->setCoords(1550, 410);
-
-    QCPItemLine *sixLine = new QCPItemLine(plot);
-    sixLine->start->setParentAnchor(six->position);
-    sixLine->end->setCoords(1700, 520);
-
-    QCPItemLine *sevenLine = new QCPItemLine(plot);
-    sevenLine->start->setParentAnchor(seven->position);
-    sevenLine->end->setCoords(1650, 400);
-
-    QCPItemLine *eightLine = new QCPItemLine(plot);
-    eightLine->start->setParentAnchor(eight->position);
-    eightLine->end->setCoords(1225, 425);
-
-    // vowelLines.resize(8);
-    // vowelLines[0] = oneLine;
-    // vowelLines[1] = twoLine;
-    // vowelLines[2] = threeLine;
-    // vowelLines[3] = fourLine;
-    // vowelLines[4] = fiveLine;
-    // vowelLines[5] = sixLine;
-    // vowelLines[6] = sevenLine;
-    // vowelLines[7] = eightLine;
-
-    QPen pen;
-    pen.setWidth(4);
-
-    for (int i = 0; i < 8; i++){
-        // plot->addItem(vowelLines[i]);
-        // vowelLines[i]->setHead(QCPLineEnding::esSpikeArrow);
-        // vowelLines[i]->setPen(pen);
-        // vowelLines[i]->setSelectable(false);
-    }
-
-    ui->label->setText("English Received (British)");
-}
-
 void MainWindow::setupVowelButtons() {
     vowelButtons[0] = ui->pushButton;
     vowelButtons[1] = ui->pushButton_2;
@@ -688,16 +461,6 @@ void MainWindow::setupVowelButtons() {
     vowelButtons[34] = ui->pushButton_35;
     vowelButtons[35] = ui->pushButton_36;
 
-    vowelButtons[36] = ui->pushButton_37;
-    vowelButtons[37] = ui->pushButton_38;
-    vowelButtons[38] = ui->pushButton_39;
-    vowelButtons[39] = ui->pushButton_40;
-    vowelButtons[40] = ui->pushButton_41;
-    vowelButtons[41] = ui->pushButton_42;
-    vowelButtons[42] = ui->pushButton_43;
-    vowelButtons[43] = ui->pushButton_44;
-    vowelButtons[44] = ui->pushButton_45;
-
     // Connect every button to a single function using a QSignalMapper
     // Rather than define unique functions for every button, we use the
     // mapper to pass in an integer argument that refers to the pushed
@@ -708,22 +471,7 @@ void MainWindow::setupVowelButtons() {
     }
 
     connect(&signalMapper, SIGNAL(mapped(int)), this, SLOT(vowelButtonPushed(int)));
-}
 
-void MainWindow::setupChineseButtons(){
-    vowelButtons[38]->setEnabled(false);
-    vowelButtons[40]->setEnabled(false);
-    vowelButtons[43]->setEnabled(false);
-    vowelButtons[44]->setEnabled(false);
-
-    vowelButtons[36]->setToolTip("close front");
-    vowelButtons[37]->setToolTip("close front");
-    vowelButtons[39]->setToolTip("close back");
-    vowelButtons[41]->setToolTip("close-mid back");
-    vowelButtons[42]->setToolTip("open front");
-}
-
-void MainWindow::setupEnglishButtons(){
     // Disable portions of the chart that have no vowel symbol
     vowelButtons[8]->setEnabled(false);
     vowelButtons[9]->setEnabled(false);
@@ -905,98 +653,44 @@ void MainWindow::vowelButtonPushed(int pushedVowelButton){
     addSymbol(vowelButtons[pushedVowelButton]->text());
 }
 
-void MainWindow::resetPlot(){
-    if (accentToggle == 0){
-        // vowelSymbols[0]->position->setCoords(750, 295);
-        // vowelSymbols[1]->position->setCoords(910, 334);
-        // vowelSymbols[2]->position->setCoords(727, 406);
-        // vowelSymbols[3]->position->setCoords(830, 541);
-        // vowelSymbols[4]->position->setCoords(843, 652);
-        // vowelSymbols[5]->position->setCoords(1065, 781);
-        // vowelSymbols[6]->position->setCoords(1211, 784);
-        // vowelSymbols[7]->position->setCoords(1632, 806);
-        // vowelSymbols[8]->position->setCoords(1782, 766);
-        // vowelSymbols[9]->position->setCoords(1840, 541);
-        // vowelSymbols[10]->position->setCoords(2148, 434);
-        // vowelSymbols[11]->position->setCoords(2187, 360);
-        // vowelSymbols[12]->position->setCoords(2343, 294);
-        // for (int i = 13; i < vowelSymbols.size(); i++){
-        //     ui->customPlot->removeItem(vowelSymbols[i]);
-        // }
-        // vowelSymbols.resize(13);
-        // vowelLines.resize(0);
-    }
-    else if (accentToggle == 1){
-        // vowelSymbols[0]->position->setCoords(2200, 240);
-        // vowelSymbols[1]->position->setCoords(2000, 235);
-        // vowelSymbols[2]->position->setCoords(850, 300);
-        // vowelSymbols[3]->position->setCoords(1350, 425);
-        // vowelSymbols[4]->position->setCoords(1400, 750);
-        // for (int i = 5; i < vowelSymbols.size(); i++){
-        //     ui->customPlot->removeItem(vowelSymbols[i]);
-        // }
-        // vowelSymbols.resize(5);
-        // vowelLines.resize(0);
-    }
-    else if (accentToggle == 2){
-        // vowelSymbols[0]->position->setCoords(1850, 360);
-        // vowelSymbols[1]->position->setCoords(1100, 360);
-        // vowelSymbols[2]->position->setCoords(1950, 500);
-        // vowelSymbols[3]->position->setCoords(1450, 500);
-        // vowelSymbols[4]->position->setCoords(950, 500);
-        // vowelSymbols[5]->position->setCoords(1850, 600);
-        // vowelSymbols[6]->position->setCoords(1550, 800);
-        // vowelSymbols[7]->position->setCoords(1300, 800);
-        // for (int i = 8; i < vowelSymbols.size(); i++){
-        //     ui->customPlot->removeItem(vowelSymbols[i]);
-        // }
-        // vowelSymbols.resize(8);
-    }
-
-    plot->replot();
-}
-
-void MainWindow::accentButtonPushed(){
-    vowelToggle = !vowelToggle;
-    ui->chineseGroupBox->setVisible(!vowelToggle);
-    ui->englishGroupBox->setVisible(vowelToggle);
-}
-
-void MainWindow::defaultSymbolsButtonPushed(){
-    if (accentToggle < 2) accentToggle++;
-    else accentToggle = 0;
-
-    // for (int i = 0; i < vowelSymbols.size(); i++){
-    //     ui->customPlot->removeItem(vowelSymbols[i]);
-    // }
-    // for (int i = 0; i < vowelLines.size(); i++){
-    //     ui->customPlot->removeItem(vowelLines[i]);
-    // }
-
-    // vowelSymbols.resize(0);
-    // vowelLines.resize(0);
-
-    if (accentToggle == 0) setupEnglishSymbols();
-    else if (accentToggle == 1) setupChineseSymbols();
-    else if (accentToggle == 2) setupEnglishReceivedSymbols();
+void MainWindow::toggleChart(){
+    if (charts.size() == 0) return;
+    charts[curChart].uninstall();
+    curChart += 1;
+    curChart %= charts.size();
+    charts[curChart].install();
     plot->replot();
 }
 
 void MainWindow::addSymbolButtonPushed(){
-    addSymbol(ui->plainTextEdit->toPlainText());
+
+    if (ui->plainTextEdit->toPlainText().length() > 2)
+    {
+        QString text = ui->plainTextEdit->toPlainText();
+        text.chop(text.length() - 2); // Cut off at 300 characters
+        ui->plainTextEdit->setPlainText(text); // Reset text
+
+        // This code just resets the cursor back to the end position
+        // If you don't use this, it moves back to the beginning.
+        // This is helpful for really long text edits where you might
+        // lose your place.
+        QTextCursor cursor = ui->plainTextEdit->textCursor();
+        cursor.setPosition(ui->plainTextEdit->document()->characterCount() - 1);
+        ui->plainTextEdit->setTextCursor(cursor);
+
+        // This is your "action" to alert the user. I'd suggest something more
+        // subtle though, or just not doing anything at all.
+        QMessageBox::critical(this,
+                              "Error",
+                              "Your symbol can only have 2 characters :(");
+    }
+    else {
+        addSymbol(ui->plainTextEdit->toPlainText());
+    }
 }
 
 void MainWindow::addSymbol(QString symbol){
-    QCPItemText *userVowel = new QCPItemText(ui->customPlot);
-    userVowel->position->setCoords(1500, 500);
-    userVowel->setText(symbol);
-    userVowel->setFont(QFont(font().family(), 40));
-    userVowel->setColor(QColor(34, 34, 34));
-    userVowel->setSelectedColor(Qt::blue);
-    userVowel->setSelectedFont(QFont(font().family(), 40));
-
-    // vowelSymbols.push_back(userVowel);
-    ui->customPlot->addItem(userVowel);
+    if (charts.size() > 0) charts[curChart].addSymbol(symbol, 500, 1500);
     plot->replot();
 }
 
@@ -1007,14 +701,7 @@ void MainWindow::invertAxis(){
 }
 
 void MainWindow::mouseMove(QMouseEvent *event){
-    QPoint point = event->pos();
-    QList<QCPAbstractItem*> selected = plot->selectedItems();
-    // for (int i = 0; i < vowelSymbols.size(); i++){
-    //     if (vowelSymbols[i]->selected()){
-    //         vowelSymbols[i]->position->setCoords(plot->xAxis->pixelToCoord(point.x()), plot->yAxis->pixelToCoord(point.y()));
-    //         plot->replot();
-    //     }
-    // }
+    if (charts.size() > 0) charts[curChart].mouseMove(event);
 }
 
 void MainWindow::mouseRelease(){

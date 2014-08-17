@@ -1500,7 +1500,9 @@ public:
   
   explicit QCustomPlot(QWidget *parent = 0);
   virtual ~QCustomPlot();
-  
+
+  QList<QCPAbstractItem*> mItems;
+
   // getters:
   QRect viewport() const { return mViewport; }
   QPixmap background() const { return mBackgroundPixmap; }
@@ -1634,7 +1636,7 @@ protected:
   bool mAutoAddPlottableToLegend;
   QList<QCPAbstractPlottable*> mPlottables;
   QList<QCPGraph*> mGraphs; // extra list of plottables also in mPlottables that are of type QCPGraph
-  QList<QCPAbstractItem*> mItems;
+
   QList<QCPLayer*> mLayers;
   QCP::AntialiasedElements mAntialiasedElements, mNotAntialiasedElements;
   QCP::Interactions mInteractions;

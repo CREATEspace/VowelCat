@@ -20,6 +20,8 @@ private:
 public:
     VowelSymbol(QCustomPlot *plot, const wchar_t *symbol, uint32_t f1,
                 uint32_t f2);
+    VowelSymbol(QCustomPlot *plot, const QString &symbol, uint32_t f1, uint32_t f2);
+    VowelSymbol(QCustomPlot *plot, uint32_t f1, uint32_t f2);
 };
 
 class DipthongArrow: public QCPItemLine {
@@ -48,6 +50,11 @@ public:
     void uninstall();
 
     void save(FILE *stream);
+
+    void mouseMove(QMouseEvent *event);
+    void addSymbol(QString &symbol, uint32_t f1, uint32_t f2);
+    void hide();
+    void show();
 
 private:
     bool loadTitle(FILE *stream);

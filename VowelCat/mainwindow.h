@@ -115,8 +115,6 @@ private:
     QVector<QCPItemLine *> vowelBox;
     QVector<QPushButton*> vowelButtons;
     QSignalMapper signalMapper;
-    int accentToggle;
-    bool vowelToggle;
 
     // All charts currently loaded from disk.
     QVector<PhoneticChart> charts;
@@ -156,10 +154,8 @@ private slots:
     void plotNext();
 
     void vowelButtonPushed(int vowelButtonPushed);
-    void resetPlot();
-    void defaultSymbolsButtonPushed();
+    void toggleChart();
     void addSymbolButtonPushed();
-    void accentButtonPushed();
 
     void invertAxis();
 
@@ -188,12 +184,8 @@ private:
     void showTracers();
     void hideTracers();
     void setupVowelButtons();
-    void setupEnglishButtons();
-    void setupEnglishSymbols();
-    void setupChineseButtons();
-    void setupChineseSymbols();
-    void setupEnglishReceivedSymbols();
     void addSymbol(QString symbol);
+    void loadCharts();
 
     void updateTracers(formant_sample_t x, formant_sample_t y);
     void clearTracer();

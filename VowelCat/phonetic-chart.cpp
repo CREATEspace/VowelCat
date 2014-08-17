@@ -13,6 +13,20 @@
 
 VowelSymbol::VowelSymbol(QCustomPlot *plot, const wchar_t *symbol, uint32_t f1,
                          uint32_t f2):
+    VowelSymbol(plot, f1, f2)
+{
+    setText(QString::fromWCharArray(symbol));
+}
+
+VowelSymbol::VowelSymbol(QCustomPlot *plot, const QString &symbol, uint32_t f1,
+                         uint32_t f2):
+    VowelSymbol(plot, f1, f2)
+{
+    setText(symbol);
+}
+
+VowelSymbol::VowelSymbol(QCustomPlot *plot, uint32_t f1,
+                         uint32_t f2):
     QCPItemText(plot)
 {
     QFont font(plot->font().family(), FONT_SIZE);
@@ -21,7 +35,6 @@ VowelSymbol::VowelSymbol(QCustomPlot *plot, const wchar_t *symbol, uint32_t f1,
     setFont(font);
     setSelectedFont(font);
     setSelectedColor(Qt::blue);
-    setText(QString::fromWCharArray(symbol));
 }
 
 DipthongArrow::DipthongArrow(QCustomPlot *plot, VowelSymbol *start_,
@@ -96,19 +109,25 @@ bool PhoneticChart::loadSymbols(FILE *stream) {
 void PhoneticChart::install() {
     label->setText(title);
 
-    for (int i = 0; i < symbols.size(); i += 1)
+    for (int i = 0; i < symbols.size(); i += 1){
         plot->addItem(symbols[i]);
+    }
 
-    for (int i = 0; i < arrows.size(); i += 1)
+    for (int i = 0; i < arrows.size(); i += 1){
         plot->addItem(arrows[i]);
+    }
+    show();
 }
 
 void PhoneticChart::uninstall() {
-    for (int i = 0; i < symbols.size(); i++)
-        plot->removeItem(symbols[i]);
+    for (int i = 0; i < symbols.size(); i++){
+        plot->mItems.removeOne(symbols[i]);
+    }
 
-    for (int i = 0; i < arrows.size(); i += 1)
-        plot->removeItem(arrows[i]);
+    for (int i = 0; i < arrows.size(); i += 1){
+        plot->mItems.removeOne(arrows[i]);
+    }
+    hide();
 }
 
 void PhoneticChart::save(FILE *stream) {
@@ -143,5 +162,42 @@ void PhoneticChart::save(FILE *stream) {
         }
 
         fputc('\n', stream);
+    }
+}
+
+void PhoneticChart::mouseMove(QMouseEvent *event){
+    QPoint point = event->pos();
+    QList<QCPAbstractItem*> selected = plot->selectedItems();
+    for (int i = 0; i < symbols.size(); i++){
+         if (symbols[i]->selected()){
+             symbols[i]->position->setCoords(plot->xAxis->pixelToCoord(point.x()), plot->yAxis->pixelToCoord(point.y()));
+             plot->replot();
+         }
+    }
+}
+
+void PhoneticChart::addSymbol(QString &symbol, uint32_t f1, uint32_t f2){
+    auto vs = new VowelSymbol(plot, symbol, f1, f2);
+    symbols.push_back(vs);
+    plot->addItem(vs);
+}
+
+void PhoneticChart::hide(){
+    for (int i = 0; i < symbols.size(); i++){
+            symbols[i]->setVisible(false);
+    }
+
+    for (int i = 0; i < arrows.size(); i += 1){
+        arrows[i]->setVisible(false);
+    }
+}
+
+void PhoneticChart::show(){
+    for (int i = 0; i < symbols.size(); i++){
+        symbols[i]->setVisible(true);
+    }
+
+    for (int i = 0; i < arrows.size(); i += 1){
+        arrows[i]->setVisible(true);
     }
 }
