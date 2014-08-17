@@ -22,7 +22,6 @@
 #else
    #include <sys/mman.h>
 #endif
-#define __USE_POSIX
 //***************************
 
 typedef short audio_sample_t;
