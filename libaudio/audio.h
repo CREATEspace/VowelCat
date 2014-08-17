@@ -7,6 +7,7 @@
 
 //***************************
 #include <stdlib.h>
+#define __USE_POSIX
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
@@ -21,6 +22,7 @@
 #else
    #include <sys/mman.h>
 #endif
+#define __USE_POSIX
 //***************************
 
 typedef short audio_sample_t;
