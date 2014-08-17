@@ -17,9 +17,12 @@ extern "C" {
 #include "audio.h"
 #include "formant.h"
 #include <fcntl.h>
-#include <unistd.h>
 #include <sys/stat.h>
-#include <sys/mman.h>
+#ifdef __MINGW32__
+   #include "mman.h"
+#else
+   #include <sys/mman.h>
+#endif
 }
 
 #include "mainwindow.h"
@@ -163,22 +166,26 @@ void MainWindow::openFile() {
     plotter->stop();
     audio_clear(audio);
 
+	FILE *fp;
     int fd;
     struct stat st;
     audio_sample_t *buf;
     QString qfilename;
+	QByteArray qunicode;
     const char *filename;
 
     qfilename = QFileDialog::getOpenFileName(this, tr("Open Audio File"), "", tr("Audio-Files(*.raw *.wav)"));
 
-    if (qfilename == NULL)
+    if (qfilename == NULL) 
         return;
 
-    filename = qfilename.toUtf8().constData();
-    fd = open(filename, O_RDONLY);
+	qunicode = qfilename.toUtf8();
+    filename = qunicode.constData();
+    fp = fopen(filename, "r");
+	fd = fileno(fp);
     fstat(fd, &st);
     buf = (audio_sample_t*) mmap(NULL, st.st_size, PROT_READ, MAP_SHARED, fd, 0);
-    ::close(fd);
+    fclose(fp);
 
     ui->recordButton->setVisible(false);
     ui->stopButton->setVisible(true);
@@ -195,17 +202,18 @@ void MainWindow::openFile() {
 }
 
 void MainWindow::saveAsFile() {
-    int fd;
+    FILE *fp;
     QString qfilename;
+	QByteArray qunicode;
     const char *filename;
 
-    qfilename = QFileDialog::getSaveFileName(this, tr("Save Audio File"), "", tr("Audio-Files(*.raw *.wav)"));
-    qfilename.append(".wav");
-    filename = qfilename.toUtf8().constData();
+    qfilename = QFileDialog::getSaveFileName(this, tr("Save Audio File"), "", tr("Audio-Files(*.wav)"));
+    qunicode = qfilename.toUtf8();
+	filename = qunicode.constData();
 
-    fd = open(filename, O_WRONLY|O_CREAT,0666);
-    audio_save(audio, fd);
-    ::close(fd);
+    fp = fopen(filename, "wb");
+    audio_save(audio, fp);
+    fclose(fp);
 
     ui->actionSaveAs->setEnabled(false);
 }
@@ -308,8 +316,9 @@ void MainWindow::endAudio() {
 }
 
 void MainWindow::loadSymbols() {
-    auto path = QFileDialog::getOpenFileName(this, "Open Vowel Symbols")
-        .toUtf8().constData();
+    auto qfilename = QFileDialog::getOpenFileName(this, "Open Vowel Symbols");
+	auto qunicode = qfilename.toUtf8();
+	auto path = qunicode.constData();
 
     FILE *stream = fopen(path, "r");
 
@@ -338,8 +347,9 @@ void MainWindow::loadSymbols(FILE *stream) {
 }
 
 void MainWindow::saveSymbols() {
-    auto path = QFileDialog::getSaveFileName(this, "Save Vowel Symbols")
-        .toUtf8().constData();
+    auto qfilename = QFileDialog::getSaveFileName(this, "Save Vowel Symbols");
+	auto qunicode = qfilename.toUtf8();
+	auto path = qunicode.constData();
 
     FILE *stream = fopen(path, "w");
 
