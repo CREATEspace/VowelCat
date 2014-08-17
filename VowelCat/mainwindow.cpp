@@ -453,6 +453,19 @@ void MainWindow::setupChineseSymbols(){
 }
 
 void MainWindow::setupEnglishSymbols(){
+    // QStringList nameFilter("*.sym");
+    // QDir directory(QDir::currentPath());
+    // QStringList symbolFiles = directory.entryList(nameFilter);
+
+    // QStringList::const_iterator it;
+    // int i = 0;
+    // for (it = symbolFiles.constBegin(); it != symbolFiles.constEnd(); ++it){
+    //     //std::cout << (*it).toUtf8().constData() << std::endl;
+
+    //     FILE *stream = fopen((*it).toLocal8Bit().constData(), "r");
+    //     loadSymbols(stream, i++);
+    // }
+
     QCPItemText *upperHighBackRounded = new QCPItemText(ui->customPlot);
     upperHighBackRounded->position->setCoords(750, 295);
     upperHighBackRounded->setText("u");
