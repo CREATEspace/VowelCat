@@ -270,13 +270,13 @@ void audio_open(audio_t *a, audio_sample_t *m_data, size_t m_size)
    a->prbuf_offset = 0;
 }
 
-void audio_save(audio_t *a, int fd)
+void audio_save(audio_t *a, FILE *fp)
 {
    wav_header_t header;
    wav_header_init(&header, a);
 
-   write(fd, &header, sizeof(wav_header_t));
-   write(fd, a->prbuf, a->prbuf_size * sizeof(audio_sample_t));
+   fwrite(&header, sizeof(wav_header_t), 1, fp);
+   fwrite(a->prbuf, sizeof(audio_sample_t), a->prbuf_size, fp);
 }
 
 // Grow the given audio buffer so it can hold the given additional number of

@@ -7,15 +7,19 @@
 
 //***************************
 #include <stdlib.h>
+#include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
-#include <sys/mman.h>
 #include <limits.h>
-#include <unistd.h>
 #include <pthread.h>
 #include <inttypes.h>
 #include "portaudio.h"
 #include "pa_ringbuffer.h"
+#ifdef __MINGW32__
+   #include "mman.h"
+#else
+   #include <sys/mman.h>
+#endif
 //***************************
 
 typedef short audio_sample_t;
@@ -60,7 +64,7 @@ void audio_clear(audio_t *a);
 void audio_destroy(audio_t *a);
 
 void audio_open(audio_t *a, audio_sample_t *m_data, size_t m_size);
-void audio_save(audio_t *a, int fd);
+void audio_save(audio_t *a, FILE *fp);
 
 bool audio_play(audio_t *a);
 bool audio_record(audio_t *a);
