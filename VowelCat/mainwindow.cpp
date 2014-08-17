@@ -16,13 +16,6 @@
 extern "C" {
 #include "audio.h"
 #include "formant.h"
-#include <fcntl.h>
-#include <sys/stat.h>
-#ifdef __MINGW32__
-   #include "mman.h"
-#else
-   #include <sys/mman.h>
-#endif
 }
 
 #include "mainwindow.h"
@@ -167,9 +160,6 @@ void MainWindow::openFile() {
     audio_clear(audio);
 
 	FILE *fp;
-    int fd;
-    struct stat st;
-    audio_sample_t *buf;
     QString qfilename;
 	QByteArray qunicode;
     const char *filename;
@@ -182,10 +172,8 @@ void MainWindow::openFile() {
 	qunicode = qfilename.toUtf8();
     filename = qunicode.constData();
     fp = fopen(filename, "r");
-	fd = fileno(fp);
-    fstat(fd, &st);
-    buf = (audio_sample_t*) mmap(NULL, st.st_size, PROT_READ, MAP_SHARED, fd, 0);
-    fclose(fp);
+	audio_open(audio, fp);
+	fclose(fp);
 
     ui->recordButton->setVisible(false);
     ui->stopButton->setVisible(true);
@@ -197,7 +185,6 @@ void MainWindow::openFile() {
     ui->endButton->setEnabled(true);
     ui->actionSaveAs->setEnabled(false);
 
-    audio_open(audio, buf, st.st_size);
     emit clearAudio();
 }
 

@@ -1,7 +1,6 @@
+SRC = pa_ringbuffer.c audio.c
 ifeq ($(OS), Windows_NT)
-	SRC = pa_ringbuffer.c mman.c audio.c 
-else
-	SRC = pa_ringbuffer.c audio.c
+	SRC += mman.c
 endif
 OBJ = $(SRC:.c=.o)
 
