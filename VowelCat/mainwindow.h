@@ -24,6 +24,7 @@ extern "C" {
 }
 
 #include "formants.h"
+#include "phonetic-chart.h"
 #include "plotter.h"
 #include "qcustomplot.h"
 #include "spectrogram.h"
@@ -75,45 +76,6 @@ private:
 
     // Splice together an RGBA integer for QColor::fromRgba of the form AARRGGBB.
     static uint32_t rgba(double i);
-};
-
-class VowelSymbol: public QCPItemText {
-private:
-    enum { FONT_SIZE = 30 };
-
-public:
-    VowelSymbol(QCustomPlot *plot, const wchar_t *symbol, uint32_t f1,
-                uint32_t f2);
-};
-
-class DipthongArrow: public QCPItemLine {
-public:
-    DipthongArrow(QCustomPlot *plot, VowelSymbol *start_, const QPointF &end_);
-};
-
-class PhoneticChart {
-private:
-    QCustomPlot *plot;
-    QLabel *label;
-
-    QString title;
-    QVector<VowelSymbol *> symbols;
-    QVector<DipthongArrow *> arrows;
-
-public:
-    PhoneticChart(QCustomPlot *plot_, QLabel *label_);
-    PhoneticChart();
-
-    bool load(FILE *stream);
-
-    void install();
-    void uninstall();
-
-    void save(FILE *stream);
-
-private:
-    bool loadTitle(FILE *stream);
-    bool loadSymbols(FILE *stream);
 };
 
 class MainWindow: public QMainWindow {

@@ -14,6 +14,7 @@ SOURCES += \
     formants.cpp \
     main.cpp \
     mainwindow.cpp \
+    phonetic-chart.cpp \
     plotter.cpp \
     qcustomplot.cpp \
     spectrogram.cpp \
@@ -22,6 +23,7 @@ SOURCES += \
 HEADERS += \
     formants.h \
     mainwindow.h \
+    phonetic-chart.h \
     plotter.h \
     qcustomplot.h \
     spectrogram.h \
