@@ -83,7 +83,7 @@ void Spectrogram::draw_chunk(QPainter *paint, int l, int r, int h) {
 
     size_t sample = pixel_to_offset(l);
 
-    if (sample >= audio->prbuf_size || !formants.calc(sample)) {
+    if (audio->samples_per_chunk + sample > audio->prbuf_size || !formants.calc(sample)) {
         paint->setPen(Qt::NoPen);
         paint->fillRect(l, 0, r - l + 1, h, QColor(BACKGROUND));
 
