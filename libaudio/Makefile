@@ -1,4 +1,8 @@
-SRC = pa_ringbuffer.c mman.c audio.c 
+ifeq ($(OS), Windows_NT)
+	SRC = pa_ringbuffer.c mman.c audio.c 
+else
+	SRC = pa_ringbuffer.c audio.c
+endif
 OBJ = $(SRC:.c=.o)
 
 ALL_CFLAGS += -std=c11 -Wall -Wextra -pipe
