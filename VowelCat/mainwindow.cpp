@@ -134,9 +134,9 @@ void MainWindow::openFile() {
     plotter->stop();
     audio_clear(audio);
 
-	FILE *fp;
+    FILE *fp;
     QString qfilename;
-	QByteArray qunicode;
+    QByteArray qunicode;
     const char *filename;
 
     qfilename = QFileDialog::getOpenFileName(this, tr("Open Audio File"), "", tr("Audio-Files(*.raw *.wav)"));
@@ -144,11 +144,11 @@ void MainWindow::openFile() {
     if (qfilename == NULL)
         return;
 
-	qunicode = qfilename.toUtf8();
+    qunicode = qfilename.toUtf8();
     filename = qunicode.constData();
     fp = fopen(filename, "r");
-	audio_open(audio, fp);
-	fclose(fp);
+    audio_open(audio, fp);
+    fclose(fp);
 
     ui->recordButton->setVisible(false);
     ui->stopButton->setVisible(true);
@@ -166,12 +166,12 @@ void MainWindow::openFile() {
 void MainWindow::saveAsFile() {
     FILE *fp;
     QString qfilename;
-	QByteArray qunicode;
+    QByteArray qunicode;
     const char *filename;
 
     qfilename = QFileDialog::getSaveFileName(this, tr("Save Audio File"), "", tr("Audio-Files(*.wav)"));
     qunicode = qfilename.toUtf8();
-	filename = qunicode.constData();
+    filename = qunicode.constData();
 
     fp = fopen(filename, "wb");
     audio_save(audio, fp);
@@ -279,8 +279,8 @@ void MainWindow::endAudio() {
 
 void MainWindow::loadSymbols() {
     auto qfilename = QFileDialog::getOpenFileName(this, "Open Vowel Symbols");
-	auto qunicode = qfilename.toUtf8();
-	auto path = qunicode.constData();
+    auto qunicode = qfilename.toUtf8();
+    auto path = qunicode.constData();
 
     FILE *stream = fopen(path, "r");
 
@@ -309,8 +309,8 @@ void MainWindow::loadSymbols() {
 
 void MainWindow::saveSymbols() {
     auto qfilename = QFileDialog::getSaveFileName(this, "Save Vowel Symbols");
-	auto qunicode = qfilename.toUtf8();
-	auto path = qunicode.constData();
+    auto qunicode = qfilename.toUtf8();
+    auto path = qunicode.constData();
 
     FILE *stream = fopen(path, "w");
 
@@ -352,14 +352,14 @@ void MainWindow::loadCharts() {
     QStringList nameFilter("*.sym");
     QDir directory(QDir::currentPath());
     QStringList symbolFiles = directory.entryList(nameFilter);
-
     QStringList::const_iterator it;
+
     for (it = symbolFiles.constBegin(); it != symbolFiles.constEnd(); ++it){
-         FILE *stream = fopen((*it).toLocal8Bit().constData(), "r");
-         PhoneticChart load(ui->customPlot, ui->label);
-         load.load(stream);
-         load.hide();
-         charts.push_back(load);
+        FILE *stream = fopen((*it).toLocal8Bit().constData(), "r");
+        PhoneticChart load(ui->customPlot, ui->label);
+        load.load(stream);
+        load.hide();
+        charts.push_back(load);
     }
 
     if (!charts.size())
@@ -687,8 +687,7 @@ void MainWindow::addSymbolButtonPushed(){
         QMessageBox::critical(this,
                               "Error",
                               "Your symbol can only have 2 characters :(");
-    }
-    else {
+    } else {
         addSymbol(ui->plainTextEdit->toPlainText());
     }
 }
