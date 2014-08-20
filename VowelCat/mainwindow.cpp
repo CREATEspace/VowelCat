@@ -361,6 +361,10 @@ void MainWindow::loadCharts() {
          load.hide();
          charts.push_back(load);
     }
+
+    if (!charts.size())
+        return;
+
     curChart = charts.size() - 1;
     charts[curChart].install();
 }
