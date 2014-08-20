@@ -361,10 +361,11 @@ void MainWindow::loadCharts() {
         if (!stream)
             continue;
 
-        PhoneticChart load(ui->customPlot, ui->label);
-        load.load(stream);
-        load.hide();
-        charts.push_back(load);
+        PhoneticChart chart(ui->customPlot, ui->label);
+        chart.load(stream);
+        chart.hide();
+
+        charts.push_back(chart);
     }
 
     if (!charts.size())
