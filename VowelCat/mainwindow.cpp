@@ -355,7 +355,9 @@ void MainWindow::loadCharts() {
     QStringList::const_iterator it;
 
     for (it = symbolFiles.constBegin(); it != symbolFiles.constEnd(); ++it){
-        FILE *stream = fopen((*it).toLocal8Bit().constData(), "r");
+        auto utf8 = (*it).toUtf8();
+        FILE *stream = fopen(utf8.constData(), "r");
+
         PhoneticChart load(ui->customPlot, ui->label);
         load.load(stream);
         load.hide();
