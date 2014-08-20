@@ -43,7 +43,7 @@ int main(int argc, char *argv[])
     QFont splashFont;
     splashFont.setFamily("Sans");
     splashFont.setWeight(QFont::DemiBold);
-    
+
     QColor ou_green = QColor(0, 105, 78);
 
     splash.setFont(splashFont);
