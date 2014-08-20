@@ -67,6 +67,9 @@ bool PhoneticChart::load(FILE *stream) {
 }
 
 bool PhoneticChart::loadTitle(FILE *stream) {
+// Clang doesn't support the 'm' allocation flag, so OSX is stuck with fixed-
+// length titles. GCC targets can have arbitrary-length titles.
+#ifndef __MACH__
     char *title_;
 
     if (fscanf(stream, "%m[^\n]\n", &title_) != 1)
@@ -74,6 +77,14 @@ bool PhoneticChart::loadTitle(FILE *stream) {
 
     title = QString(title_);
     free(title_);
+#else
+    char title_[256];
+
+    if (fscanf(stream, "%256[^\n]\n", title_) != 1)
+        return false;
+
+    title = QString(title_);
+#endif
 
     return true;
 }
