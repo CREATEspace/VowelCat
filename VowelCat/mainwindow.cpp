@@ -358,6 +358,9 @@ void MainWindow::loadCharts() {
         auto utf8 = (*it).toUtf8();
         FILE *stream = fopen(utf8.constData(), "r");
 
+        if (!stream)
+            continue;
+
         PhoneticChart load(ui->customPlot, ui->label);
         load.load(stream);
         load.hide();
