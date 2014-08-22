@@ -350,7 +350,7 @@ void MainWindow::setupPlot()
 
 void MainWindow::loadCharts() {
     QStringList nameFilter("*.sym");
-    QDir directory(QDir::currentPath());
+    QDir directory(QString("%1/charts").arg(QDir::currentPath()));
     QStringList symbolFiles = directory.entryList(nameFilter);
     QStringList::const_iterator it;
 
