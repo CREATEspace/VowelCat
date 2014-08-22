@@ -44,7 +44,7 @@ int main(int argc, char *argv[])
     splashFont.setFamily("Sans");
     splashFont.setWeight(QFont::DemiBold);
 
-    QColor ou_green = QColor(0, 105, 78);
+    QColor ou_green(0, 105, 78);
 
     splash.setFont(splashFont);
     splash.showMessage("v 1.0.0", Qt::AlignBottom, ou_green);
