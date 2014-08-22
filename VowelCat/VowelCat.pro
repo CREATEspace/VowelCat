@@ -33,7 +33,8 @@ FORMS += \
     mainwindow.ui \
 
 RESOURCES += \
-    icons.qrc
+    icons.qrc \
+    images.qrc \
 
 QMAKE_CXXFLAGS += -std=c++11
 QMAKE_CXXFLAGS += $$(CFLAGS)

@@ -37,7 +37,7 @@ int main(int argc, char *argv[])
 
     QApplication app(argc, argv);
 
-    QPixmap pixmap("splash.png");
+    QPixmap pixmap(":/images/splash.png");
     QSplashScreen splash(pixmap, Qt::WindowStaysOnTopHint);
 
     QFont splashFont;
