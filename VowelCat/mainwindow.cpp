@@ -726,4 +726,6 @@ MainWindow::~MainWindow() {
 
     for (size_t i = 0; i < Tracer::COUNT; i += 1)
         delete tracers[i];
+
+    // TODO: fix memory leaks.
 }
