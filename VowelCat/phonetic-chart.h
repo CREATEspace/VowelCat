@@ -18,8 +18,7 @@ private:
     enum { FONT_SIZE = 30 };
 
 public:
-    VowelSymbol(QCustomPlot *plot, const wchar_t *symbol, uint32_t f1,
-                uint32_t f2);
+    VowelSymbol(QCustomPlot *plot, const char *symbol, uint32_t f1, uint32_t f2);
     VowelSymbol(QCustomPlot *plot, const QString &symbol, uint32_t f1, uint32_t f2);
     VowelSymbol(QCustomPlot *plot, uint32_t f1, uint32_t f2);
 };

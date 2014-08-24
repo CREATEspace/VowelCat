@@ -3,7 +3,6 @@
 
 #include <inttypes.h>
 #include <stdio.h>
-#include <wchar.h>
 
 #include <QString>
 #include <QVector>
@@ -11,12 +10,10 @@
 #include "phonetic-chart.h"
 #include "qcustomplot.h"
 
-VowelSymbol::VowelSymbol(QCustomPlot *plot, const wchar_t *symbol, uint32_t f1,
+VowelSymbol::VowelSymbol(QCustomPlot *plot, const char *symbol, uint32_t f1,
                          uint32_t f2):
-    VowelSymbol(plot, f1, f2)
-{
-    setText(QString::fromWCharArray(symbol));
-}
+    VowelSymbol(plot, QString::fromUtf8(symbol) ,f1, f2)
+{}
 
 VowelSymbol::VowelSymbol(QCustomPlot *plot, const QString &symbol, uint32_t f1,
                          uint32_t f2):
@@ -92,18 +89,9 @@ bool PhoneticChart::loadTitle(FILE *stream) {
 bool PhoneticChart::loadSymbols(FILE *stream) {
     uint32_t f1, f2;
     uint32_t endx, endy;
+    char symbol[9] = {'\0'};
 
-    // Support a maximum two-character symbol, and make sure it's always
-    // null-terminated.
-    wchar_t symbol[3];
-    symbol[2] = L'\0';
-
-    while (fscanf(stream, "%2lc %u %u", symbol, &f1, &f2) == 3) {
-        // If the symbol is only one character, the second character will be the
-        // whitespace separator. In that case, strip the whitespace off.
-        if (iswspace(symbol[1]))
-            symbol[1] = L'\0';
-
+    while (fscanf(stream, "%8s %u %u", symbol, &f1, &f2) == 3) {
         symbols.push_back(new VowelSymbol(plot, symbol, f1, f2));
 
         if (fscanf(stream, "%u %u\n", &endy, &endx) != 2)
