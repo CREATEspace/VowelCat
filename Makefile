@@ -52,7 +52,7 @@ export CFLAGS LDFLAGS QMAKEFLAGS
 
 # Relative and absolute path where things will be built.
 BUILD = build
-BUILD_ABS = $(PWD)/$(BUILD)
+BUILD_ABS = $(CURDIR)/$(BUILD)
 
 # What platform we're running on.
 ifeq ($(OS), )
