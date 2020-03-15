@@ -1,0 +1,13 @@
+name: build
+
+on: push
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: build image
+        run: docker build -t vowelcat/build:latest ./docker
+      - name: build project
+        run: docker run --rm -v $PWD:/app -w /app vowelcat/build:latest make
